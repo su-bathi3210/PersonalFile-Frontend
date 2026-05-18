@@ -1,0 +1,307 @@
+.navBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100px;
+    padding: 0 40px;
+    background-color: rgba(222, 222, 222, 0.401);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.leftSection {
+    display: flex;
+    align-items: center;
+}
+
+.logoContainer {
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    animation: rotateLogo 10s linear infinite;
+}
+
+.titleContainer {
+    display: flex;
+    flex-direction: column;
+    margin-left: 15px;
+    line-height: 1.6;
+}
+
+.appName {
+    font-size: 17px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #ba181b;
+}
+
+.subName {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #355070;
+}
+
+.centerSection {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    margin-right: 40px;
+}
+
+.menuList {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.menuItem {
+    position: relative;
+    margin: 0 15px;
+}
+
+.menuLink {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #888888;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+.menuLink:hover {
+    color: #000000;
+}
+
+.menuLink.active {
+    color: #000000;
+    border-bottom: 3px solid #000000;
+}
+
+.submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+    min-width: 180px;
+    z-index: 100;
+    display: none;
+}
+
+.menuItem:hover .submenu {
+    display: block;
+}
+
+.submenu li .menuLink {
+    color: #555555;
+    padding: 8px 15px;
+    font-size: 14px;
+    display: block;
+    width: 100%;
+}
+
+.submenu li .menuLink.active {
+    color: #000000;
+    border-bottom: 1px dashed #000000;
+}
+
+.submenu li .menuLink:hover {
+    background-color: #f0f0f0;
+    color: #000000;
+}
+
+.rightSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.searchContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 5px 14px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 180px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    padding: 5px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.searchInput::placeholder {
+    color: #a0a0a0;
+}
+
+.searchIconSvg {
+    color: #666;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.profileIcon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: #ba181b;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.profileIcon:hover {
+    background-color: #000;
+}
+
+.nav-profile-img {
+    width: 35px;
+    height: 35px;
+    text-transform: uppercase;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mobileMenuBtn {
+    display: none;
+    cursor: pointer;
+}
+
+@keyframes rotateLogo {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .titleContainer {
+        margin-left: 12px;
+    }
+
+    .appName {
+        font-size: 12.5px;
+    }
+
+    .subName {
+        font-size: 10px;
+    }
+
+    .navBar {
+        padding: 0 15px;
+        height: 80px;
+    }
+
+    .logoContainer {
+        width: 50px;
+        height: 50px;
+    }
+
+    .rightSection {
+        gap: 20px;
+    }
+
+    .profileIcon {
+        width: 30px;
+        height: 30px;
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    .searchContainer {
+        display: none;
+    }
+
+    .mobileMenuBtn {
+        display: block;
+    }
+
+    .centerSection {
+        position: absolute;
+        top: 80px;
+        left: -100%;
+        width: 100%;
+        height: auto;
+        background-color: #f0efeb;
+        flex-direction: column;
+        transition: 0.3s ease-in-out;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+    }
+
+    .centerSection.active {
+        left: 0;
+    }
+
+    .menuList {
+        flex-direction: column;
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    .menuItem {
+        margin: 10px 0;
+        text-align: center;
+        width: 100%;
+    }
+
+    .submenu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        display: block;
+        width: 0%;
+        margin-left: 180px;
+        margin-bottom: -5px;
+    }
+
+    .submenu li .menuLink {
+        color: #555555;
+        padding: 9px 15px;
+        font-size: 14px;
+        display: block;
+        width: 100%;
+    }
+
+    .submenu li .menuLink.active {
+        color: #000000;
+        border-bottom: 1px solid #000000;
+    }
+}

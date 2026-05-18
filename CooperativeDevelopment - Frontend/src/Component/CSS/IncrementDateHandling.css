@@ -1,0 +1,221 @@
+.increment-Date-Handling-main-wrapper {
+    display: flex;
+    padding: 30px 40px;
+    height: 85vh;
+}
+
+.increment-Date-Handling-error {
+    padding: 30px 40px;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: #d90429;
+}
+
+.increment-Date-Handling-left-panel {
+    flex: 1;
+}
+
+.increment-Date-Handling-right-panel {
+    flex: 1;
+    padding-left: 30px;
+}
+
+.increment-Date-Handling-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 10px;
+}
+
+.increment-Date-Handling-description {
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+
+.increment-Date-Handling-table-wrapper {
+    height: 70vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.increment-Date-Handling-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.increment-Date-Handling-th {
+    padding: 15px 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    border-right: 1px solid #fff;
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.increment-Date-Handling-td {
+    padding: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.increment-Date-Handling-tr:hover {
+    background-color: #f8f9fa;
+}
+
+.increment-Date-Handling-date-text {
+    font-size: 12.5px;
+    color: #dc2f02;
+}
+
+.notifications-container-flex {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.notification-section {
+    flex: 1;
+    background-color: #e9ecef;
+    padding: 15px;
+    height: 78vh;
+}
+
+.section-subtitle {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 10px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.upcoming-list {
+    height: 70vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.upcoming-card {
+    background: #ffffff;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.upcoming-info {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.upcoming-info strong {
+    text-transform: uppercase;
+    font-size: 12px;
+    color: #333;
+}
+
+.upcoming-info span {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #666;
+}
+
+.send-email-btn {
+    background-color: #dee2e6;
+    font-size: 11px;
+    color: #333;
+    border: none;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.send-email-btn:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+.send-email-btn:disabled {
+    background-color: #ccc;
+    border-color: #999;
+    cursor: not-allowed;
+}
+
+.notification-section-no-data {
+    text-align: center;
+    color: #c1121f;
+    font-size: 10px;
+    margin-top: 20px;
+    text-transform: uppercase;
+}
+
+
+@media screen and (max-width: 1024px) {
+    .increment-Date-Handling-main-wrapper {
+        padding: 20px;
+        height: auto;
+        flex-direction: column;
+    }
+
+    .increment-Date-Handling-right-panel {
+        padding-left: 0;
+        margin-top: 30px;
+    }
+
+    .notification-section {
+        height: auto;
+        min-height: 400px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .increment-Date-Handling-main-wrapper {
+        padding: 15px;
+    }
+
+    .notifications-container-flex {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .increment-Date-Handling-table-wrapper {
+        height: auto;
+        max-height: 60vh;
+        overflow-x: auto;
+    }
+
+    .increment-Date-Handling-table {
+        min-width: 600px;
+    }
+
+    .increment-Date-Handling-title {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .upcoming-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .send-email-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

@@ -1,0 +1,784 @@
+.personalFile-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 87vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.personalFile-glass-layout {
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 30px;
+}
+
+.loading {
+    text-transform: uppercase;
+    font-size: 12px;
+    color: brown;
+    font-weight: 300;
+}
+
+.personalFile-header h1 {
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 10px;
+}
+
+.personalFile-header p {
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-bottom: 15px;
+    line-height: 1.9;
+}
+
+.notification-alert-banner {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    color: #d90429;
+    gap: 10px;
+    padding: 12px 10px;
+    background: rgba(244, 223, 223, 0.05);
+    transition: all 0.3s ease;
+    animation: gentleGlow 5s infinite ease-in-out;
+}
+
+@keyframes gentleGlow {
+
+    0%,
+    80%,
+    100% {
+        box-shadow: 0 0 0px rgba(255, 0, 0, 0);
+        background: rgba(255, 0, 0, 0.05);
+        transform: scale(1);
+    }
+
+    90% {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        background: rgba(255, 0, 0, 0.1);
+        transform: scale(1.02);
+    }
+}
+
+.alert-item span {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.increment-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.increment-modal {
+    position: relative;
+    background: white;
+    padding: 40px 30px 20px 30px;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.increment-modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    font-size: 30px;
+    color: #c1121f;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 1010;
+}
+
+.increment-modal-close-btn:hover {
+    color: #000;
+}
+
+.increment-modal h2 {
+    text-align: center;
+    color: #e85d04;
+    font-size: 17px;
+    margin-bottom: 10px;
+}
+
+.head-office-file-group {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    gap: 10px;
+    color: #e85d04;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.head-office-input {
+    border: none;
+    outline: none;
+    font-size: 15px;
+    width: 100px;
+    background: transparent;
+}
+
+.increment-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 22px;
+}
+
+.personalFile-increment-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.short-input {
+    width: 23%;
+}
+
+.medium-input {
+    width: 48%;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.personalFile-increment-form-group label {
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.personalFile-increment-form-group input[type="text"],
+.personalFile-increment-form-group input[type="date"],
+.personalFile-increment-form-group input[type="number"],
+.personalFile-increment-form-group textarea {
+    border: none;
+    background-color: #e9ecef;
+    padding: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    outline: none;
+}
+
+.large-detail-box {
+    width: 100%;
+    min-height: 60px;
+    resize: vertical;
+}
+
+.increment-form-row-12 {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+}
+
+.increment-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.checkbox-input-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkbox-input-group input[type="text"] {
+    flex: 1;
+    background-color: #e9ecef;
+    padding: 10px;
+}
+
+.increment-row-inline {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: -5px;
+}
+
+.checkbox-wrap input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    order: 1;
+}
+
+.status-text {
+    font-size: 12px;
+    font-weight: 500;
+    order: 2;
+}
+
+.personalFile-increment-submit-btn {
+    background: #2a9d8f;
+    color: #fff;
+    padding: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.personalFile-increment-submit-btn:hover {
+    background: #000;
+}
+
+.personalFile-card {
+    background: #edf2fb;
+    padding: 20px 25px;
+}
+
+.personalFile-card-title {
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    color: #00509d;
+}
+
+.personalFile-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+}
+
+.info-item-box {
+    display: flex;
+    gap: 18px;
+    padding: 10px 18px;
+    background: #f9fafb;
+    border: 1px solid #fff;
+}
+
+.item-icon {
+    color: #38b000;
+    margin-top: 7px;
+}
+
+.item-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-label {
+    text-transform: uppercase;
+    font-size: 12.5px;
+}
+
+.item-value {
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-top: 8px;
+    color: #555;
+}
+
+.personalFile-sidebar {
+    background: #e1f5e5;
+    padding: 25px;
+}
+
+.personalFile-sidebar-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.personalFile-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.personalFile-avatar-circle {
+    width: 100px;
+    height: 100px;
+    background: #38b000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    font-size: 40px;
+    color: #ffffff;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #fff;
+}
+
+.personalFile-edit-p-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 6px;
+    background: #ffffff;
+    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.personalFile-user-name {
+    margin-top: 12px;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #008000;
+    margin-bottom: 3px;
+}
+
+.personalFile-user-badge {
+    font-size: 12.5px;
+    text-transform: uppercase;
+}
+
+.personalFile-sidebar-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.personalFile-security-section {
+    margin: 10px 10px 0px;
+}
+
+.personalFile-item-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: black;
+}
+
+.personalFile-password-display-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.personalFile-pw-dots {
+    letter-spacing: 2px;
+}
+
+.personalFile-pw-change-link {
+    background: none;
+    border: none;
+    color: #38b000;
+    font-size: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.personalFile-modal-overlay,
+.pfChangingPassword-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.personalFile-modal,
+.pfChangingPassword-modal {
+    background: #ffffff;
+    width: 600px;
+    padding: 20px;
+}
+
+.pfChangingPassword-modal {
+    width: 450px;
+}
+
+.personalFile-modal-top,
+.pfChangingPassword-modal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.personalFile-modal-top h3,
+.pfChangingPassword-modal-top h3 {
+    font-size: 15px;
+    text-transform: uppercase;
+    color: #9d4edd;
+}
+
+.personalFile-modal-image-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.personalFile-modal-avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: none;
+    background: #c4c8c2;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 12px;
+}
+
+.personalFile-modal-img-circle {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.personalFile-modal-img-placeholder {
+    font-size: 40px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.personalFile-image-upload-label {
+    font-size: 12px;
+    color: #4dabf7;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.personalFile-modal-form,
+.pfChangingPassword-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.personalFile-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.personalFile-form-group label,
+.pfChangingPassword-form-group label {
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.personalFile-form-group input,
+.personalFile-form-group textarea,
+.personalFile-form-group select,
+.pfChangingPassword-form-group input {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px 12px;
+    outline: none;
+    border: 1px solid #d1d5db;
+    font-size: 11.5px;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.personalFile-form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%235b5a5a' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+.personalFile-modal-footer,
+.pfChangingPassword-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 0px;
+}
+
+.personalFile-btn-primary,
+.pfChangingPassword-btn-primary {
+    background: #6b9080;
+    color: #ffffff;
+    font-size: 12px;
+    text-transform: uppercase;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.personalFile-btn-secondary,
+.pfChangingPassword-btn-secondary {
+    background: #62b6cb;
+    border: none;
+    font-size: 12px;
+    text-transform: uppercase;
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.eye-btn {
+    position: absolute;
+    right: 10px;
+    top: 60%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .personalFile-container {
+        padding: 20px 20px;
+    }
+
+    .notification-alert-banner {
+        width: 100%;
+        padding: 0px 10px;
+    }
+
+    .alert-item {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .alert-item span {
+        font-size: 12px;
+    }
+
+    .personalFile-glass-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .personalFile-header h1 {
+        font-size: 12px;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .personalFile-header p {
+        text-align: center;
+        font-size: 11px;
+        margin-bottom: 15px;
+        line-height: 2;
+    }
+
+    .personalFile-card {
+        padding: 20px;
+    }
+
+    .personalFile-card-title {
+        font-size: 12px;
+    }
+
+    .personalFile-card-grid {
+        gap: 10px;
+    }
+
+    .info-item-box {
+        display: flex;
+        gap: 18px;
+        padding: 10px 19px;
+    }
+
+    .item-value {
+        font-size: 11px;
+    }
+
+    .item-label {
+        font-size: 11px;
+    }
+
+    .personalFile-modal {
+        width: 500px;
+    }
+
+    .personalFile-modal-top h3,
+    .pfChangingPassword-modal-top h3 {
+        font-size: 13px;
+    }
+
+    .personalFile-form-group label,
+    .pfChangingPassword-form-group label {
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+
+    .personalFile-form-group input,
+    .personalFile-form-group textarea,
+    .personalFile-form-group select,
+    .pfChangingPassword-form-group input {
+        font-size: 11px;
+    }
+
+    .personalFile-btn-primary,
+    .pfChangingPassword-btn-primary {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    .personalFile-btn-secondary,
+    .pfChangingPassword-btn-secondary {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    .increment-modal {
+        width: 90%;
+        max-width: 90%;
+        padding: 25px 15px 20px 15px;
+        max-height: 90vh;
+    }
+
+    .increment-modal h2 {
+        font-size: 14px;
+    }
+
+    .head-office-file-group {
+        flex-direction: column;
+        gap: 5px;
+        font-size: 13px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .head-office-input {
+        width: 100%;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .increment-form {
+        gap: 10px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .short-input,
+    .medium-input,
+    .full-width {
+        width: 100%;
+    }
+
+    .increment-form-row-12 {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .increment-row-inline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .checkbox-wrap {
+        gap: 10px;
+    }
+
+    .personalFile-increment-form-group label {
+        font-size: 13px;
+    }
+
+    .personalFile-increment-form-group input[type="text"],
+    .personalFile-increment-form-group input[type="date"],
+    .personalFile-increment-form-group input[type="number"],
+    .personalFile-increment-form-group textarea {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .personalFile-increment-submit-btn {
+        font-size: 11px;
+        padding: 12px;
+    }
+
+    .increment-modal-close-btn {
+        font-size: 24px;
+        top: 5px;
+        right: 12px;
+    }
+
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

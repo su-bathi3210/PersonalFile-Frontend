@@ -165,27 +165,43 @@
 }
 
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1366px) {
     .increment-Date-Handling-main-wrapper {
-        padding: 20px;
-        height: auto;
+        padding: 25px;
+        gap: 20px;
+    }
+
+    .increment-Date-Handling-th,
+    .increment-Date-Handling-td {
+        padding: 12px;
+    }
+}
+
+@media screen and (max-width: 1120px) {
+    .increment-Date-Handling-main-wrapper {
         flex-direction: column;
-    }
-
-    .increment-Date-Handling-right-panel {
-        padding-left: 0;
-        margin-top: 30px;
-    }
-
-    .notification-section {
         height: auto;
-        min-height: 400px;
+        overflow-y: visible;
+    }
+
+    .increment-Date-Handling-left-panel,
+    .increment-Date-Handling-right-panel {
+        width: 100%;
+        flex: none;
+    }
+
+    .increment-Date-Handling-table-wrapper {
+        max-height: 50vh;
+    }
+
+    .notifications-container-flex {
+        margin-top: 10px;
     }
 }
 
 @media screen and (max-width: 768px) {
     .increment-Date-Handling-main-wrapper {
-        padding: 15px;
+        padding: 20px 15px;
     }
 
     .notifications-container-flex {
@@ -193,29 +209,37 @@
         gap: 15px;
     }
 
-    .increment-Date-Handling-table-wrapper {
+    .notification-section {
         height: auto;
-        max-height: 60vh;
-        overflow-x: auto;
+        max-height: 450px;
     }
 
     .increment-Date-Handling-table {
-        min-width: 600px;
+        min-width: 550px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .increment-Date-Handling-title {
+        font-size: 13.5px;
+        text-align: center;
     }
 
-    .increment-Date-Handling-title {
-        font-size: 14px;
+    .increment-Date-Handling-description {
+        font-size: 10.5px;
         text-align: center;
     }
 
     .upcoming-card {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        align-items: stretch;
+        text-align: left;
+        padding: 12px;
     }
 
     .send-email-btn {
         width: 100%;
         text-align: center;
+        margin-top: 5px;
     }
 }

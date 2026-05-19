@@ -217,10 +217,60 @@ const AdminPersonalFile = () => {
         const dataToExport = files.filter(f => selectedIds.includes(f.id));
         if (dataToExport.length === 0) return alert("Select employees first!");
 
-        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const excelHeaders = [
+            [
+                "No", "Name Of The Employee", "Email", "National ID", "Phone Number",
+                "Address", "Date Of Birth", "Gender", "Service Number", "WNOP Number",
+                "Designation", "Department", "Duty Place", "Salary Scale",
+                "Date Of First Appointment", "Date Of Language Proficiency",
+                "Appointment Date To Present Status", "Increment Date",
+                "Date Of Compulsory Retirement", "Present Status Date", "Grade",
+                "Date Of Receipt Of Relevant Grade", "", ""
+            ],
+            [
+                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                "III", "II", "I"
+            ]
+        ];
+
+        const excelRows = dataToExport.map((emp, index) => {
+            return [
+                index + 1,
+                emp.name || emp.username || "-",
+                emp.email || "-",
+                emp.nic || "-",
+                emp.phoneNumber || "-",
+                emp.address || "-",
+                emp.dateOfBirth ? formatDate(emp.dateOfBirth) : "-",
+                emp.gender || "-",
+                emp.serviceNumber || "-",
+                emp.wnopNumber || "-",
+                emp.designation || "-",
+                emp.department || "-",
+                emp.dutyPlace || "-",
+                emp.salaryScale || "-",
+                emp.dateOfFirstAppointment ? formatDate(emp.dateOfFirstAppointment) : "-",
+                emp.dateOfLanguageProficiency || "-",
+                emp.appointmentDateToPresentStatus ? formatDate(emp.appointmentDateToPresentStatus) : "-",
+                emp.incrementDate ? formatDate(emp.incrementDate) : "-",
+                emp.dateOfCompulsoryRetirement ? formatDate(emp.dateOfCompulsoryRetirement) : "-",
+                emp.presentStatusDate ? formatDate(emp.presentStatusDate) : "-",
+                emp.grade || "-",
+                emp.dateOfReceiptGradeIII ? formatDate(emp.dateOfReceiptGradeIII) : "-",
+                emp.dateOfReceiptGradeII ? formatDate(emp.dateOfReceiptGradeII) : "-",
+                emp.dateOfReceiptGradeI ? formatDate(emp.dateOfReceiptGradeI) : "-"
+            ];
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet([...excelHeaders, ...excelRows]);
+
+        if (!ws['!merges']) ws['!merges'] = [];
+        ws['!merges'].push({ s: { r: 0, c: 21 }, e: { r: 0, c: 23 } });
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Employee Data");
-        XLSX.writeFile(wb, "Employee_Export.xlsx");
+
+        XLSX.writeFile(wb, `Employee_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const handleBulkDelete = async () => {
@@ -372,7 +422,7 @@ const AdminPersonalFile = () => {
                         for administering employee records, from personal contact details to professional milestones like
                         designations and salary increments. It ensures data accuracy with tools for tracking promotions,
                         managing retirement dates, and secure record maintenance. Looking for past updates?
-                        <span className="history-link" onClick={() => navigate('/DetailsHistory')}> You can view the full User History here.</span></p>
+                        <span className="history-link" onClick={() => navigate('/AdminPFHistory')}> You can view the full User History here.</span></p>
                 </div>
             </div>
 

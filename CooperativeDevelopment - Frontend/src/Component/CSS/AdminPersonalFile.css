@@ -69,11 +69,6 @@
     color: #000;
 }
 
-
-
-
-
-
 .admin-dept-add-wrapper {
     display: flex;
     align-items: center;
@@ -157,11 +152,6 @@
     background-color: #000;
 }
 
-
-
-
-
-
 .admin-personal-container button {
     display: inline-flex;
     align-items: center;
@@ -210,11 +200,6 @@
 .admin-excel-upload-wrapper:hover {
     background: #000;
 }
-
-
-
-
-
 
 .filter-controls-toolbar {
     color: #000;
@@ -352,12 +337,6 @@
     transform: rotate(-45deg);
 }
 
-
-
-
-
-
-
 .admin-personal-grid {
     display: grid;
     margin-top: 20px;
@@ -428,10 +407,6 @@
 .admin-personal-checkbox {
     margin-left: 180px;
 }
-
-
-
-
 
 .admin-excel-data-preview-personal-overlay {
     position: fixed;
@@ -532,17 +507,6 @@
     font-weight: 500;
     color: #000;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 .admin-personal-modal-overlay {
     position: fixed;
@@ -648,7 +612,6 @@
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 9px;
-
 }
 
 .admin-personal-input-group {
@@ -697,81 +660,63 @@
 }
 
 
+@media screen and (max-width: 1024px) {
+    .admin-personal-form-structured {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-personal-modal-footer {
+        grid-column: span 2;
+    }
+}
+
 @media screen and (max-width: 768px) {
     .admin-personal-container {
         padding: 20px;
     }
 
-    .admin-personal-title {
-        font-size: 14px;
-    }
-
-    .admin-personal-subtitle {
-        font-size: 11px;
-        line-height: 2;
-    }
-
-    .admin-personal-search-icon {
-        position: relative;
-        right: 40px;
-        top: 30%;
-        transform: translateY(0%);
-        color: #000;
-    }
-
     .admin-personal-controls {
         flex-direction: column;
         align-items: stretch;
-        gap: 5px;
     }
 
     .admin-personal-search-wrapper,
-    .admin-personal-search-input,
-    .admin-dept-add-search-input {
-        min-width: 100%;
+    .admin-dept-add-wrapper {
         width: 100%;
     }
 
-    .admin-personal-search-icon {
-        position: absolute;
-        right: 15px;
+    .admin-personal-container button,
+    .admin-excel-upload-wrapper {
+        width: 100%;
     }
 
-    .admin-dept-add-wrapper {
+    .filter-controls-toolbar {
         flex-direction: column;
+        align-items: stretch;
     }
 
-    .bulk-action-toolbar {
-        flex-wrap: wrap;
-        justify-content: left;
-        gap: 5px;
+    .filter-controls-right {
+        margin-left: 0;
+        width: 100%;
     }
 
-    .bulk-action-toolbar button {
-        padding: 10px 10px;
-        font-size: 10px;
+    .filter-dropdown-group {
+        width: 100%;
+    }
+
+    .admin-filter-dropdown {
+        flex: 1;
+        width: 100%;
     }
 
     .admin-personal-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
+}
 
-    .admin-personal-checkbox {
-        margin-left: 0;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
-
-    .admin-personal-modal-content {
-        width: 90%;
-        padding: 20px;
-    }
-
+@media screen and (max-width: 480px) {
     .admin-personal-form-structured {
         grid-template-columns: 1fr;
-        gap: 20px;
     }
 
     .admin-personal-modal-footer {
@@ -781,5 +726,9 @@
 
     .admin-personal-modal-footer button {
         width: 100%;
+    }
+
+    .admin-personal-modal-content {
+        padding: 15px;
     }
 }

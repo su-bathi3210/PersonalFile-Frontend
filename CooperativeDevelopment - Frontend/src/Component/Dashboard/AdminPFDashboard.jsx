@@ -146,7 +146,7 @@ const AdminPFDashboard = () => {
             <div className="pf-admin-dashboard-reminder-item pf-admin-dashboard-reminder-highlight">
               <Bell size={16} className="pf-admin-dashboard-reminder-icon-bell" />
               <div className="pf-admin-dashboard-reminder-details">
-                <p className="pf-admin-dashboard-reminder-text">ලබන මාසයේ වැටුප් වර්ධක (Increments) හිමි සේවකයින්ට ඊමේල් මතක් කිරීම් යවන්න.</p>
+                <p className="pf-admin-dashboard-reminder-text">ලබන මාසයේ වැටුප් වර්ධක හිමි සේවකයින්ට ඊමේල් මතක් කිරීම් යවන්න.</p>
                 <span className="pf-admin-dashboard-reminder-time">අද දිනට අදාළයි</span>
               </div>
             </div>
@@ -154,7 +154,7 @@ const AdminPFDashboard = () => {
             <div className="pf-admin-dashboard-reminder-item">
               <FileClock size={16} className="pf-admin-dashboard-reminder-icon-clock" />
               <div className="pf-admin-dashboard-reminder-details">
-                <p className="pf-admin-dashboard-reminder-text">Excel Upload පහසුකම මඟින් එකවර දත්ත ඇතුළත් කිරීමේදී ආකෘතිය (Template) නිවැරදිදැයි තහවුරු කරගන්න.</p>
+                <p className="pf-admin-dashboard-reminder-text">Excel Upload පහසුකම මඟින් එකවර දත්ත ඇතුළත් කිරීමේදී ආකෘතිය නිවැරදිදැයි තහවුරු කරගන්න.</p>
                 <span className="pf-admin-dashboard-reminder-time">පද්ධති උපදෙස්</span>
               </div>
             </div>

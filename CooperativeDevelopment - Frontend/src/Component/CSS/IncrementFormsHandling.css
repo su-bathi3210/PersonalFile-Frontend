@@ -392,3 +392,102 @@
     text-align: center;
     color: #c1121f;
 }
+
+@media screen and (max-width: 1366px) {
+    .increment-forms-handling-container {
+        padding: 25px 30px;
+    }
+
+    .increment-forms-handling-th,
+    .increment-forms-handling-td {
+        padding: 12px;
+    }
+
+    .increment-forms-handling-detail-row {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+@media screen and (max-width: 1100px) {
+    .increment-forms-handling-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: visible;
+    }
+
+    .increment-forms-handling-left-side,
+    .increment-forms-handling-right-side {
+        width: 100%;
+        flex: none;
+    }
+
+    .increment-forms-handling-table-wrapper {
+        max-height: 50vh;
+    }
+
+    .months-container {
+        max-height: 45vh;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .increment-forms-handling-container {
+        padding: 20px 15px;
+    }
+
+    .increment-forms-handling-table {
+        min-width: 650px;
+    }
+
+    .increment-forms-handling-detail-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .increment-forms-label {
+        font-size: 13px;
+    }
+
+    .sub-detail-row {
+        margin-left: 10px;
+        width: calc(100% - 10px);
+    }
+
+    .increment-date-update-section>div {
+        flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .increment-forms-handling-title {
+        font-size: 13.5px;
+        text-align: center;
+    }
+
+    .increment-forms-handling-description {
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .filter-controls-wrapper {
+        flex-direction: column;
+    }
+
+    .year-filter-select {
+        width: 100%;
+    }
+
+    .increment-forms-handling-modal-content {
+        padding: 20px 15px;
+    }
+
+    .increment-forms-handling-modal-footer {
+        flex-direction: column;
+    }
+
+    .increment-forms-handling-generate-btn,
+    .increment-forms-handling-close-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

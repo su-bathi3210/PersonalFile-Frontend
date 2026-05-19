@@ -28,6 +28,7 @@ import EmployeePersonalFile from './Component/PersonalFile/Employee/EmployeePers
 import AdminPersonalFile from './Component/PersonalFile/Admin/AdminPersonalFile';
 import IncrementDateHandling from './Component/PersonalFile/Admin/IncrementDateHandling';
 import IncrementFormsHandling from './Component/PersonalFile/Admin/IncrementFormsHandling';
+import AdminPFHistory from './Component/PersonalFile/Admin/AdminPFHistory';
 
 
 // Vehicle
@@ -107,6 +108,7 @@ function App() {
           <Route path="/AdminPersonalFile" element={<AdminPersonalFile />} />
           <Route path="/IncrementDateHandling" element={<IncrementDateHandling />} />
           <Route path="/IncrementFormsHandling" element={<IncrementFormsHandling />} />
+          <Route path="/AdminPFHistory" element={<AdminPFHistory />} />
         </Route>
 
         <Route path="/ApprovalPFDashboard" element={

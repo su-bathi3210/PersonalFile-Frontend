@@ -1,0 +1,395 @@
+.pf-history-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.pf-history-top-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pf-history-main-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 8px;
+}
+
+.pf-history-sub-title-desc {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 12px;
+    max-width: 1200px;
+}
+
+.pf-history-back-btn {
+    background-color: #000;
+    color: white;
+    text-transform: uppercase;
+    border: none;
+    padding: 10px 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pf-history-back-btn:hover {
+    background-color: #2d3748;
+}
+
+.pf-history-filter-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.pf-history-search-input {
+    width: 40%;
+    padding: 12px 10px;
+    border: 1px solid #cbd5e0;
+    text-transform: uppercase;
+    font-size: 10px;
+    outline: none;
+    transition: all 0.2s;
+    background-color: #fff;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+.pf-history-search-input:focus {
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+}
+
+.pf-history-select-filter {
+    width: 15%;
+    padding: 12px 10px;
+    border: 1px solid #cbd5e0;
+    text-transform: uppercase;
+    font-size: 10px;
+    outline: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    outline: none;
+    display: inline-block;
+    box-sizing: border-box;
+    float: right;
+}
+
+.pf-history-select-filter {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 9px;
+}
+
+.pf-history-table-wrapper {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.pf-history-emp-table {
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+.pf-history-emp-table th {
+    background-color: #d8e2dc;
+    color: #000;
+    padding: 15px;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid #fff;
+}
+
+.pf-history-emp-table td {
+    padding: 12px;
+    color: #000;
+    text-transform: uppercase;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 12px;
+}
+
+.pf-history-emp-row:hover {
+    background-color: #e9ecef;
+}
+
+.active-row {
+    background-color: #edf6fa !important;
+    border-left: 3px solid #013a63;
+}
+
+.pf-history-view-btn {
+    background-color: transparent !important;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    width: 50px;
+}
+
+.pf-history-view-btn:hover {
+    color: #c1121f;
+}
+
+.pf-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.pf-history-title {
+    text-transform: uppercase;
+    font-size: 15px;
+}
+
+.pf-history-title span {
+    color: #c1121f;
+    margin-left: 10px;
+}
+
+.pf-history-badge {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000;
+}
+
+.pf-history-count-num {
+    color: #c1121f;
+    font-size: 13px;
+    margin-left: 5px;
+}
+
+.pf-history-timeline {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    gap: 15px;
+}
+
+.pf-history-card {
+    background: #f8f9fa;
+    border: none;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.pf-history-card-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.pf-history-revision {
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #0a9396;
+    font-size: 12px;
+}
+
+.pf-history-date {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.pf-history-author {
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    font-size: 12px;
+    color: #000;
+}
+
+.pf-history-role-badge {
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 0.5rem;
+}
+
+.role-admin {
+    color: #2b6cb0;
+}
+
+.role-employee {
+    color: #319795;
+}
+
+.pf-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.pf-history-table th {
+    background-color: #c9e8f8;
+    color: #000;
+    font-size: 12px;
+    text-transform: uppercase;
+    padding: 15px;
+}
+
+.pf-history-table td {
+    padding: 12px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #fff;
+    font-size: 12px;
+}
+
+.pf-history-field-name {
+    color: #000;
+    text-align: center;
+    width: 30%;
+}
+
+.pf-history-old-val {
+    color: #e53e3e;
+    background-color: #fff5f5;
+    width: 35%;
+    text-align: center;
+}
+
+.pf-history-new-val {
+    color: #38a169;
+    background-color: #f0fff4;
+    width: 35%;
+    text-align: center;
+}
+
+.pf-history-null {
+    color: #000;
+    font-style: italic;
+}
+
+.pf-history-sub-loading {
+    text-align: center;
+    font-size: 12px;
+    color: #000;
+}
+
+.pf-history-error {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 30px 40px;
+    color: #c53030;
+}
+
+.pf-history-empty,
+.pf-history-no-match {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 12px;
+    color: #000;
+}
+
+/* ==========================================
+   8. MEDIA QUERIES (RESPONSIVE BREAKPOINTS)
+   ========================================== */
+
+/* Tablets & Smaller Monitors (max-width: 992px) */
+@media screen and (max-width: 992px) {
+    .pf-history-container {
+        padding: 20px 25px;
+        height: auto; /* Scroll එක මුළු පිටුවටම ලබා දීමට */
+    }
+    
+    .pf-history-search-input {
+        width: 50%;
+    }
+    
+    .pf-history-select-filter {
+        width: 30%;
+    }
+}
+
+/* Smart Phones (max-width: 600px) */
+@media screen and (max-width: 600px) {
+    .pf-history-container {
+        padding: 15px 15px;
+    }
+
+    .pf-history-top-navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .pf-history-back-btn {
+        width: 100%; /* Phone වලදී back button එක ලොකුවට පෙන්වීමට */
+        text-align: center;
+    }
+
+    /* Search සහ Filter එක යට එක වැටීමට */
+    .pf-history-search-input {
+        width: 100%;
+        float: none;
+        margin-bottom: 10px;
+    }
+
+    .pf-history-select-filter {
+        width: 100%;
+        float: none;
+    }
+
+    .pf-history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* Changes Table එක Phone එකේදී ලස්සනට පේන්න blocks වලට හැරවීම */
+    .pf-history-table th {
+        display: none; /* Column headers සඟවන්න */
+    }
+
+    .pf-history-table tr {
+        display: block;
+        border: 1px solid #cbd5e0;
+        margin-bottom: 10px;
+        background: #fff;
+    }
+
+    .pf-history-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100% !important;
+        box-sizing: border-box;
+        text-align: right;
+        border-bottom: 1px solid #edf2f7;
+        padding: 10px;
+    }
+
+    /* Phone එකේදී වම් පැත්තෙන් Column එකේ නම දකුණු පැත්තෙන් දත්තය පෙන්වීමට label එකක් දීම */
+    .pf-history-field-name::before {
+        content: "FIELD: ";
+        font-weight: bold;
+        color: #718096;
+    }
+    .pf-history-old-val::before {
+        content: "OLD VALUE: ";
+        font-weight: bold;
+        color: #e53e3e;
+    }
+    .pf-history-new-val::before {
+        content: "NEW VALUE: ";
+        font-weight: bold;
+        color: #38a169;
+    }
+    
+    .pf-history-field-name, .pf-history-old-val, .pf-history-new-val {
+        text-align: right;
+        background-color: transparent;
+    }
+}

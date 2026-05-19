@@ -41,9 +41,9 @@ const AdminPersonalFileNavBar = () => {
 
     const menuItems = [
         { name: 'Dashboard', path: '/AdminPFDashboard' },
-        { name: 'Personal File', path: '/AdminPersonalFile' },
+        { name: 'Personal File', path: '/AdminPersonalFile', relatedPaths: ["/AdminPFHistory"] },
         { name: 'In:Date', path: '/IncrementDateHandling' },
-        { name: 'In:Forms', path: '/IncrementFormsHandling'},
+        { name: 'In:Forms', path: '/IncrementFormsHandling' },
     ];
 
     return (

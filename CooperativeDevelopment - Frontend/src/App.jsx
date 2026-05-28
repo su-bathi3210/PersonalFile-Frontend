@@ -17,10 +17,14 @@ import AdminVehicleDashboard from './Component/Dashboard/AdminVehicleDashboard';
 import ApprovalVehicleDashboard from './Component/Dashboard/ApprovalVehicleDashboard';
 import AdminPFDashboard from './Component/Dashboard/AdminPFDashboard';
 import ApprovalPFDashboard from './Component/Dashboard/ApprovalPFDashboard';
+import DriverDashboard from './Component/Dashboard/DriverDashboard';
 
 // NavBars
 import EmployeeNavBar from './Component/NavBars/EmployeeNavBar';
 import AdminPersonalFileNavBar from './Component/NavBars/AdminPersonalFileNavBar';
+import AdminVehicleNavBar from './Component/NavBars/AdminVehicleNavBar';
+import ApproveOfficerVehicleNavBar from './Component/NavBars/ApproveOfficerVehicleNavBar';
+import DriverNavBar from './Component/NavBars/DriverNavBar';
 
 
 // PersonalFile
@@ -33,6 +37,11 @@ import AdminPFHistory from './Component/PersonalFile/Admin/AdminPFHistory';
 
 // Vehicle
 import EmployeeVehicle from './Component/Vehicle/Employee/EmployeeVehicle';
+import AdminVehicleRequest from './Component/Vehicle/Admin/AdminVehicleRequest';
+import AdminDriversVehicles from './Component/Vehicle/Admin/AdminDriversVehicles';
+import AdminVehicleHistory from './Component/Vehicle/Admin/AdminVehicleHistory';
+import ApproveOfficerVehicle from './Component/Vehicle/ApprovalOfficer/ApproveOfficerVehicle';
+import ApproveOfficerVehicleHistory from './Component/Vehicle/ApprovalOfficer/ApproveOfficerVehicleHistory';
 
 const Unauthorized = () => <div><h2>Access Denied: You do not have permission.</h2></div>;
 
@@ -87,18 +96,33 @@ function App() {
           <Route path="/EmployeeVehicle" element={<EmployeeVehicle />} />
         </Route>
 
-        <Route path="/AdminVehicleDashboard" element={
-          <ProtectedRoute allowedRoles={['ROLE_VEHICLE_ADMIN']}>
-            <AdminVehicleDashboard />
-          </ProtectedRoute>
-        } />
 
-        <Route path="/ApprovalVehicleDashboard" element={
-          <ProtectedRoute allowedRoles={['ROLE_VEHICLE_APPROVAL']}>
-            <ApprovalVehicleDashboard />
-          </ProtectedRoute>
-        } />
+        <Route element={
+          <ProtectedRoute allowedRoles={['ROLE_VEHICLE_ADMIN']} Navbar={AdminVehicleNavBar}>
+            <div className="employee-layout-wrapper"><Outlet /></div> </ProtectedRoute>}>
 
+          <Route path="/AdminVehicleDashboard" element={<AdminVehicleDashboard />} />
+          <Route path="/AdminVehicleRequest" element={<AdminVehicleRequest />} />
+          <Route path="/AdminDriversVehicles" element={<AdminDriversVehicles />} />
+          <Route path="/AdminVehicleHistory" element={<AdminVehicleHistory />} />
+        </Route>
+
+        <Route element={
+          <ProtectedRoute allowedRoles={['ROLE_VEHICLE_APPROVAL']} Navbar={ApproveOfficerVehicleNavBar}>
+            <div className="employee-layout-wrapper"><Outlet /></div> </ProtectedRoute>}>
+
+          <Route path="/ApprovalVehicleDashboard" element={<ApprovalVehicleDashboard />} />
+          <Route path="/ApproveOfficerVehicle" element={<ApproveOfficerVehicle />} />
+          <Route path="/ApproveOfficerVehicleHistory" element={<ApproveOfficerVehicleHistory />} />
+        </Route>
+
+
+        <Route element={
+          <ProtectedRoute allowedRoles={['ROLE_DRIVER']} Navbar={DriverNavBar}>
+            <div className="employee-layout-wrapper"><Outlet /></div> </ProtectedRoute>}>
+
+          <Route path="/DriverDashboard" element={<DriverDashboard />} />
+        </Route>
 
         <Route element={
           <ProtectedRoute allowedRoles={['ROLE_PERSONALFILE_ADMIN']} Navbar={AdminPersonalFileNavBar}>

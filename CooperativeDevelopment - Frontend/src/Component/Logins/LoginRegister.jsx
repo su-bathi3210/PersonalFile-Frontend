@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+    useState,
+    useEffect
+} from 'react';
+
 import axios from 'axios';
+
+import api from '../API/Axios';
+
 import { useNavigate } from 'react-router-dom';
+
 import '../CSS/LoginRegister.css';
 
 const LoginRegister = () => {
@@ -35,14 +43,17 @@ const LoginRegister = () => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const response = await axios.get(`${API_URL}/departments/all`);
+                const response = await api.get('/departments/all');
                 setDepartments(response.data);
             } catch (err) {
                 console.error("Error fetching departments:", err);
+                if (err.response?.status === 403) {
+                    localStorage.removeItem('token');
+                }
             }
         };
         fetchDepartments();
-    }, [API_URL]);
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -58,7 +69,7 @@ const LoginRegister = () => {
         setMessage('');
         setIsLoading(true);
         try {
-            await axios.post(`${API_URL}/api/auth/forgot-password/request`, {
+            await api.post('/api/auth/forgot-password/request', {
                 email: forgotData.email,
                 serviceNumber: forgotData.serviceNumber
             });
@@ -76,7 +87,7 @@ const LoginRegister = () => {
         setError('');
         setIsLoading(true);
         try {
-            await axios.post(`${API_URL}/api/auth/forgot-password/verify`, {
+            await api.post('/api/auth/forgot-password/verify', {
                 email: forgotData.email,
                 otp: forgotData.otp
             });
@@ -96,7 +107,7 @@ const LoginRegister = () => {
         }
         setIsLoading(true);
         try {
-            await axios.post(`${API_URL}/api/auth/forgot-password/reset`, {
+            await api.post('/api/auth/forgot-password/reset', {
                 email: forgotData.email,
                 newPassword: forgotData.newPassword
             });
@@ -121,14 +132,15 @@ const LoginRegister = () => {
 
         try {
             if (isLogin) {
-                const response = await axios.post(`${API_URL}/api/auth/login`, {
-                    username: formData.email,
+                const response = await api.post('/api/auth/login', {
+                    username: formData.email, // Backend එක බලාපොරොත්තු වන Username එකට මේ field එකම යනවා (Email හෝ Phone එක)
                     password: formData.password
                 });
 
                 const { token, email, roles, username, profileImage } = response.data;
+
                 localStorage.setItem('token', token);
-                localStorage.setItem('userEmail', email);
+                localStorage.setItem('employeeEmail', email);
                 localStorage.setItem('username', username);
                 localStorage.setItem('roles', JSON.stringify(roles));
 
@@ -140,7 +152,9 @@ const LoginRegister = () => {
 
                 setMessage('Login Successful!');
                 setTimeout(() => {
-                    if (roles.includes('ROLE_EMPLOYEE')) navigate('/EmployeeDashboard');
+                    // --- Driver ඇතුළු අනෙකුත් සියලුම භූමිකාවන් සඳහා Dashboard Routes ---
+                    if (roles.includes('ROLE_DRIVER')) navigate('/DriverDashboard');
+                    else if (roles.includes('ROLE_EMPLOYEE')) navigate('/EmployeeDashboard');
                     else if (roles.includes('ROLE_VEHICLE_ADMIN')) navigate('/AdminVehicleDashboard');
                     else if (roles.includes('ROLE_VEHICLE_APPROVAL')) navigate('/ApprovalVehicleDashboard');
                     else if (roles.includes('ROLE_PERSONALFILE_ADMIN')) navigate('/AdminPFDashboard');
@@ -148,7 +162,7 @@ const LoginRegister = () => {
                 }, 1500);
 
             } else {
-                await axios.post(`${API_URL}/api/auth/register`, {
+                await api.post('/api/auth/register', {
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
@@ -241,8 +255,9 @@ const LoginRegister = () => {
                                     </select>
                                 </>
                             )}
-                            <input name="email" type="email" placeholder="Email Address" required value={formData.email} onChange={handleChange} className="input-field" />
-                            <input name="password" type="password" placeholder="Password" required value={formData.password} onChange={handleChange} className="input-field" />
+                            {/* රියදුරන්ට පහසු වෙන්න placeholder එක වෙනස් කළා */}
+                            <input name="email" type="text" placeholder={isLogin ? "Email / NIC" : "Email Address"} required value={formData.email} onChange={handleChange} className="input-field" />
+                            <input name="password" type="password" placeholder={isLogin ? "Password / Phone Number" : "Password"} required value={formData.password} onChange={handleChange} className="input-field" />
 
                             <div className="options">
                                 <label><input type="checkbox" /> Remember me</label>

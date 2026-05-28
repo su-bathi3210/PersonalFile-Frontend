@@ -1,0 +1,247 @@
+.vehicle-approve-officer-request-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.vehicle-approve-officer-request-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 8px;
+}
+
+.vehicle-approve-officer-request-description {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 2;
+    margin-bottom: 10px;
+}
+
+.vehicle-approve-officer-request-error {
+    color: #c1121f;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.vehicle-approve-officer-request-empty {
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: #c1121f;
+}
+
+.vehicle-approve-officer-request-table-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.vehicle-approve-officer-request-responsive-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.vehicle-approve-officer-request-table {
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+.vehicle-approve-officer-request-th {
+    padding: 15px;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+    border-right: 1px solid #fff;
+    background-color: #edede9;
+    color: #333;
+}
+
+.vehicle-approve-officer-request-td {
+    padding: 10px;
+    font-size: 12px;
+    border: 1px solid #e9ecef;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.vehicle-approve-officer-request-table th:nth-child(4),
+.vehicle-approve-officer-request-table td:nth-child(5) {
+    width: 200px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.vehicle-approve-officer-request-name {
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.vehicle-approve-officer-request-email {
+    font-size: 10px;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.vehicle-approve-officer-request-dept-badge {
+    display: inline-block;
+    color: #1e40af;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.vehicle-approve-officer-request-label-prefix {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #000;
+}
+
+.vehicle-approve-officer-request-distance {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.vehicle-approve-officer-request-special-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 300px;
+}
+
+.vehicle-approve-officer-request-select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 10px;
+    color: #000;
+    background-color: #e9ecef;
+    border: 1px solid #e9ecef;
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.vehicle-approve-officer-request-select  {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 9px;
+}
+
+.vehicle-approve-officer-request-textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: #e9ecef;
+    padding: 0.375rem;
+    min-height: 80px;
+    font-size: 10px;
+    text-transform: uppercase;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.vehicle-approve-officer-request-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.vehicle-approve-officer-request-btn-approve,
+.vehicle-approve-officer-request-btn-reject {
+    width: 100%;
+    padding: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    color: #ffffff;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.vehicle-approve-officer-request-btn-approve {
+    background-color: #2a9d8f;
+}
+
+.vehicle-approve-officer-request-btn-approve:hover {
+    background-color: #000;
+}
+
+.vehicle-approve-officer-request-btn-reject {
+    background-color: #c1121f;
+}
+
+.vehicle-approve-officer-request-btn-reject:hover {
+    background-color: #000;
+}
+
+@media (max-width: 991px) {
+    .vehicle-approve-officer-request-table thead {
+        display: none;
+    }
+
+    .vehicle-approve-officer-request-table,
+    .vehicle-approve-officer-request-table tbody,
+    .vehicle-approve-officer-request-table tr,
+    .vehicle-approve-officer-request-table td {
+        display: block;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .vehicle-approve-officer-request-table tr {
+        background: #fff;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .vehicle-approve-officer-request-td {
+        border: none !important;
+        padding: 8px 0 !important;
+        text-align: left !important;
+        font-size: 13px;
+    }
+
+    .vehicle-approve-officer-request-td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: bold;
+        color: #888;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .vehicle-approve-officer-request-textarea {
+        min-width: 100% !important;
+        margin-top: 5px;
+    }
+
+    .vehicle-approve-officer-request-actions-container {
+        flex-direction: row !important;
+        gap: 10px;
+        margin-top: 10px;
+    }
+}

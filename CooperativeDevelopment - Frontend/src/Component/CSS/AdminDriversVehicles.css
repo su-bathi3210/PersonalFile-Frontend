@@ -1,0 +1,337 @@
+.admin-vehicledrivers-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.admin-vehicledrivers-forms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.admin-vehicledrivers-card {
+    background: #f8f9fa;
+    padding: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.admin-vehicledrivers-card-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    margin-bottom: 1rem;
+    color: #ff477e;
+}
+
+.admin-vehicledrivers-message {
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.admin-vehicledrivers-msg-success {
+    color: #2a9d8f;
+}
+
+.admin-vehicledrivers-msg-error {
+    color: #c1121f;
+}
+
+.admin-vehicledrivers-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.admin-vehicledrivers-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.admin-vehicledrivers-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-vehicledrivers-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 8px;
+}
+
+.admin-vehicledrivers-input,
+.admin-vehicledrivers-select,
+.admin-vehicledrivers-textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    border: none;
+    background: #e9ecef;
+    box-sizing: border-box;
+    color: #000;
+}
+
+.admin-vehicledrivers-input:focus,
+.admin-vehicledrivers-select:focus,
+.admin-vehicledrivers-textarea:focus {
+    outline: none;
+}
+
+.admin-vehicledrivers-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 9px;
+}
+
+.admin-vehicledrivers-textarea {
+    resize: vertical;
+}
+
+.admin-vehicledrivers-status-static {
+    width: 100%;
+    padding: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    border: none;
+    background-color: #e9ecef;
+    color: #000;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.admin-vehicledrivers-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #000;
+    margin-right: 0.5rem;
+    animation: admin-vehicledrivers-pulse 2s infinite;
+}
+
+@keyframes admin-vehicledrivers-pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: .5;
+    }
+}
+
+.admin-vehicledrivers-form-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.admin-vehicledrivers-helper-text {
+    font-size: 10px;
+    color: #c1121f;
+    text-align: center;
+    text-transform: uppercase;
+    margin-top: 10px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.admin-vehicledrivers-link {
+    color: #0077b6;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.admin-vehicledrivers-link:hover {
+    color: #000;
+}
+
+.admin-vehicledrivers-btn {
+    width: auto;
+    padding: 10px;
+    color: #ffffff;
+    font-size: 12px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-vehicledrivers-btn-driver {
+    background-color: #6d597a;
+}
+
+.admin-vehicledrivers-btn-driver:hover:not(.disabled) {
+    background-color: #000;
+}
+
+.admin-vehicledrivers-btn-vehicle {
+    background-color: #355070;
+}
+
+.admin-vehicledrivers-btn-vehicle:hover:not(.disabled) {
+    background-color: #000;
+}
+
+.admin-vehicledrivers-tables-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.admin-vehicledrivers-table-card {
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.admin-vehicledrivers-table-header {
+    background-color: #f8edeb;
+    padding: 15px;
+}
+
+.admin-vehicledrivers-table-title {
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.admin-vehicledrivers-table-scroll {
+    overflow-x: auto;
+    max-height: 350px;
+}
+
+.admin-vehicledrivers-table-empty {
+    padding: 15px;
+    text-align: center;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.admin-vehicledrivers-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.admin-vehicledrivers-th {
+    padding: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+    border-right: 1px solid #fff;
+    background-color: #ece4db;
+    color: #000;
+    position: sticky;
+    top: 0;
+    z-index: 10
+}
+
+.admin-vehicledrivers-td {
+    padding: 12px;
+    font-size: 12px;
+    border: 1px solid #e9ecef;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.admin-vehicledrivers-tr:hover {
+    background-color: #f9fafb;
+}
+
+.admin-vehicledrivers-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-vehicledrivers-badge-available {
+    color: #2a9d8f;
+}
+
+.admin-vehicledrivers-badge-booked {
+    color: #c1121f;
+}
+
+.admin-vehicledrivers-badge-ontrip {
+    color: #118ab2;
+}
+
+.admin-vehicledrivers-badge-repair {
+    color: #991b1b;
+}
+
+.admin-vehicledrivers-badge-default {
+    color: #1f2937;
+}
+
+
+@media (max-width: 1024px) {
+    .admin-vehicledrivers-container {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .admin-vehicledrivers-forms-grid,
+    .admin-vehicledrivers-tables-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-vehicledrivers-container {
+        padding: 15px 10px;
+    }
+
+    .admin-vehicledrivers-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .admin-vehicledrivers-card {
+        padding: 15px;
+    }
+
+    .admin-vehicledrivers-form-footer {
+        justify-content: center;
+    }
+
+    .admin-vehicledrivers-btn {
+        width: 100%;
+    }
+
+    .admin-vehicledrivers-helper-text {
+        margin-left: 0;
+    }
+}

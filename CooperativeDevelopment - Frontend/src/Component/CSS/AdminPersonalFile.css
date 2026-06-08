@@ -55,14 +55,17 @@
 }
 
 .admin-personal-search-input {
-    min-width: 530px;
+    width: 100%;
+    max-width: 530px;
     text-transform: uppercase;
     padding: 11px 15px;
+    padding-right: 40px;
     background: #e9ecef;
     border: 1px solid #e9ecef;
     font-size: 11px;
     outline: none;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
 .admin-personal-search-input::placeholder {
@@ -659,25 +662,266 @@
     background: #e76f51;
 }
 
+.admin-personal-field-open-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
 
-@media screen and (max-width: 1024px) {
-    .admin-personal-form-structured {
-        grid-template-columns: repeat(2, 1fr);
+.admin-personal-field-open-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 1100px;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 20px;
+}
+
+.admin-personal-field-open-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.admin-personal-field-open-model-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #ff477e;
+}
+
+.admin-personal-field-open-header-section button {
+    background: #c1121f;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    transition: background 0.2s;
+}
+
+.admin-personal-field-open-header-section button:hover {
+    background-color: #000;
+}
+
+.admin-personal-field-open-form-structured {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-personal-field-open-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-personal-field-open-form-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.admin-personal-field-open-form-input,
+.admin-personal-field-open-form-input-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e9ecef;
+    font-size: 12px;
+    color: #000;
+    text-transform: uppercase;
+    background-color: #e9ecef;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.admin-personal-field-open-form-row select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 9px;
+}
+
+.admin-personal-field-open-checkbox-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.admin-personal-field-open-checkbox-row input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+}
+
+.admin-personal-field-open-checkbox-row label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #c1121f;
+    cursor: pointer;
+}
+
+.admin-personal-field-open-submit-container {
+    margin-top: 8px;
+}
+
+.admin-personal-field-open-btn-update {
+    background-color: #4a4e69;
+    width: 100%;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.admin-personal-field-open-btn-update:hover {
+    background-color: #000;
+}
+
+.admin-personal-field-open-existing-section {
+    margin-top: 50px;
+}
+
+.admin-personal-field-open-sub-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #00b4d8;
+}
+
+.admin-personal-field-open-empty-text {
+    font-size: 12px;
+    color: #c1121f;
+    margin-top: 15px;
+    text-transform: uppercase;
+}
+
+.admin-personal-field-open-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.admin-personal-field-open-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.admin-personal-field-open-preview-table th {
+    background-color: #edede9;
+    color: #000;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.admin-personal-field-open-preview-table td {
+    padding: 12px;
+    border-bottom: 1px solid #edede9;
+    color: #000;
+    font-size: 11px;
+    line-height: 1.8;
+    text-transform: uppercase;
+}
+
+.admin-personal-field-open-table-small {
+    color: #000;
+    font-size: 11px;
+}
+
+.admin-personal-field-open-table-btn-edit,
+.admin-personal-field-open-table-btn-delete {
+    background: #edede9;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    margin-right: 6px;
+    transition: background 0.2s;
+}
+
+.admin-personal-field-open-preview-table .admin-personal-field-open-table-btn-edit {
+    color: #7400b8;
+}
+
+.admin-personal-field-open-preview-table .admin-personal-field-open-table-btn-edit:hover {
+    color: #000;
+}
+
+.admin-personal-field-open-preview-table .admin-personal-field-open-table-btn-delete {
+    color: #c1121f;
+}
+
+.admin-personal-field-open-preview-table .admin-personal-field-open-table-btn-delete:hover {
+    color: #000;
+}
+
+.admin-personal-field-open-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
     }
 
-    .admin-personal-modal-footer {
-        grid-column: span 2;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+@media screen and (max-width: 1024px) {
+    .admin-personal-container {
+        padding: 20px;
+        height: auto;
+    }
+
+    .admin-personal-search-input {
+        min-width: 100%;
+    }
+
+    .admin-personal-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .admin-personal-form-structured {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-personal-checkbox {
+        margin-left: auto;
     }
 }
 
 @media screen and (max-width: 768px) {
-    .admin-personal-container {
-        padding: 20px;
-    }
-
     .admin-personal-controls {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
 
     .admin-personal-search-wrapper,
@@ -685,14 +929,14 @@
         width: 100%;
     }
 
-    .admin-personal-container button,
-    .admin-excel-upload-wrapper {
+    .admin-dept-add-search-input {
         width: 100%;
     }
 
     .filter-controls-toolbar {
         flex-direction: column;
-        align-items: stretch;
+        gap: 15px;
+        align-items: flex-start;
     }
 
     .filter-controls-right {
@@ -702,33 +946,69 @@
 
     .filter-dropdown-group {
         width: 100%;
+        flex-wrap: wrap;
     }
 
     .admin-filter-dropdown {
         flex: 1;
-        width: 100%;
+        min-width: 120px;
+    }
+
+    .bulk-action-toolbar-inner {
+        flex-wrap: wrap;
     }
 
     .admin-personal-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
     }
-}
 
-@media screen and (max-width: 480px) {
     .admin-personal-form-structured {
         grid-template-columns: 1fr;
     }
 
-    .admin-personal-modal-footer {
-        grid-column: span 1;
+    .admin-excel-data-preview-personal-content,
+    .admin-personal-modal-content {
+        width: 95vw;
+        padding: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .admin-personal-container {
+        padding: 15px 10px;
+    }
+
+    .admin-personal-title {
+        font-size: 13px;
+    }
+
+    .admin-personal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-personal-container button,
+    .admin-excel-upload-wrapper,
+    .bulk-action-toolbar-inner button {
+        width: 100%;
+        font-size: 11px;
+        padding: 10px;
+    }
+
+    .admin-dept-add-wrapper {
         flex-direction: column;
     }
 
-    .admin-personal-modal-footer button {
-        width: 100%;
+    .excel-preview-table-container,
+    .admin-personal-field-open-table-container {
+        max-height: 400px;
+        overflow-y: auto;
     }
 
-    .admin-personal-modal-content {
-        padding: 15px;
+    .preview-table th,
+    .preview-table td,
+    .admin-personal-field-open-preview-table th,
+    .admin-personal-field-open-preview-table td {
+        padding: 8px;
+        font-size: 11px;
     }
 }

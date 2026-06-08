@@ -133,7 +133,7 @@ const LoginRegister = () => {
         try {
             if (isLogin) {
                 const response = await api.post('/api/auth/login', {
-                    username: formData.email, // Backend එක බලාපොරොත්තු වන Username එකට මේ field එකම යනවා (Email හෝ Phone එක)
+                    username: formData.email,
                     password: formData.password
                 });
 
@@ -152,7 +152,6 @@ const LoginRegister = () => {
 
                 setMessage('Login Successful!');
                 setTimeout(() => {
-                    // --- Driver ඇතුළු අනෙකුත් සියලුම භූමිකාවන් සඳහා Dashboard Routes ---
                     if (roles.includes('ROLE_DRIVER')) navigate('/DriverDashboard');
                     else if (roles.includes('ROLE_EMPLOYEE')) navigate('/EmployeeDashboard');
                     else if (roles.includes('ROLE_VEHICLE_ADMIN')) navigate('/AdminVehicleDashboard');
@@ -208,9 +207,9 @@ const LoginRegister = () => {
                         <form className="form-group">
                             {step === 1 && (
                                 <>
-                                    <input name="email" type="email" placeholder="Email Address" required
+                                    <input name="email" type="email" placeholder="EMAIL ADDRESS" required
                                         value={forgotData.email} onChange={handleForgotChange} className="input-field" />
-                                    <input name="serviceNumber" type="text" placeholder="Service Number" required
+                                    <input name="serviceNumber" type="text" placeholder="SERVICE NUMBER" required
                                         value={forgotData.serviceNumber} onChange={handleForgotChange} className="input-field" />
                                     <button onClick={handleRequestOTP} className="submit-btn" disabled={isLoading}>
                                         {isLoading ? 'Sending...' : 'Send OTP'}
@@ -228,9 +227,9 @@ const LoginRegister = () => {
                             )}
                             {step === 3 && (
                                 <>
-                                    <input name="newPassword" type="password" placeholder="New Password" required
+                                    <input name="newPassword" type="password" placeholder="NEW PASSWORD" required
                                         value={forgotData.newPassword} onChange={handleForgotChange} className="input-field" />
-                                    <input name="confirmPassword" type="password" placeholder="Confirm Password" required
+                                    <input name="confirmPassword" type="password" placeholder="CONFIRM PASSWORD" required
                                         value={forgotData.confirmPassword} onChange={handleForgotChange} className="input-field" />
                                     <button onClick={handleResetPassword} className="submit-btn" disabled={isLoading}>
                                         Update Password
@@ -248,16 +247,15 @@ const LoginRegister = () => {
                         <form className="form-group" onSubmit={handleSubmit}>
                             {!isLogin && (
                                 <>
-                                    <input name="username" type="text" placeholder="Full Name" required value={formData.username} onChange={handleChange} className="input-field" />
+                                    <input name="username" type="text" placeholder="FULL NAME" required value={formData.username} onChange={handleChange} className="input-field" />
                                     <select name="department" required value={formData.department} onChange={handleChange} className="input-field arrow">
-                                        <option value="">Select Your Department</option>
+                                        <option value="">SELECT YOUR DEPARTMENT</option>
                                         {departments.map((dept) => <option key={dept.id} value={dept.name}>{dept.name}</option>)}
                                     </select>
                                 </>
                             )}
-                            {/* රියදුරන්ට පහසු වෙන්න placeholder එක වෙනස් කළා */}
-                            <input name="email" type="text" placeholder={isLogin ? "Email / NIC" : "Email Address"} required value={formData.email} onChange={handleChange} className="input-field" />
-                            <input name="password" type="password" placeholder={isLogin ? "Password / Phone Number" : "Password"} required value={formData.password} onChange={handleChange} className="input-field" />
+                            <input name="email" type="text" placeholder={isLogin ? "EMAIL / NIC" : "EMAIL ADDRESS"} required value={formData.email} onChange={handleChange} className="input-field" />
+                            <input name="password" type="password" placeholder={isLogin ? "PASSWORD / PHONE NUMBER" : "PASSWORD"} required value={formData.password} onChange={handleChange} className="input-field" />
 
                             <div className="options">
                                 <label><input type="checkbox" /> Remember me</label>

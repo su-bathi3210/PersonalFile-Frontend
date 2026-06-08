@@ -1,6 +1,6 @@
-import React, {
-    useState,
-    useEffect
+import {
+    useEffect,
+    useState
 } from 'react';
 
 import API from '../../API/Axios';
@@ -8,17 +8,19 @@ import API from '../../API/Axios';
 import '../../CSS/EmployeePersonalFile.css';
 
 import {
-    Pencil,
-    Lock,
-    UserRoundCog,
-    Mail,
-    Phone,
-    MapPin,
     Cake,
-    User as UserIcon,
     Eye,
     EyeOff,
-    Transgender
+    Lock,
+    Mail,
+    MapPin,
+    Pencil,
+    Phone,
+    Transgender,
+    User as UserIcon,
+    UserRoundCog,
+    Download,
+    Upload
 } from 'lucide-react';
 
 import { LuTrash2 } from "react-icons/lu";
@@ -32,107 +34,43 @@ const EmployeePersonalFile = () => {
         incrementDate: "", dateOfReceiptGradeI: "", dateOfReceiptGradeII: "",
         dateOfReceiptGradeIII: "", dateOfCompulsoryRetirement: "", dateOfReceiptOfRelevantGrade: "",
         presentStatusDate: "", wnopNumber: "",
-        profileImage: null, serviceNumber: "", dateOfLanguageProficiency: ""
+        profileImage: null, serviceNumber: "", dateOfLanguageProficiency: "",
+        dynamicFields: {}
     });
 
-    const [isIncrementFormOpen, setIsIncrementFormOpen] = useState(false);
-
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    });
-
+    const [dynamicFieldConfigs, setDynamicFieldConfigs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
     const [selectedImage, setSelectedImage] = useState(null);
+
     const [notifications, setNotifications] = useState([]);
+    const [isIncrementModalOpen, setIsIncrementModalOpen] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
 
-    const [incrementFormData, setIncrementFormData] = useState({
-        headOfficeFileNumber: "",
-        officerName: "",
-        grade: "",
-        assistantCommissionerDivision: "",
-        transferDateToACoffice: "",
-
-        incrementDate: "",
-        currentSalary: "",
-        incrementAmount: "",
-        totalWithIncrement: "",
-        monthlyConsolidatedSalary: "",
-
-        salaryIncrementSuspendedDetails: "",
-        sickLeaveCount: "",
-
-        passedSecondLanguageTest: false,
-        passedFirstInspectorExam: false,
-        examPassedDateAndYear: "",
-
-        efficiencyBarReached: false,
-
-        disciplinaryActionsDetails: "",
-        warningsOrPunishmentsDetails: ""
-
-    });
+    const [incrementNotifications, setIncrementNotifications] = useState([]);
 
     const userEmail = localStorage.getItem('employeeEmail');
 
     useEffect(() => {
-        fetchUserData();
+        const initComponent = async () => {
+            setLoading(true);
+            await fetchDynamicFieldConfigs();
+            await fetchUserData();
+            setLoading(false);
+        };
+        initComponent();
     }, [userEmail]);
-
-    const openIncrementForm = (notification) => {
-        setSelectedNotification(notification);
-
-        setIncrementFormData({
-            ...incrementFormData,
-            officerName: formData.username,
-            grade: formData.grade,
-            incrementDate: formData.incrementDate
-        });
-
-        setIsIncrementFormOpen(true);
-    };
-
-    const handleIncrementFormSubmit = async (e) => {
-
-        e.preventDefault();
-
-        try {
-
-            await API.post("/increment-form/submit", {
-                ...incrementFormData,
-                userId: formData.id,
-                notificationId: selectedNotification.id,
-                submitted: true
-            });
-
-            alert("Increment Form Submitted Successfully");
-
-            setIsIncrementFormOpen(false);
-
-            fetchUserData();
-
-            setNotifications(prev =>
-                prev.filter(n => n.id !== selectedNotification.id)
-            );
-
-        } catch (err) {
-            console.error(err);
-            alert("Failed to submit increment form");
-        }
-    };
 
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
                 const response = await API.get(`/personalfile/notifications/${formData.id}`);
-                setNotifications(response.data.filter(n => !n.read));
+                setNotifications(response.data.filter(n => !n.read && n.status === "PENDING"));
             } catch (err) {
                 console.error("Error fetching notifications", err);
             }
@@ -140,24 +78,80 @@ const EmployeePersonalFile = () => {
         if (formData.id) fetchNotifications();
     }, [formData.id]);
 
-    const fetchUserData = async () => {
-        if (!userEmail) {
-            setLoading(false);
-            return;
+    const fetchDynamicFieldConfigs = async () => {
+        try {
+            const res = await API.get('/dynamic-fields/all');
+            setDynamicFieldConfigs(res.data);
+        } catch (err) {
+            console.error("Error fetching dynamic field configurations:", err);
         }
+    };
+
+    const fetchUserData = async () => {
+        if (!userEmail) return;
         try {
             const response = await API.get(`/personalfile/me?email=${userEmail}`);
-            if (response.data) setFormData(response.data);
+            if (response.data) {
+                const data = response.data;
+                if (!data.dynamicFields) {
+                    data.dynamicFields = {};
+                }
+                setFormData(data);
+            }
             setSelectedImage(response.data.profileImage);
 
             if (response.data.profileImage) {
                 localStorage.setItem('userImage', response.data.profileImage);
             }
-
         } catch (err) {
             console.error("Error fetching data", err);
+        }
+    };
+
+    const openIncrementModal = (notification) => {
+        setSelectedNotification(notification);
+        setSelectedFiles([]);
+        setIsIncrementModalOpen(true);
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files) {
+            setSelectedFiles(Array.from(e.target.files));
+        }
+    };
+
+    const handleFormUploadSubmit = async (e) => {
+        e.preventDefault();
+        if (selectedFiles.length === 0) {
+            alert("⚠️ Please select at least one completed document to upload!");
+            return;
+        }
+
+        setIsUploading(true);
+
+        const uploadData = new FormData();
+        uploadData.append("notificationId", selectedNotification.id);
+
+        selectedFiles.forEach((file) => {
+            uploadData.append("files", file);
+        });
+
+        try {
+            await API.post("/personalfile/upload-submitted-forms", uploadData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+
+            alert("✅ Completed Increment Forms Uploaded Successfully!");
+            setIsIncrementModalOpen(false);
+
+            setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
+        } catch (err) {
+            console.error("Error uploading forms:", err);
+            alert(err.response?.data || "❌ Failed to upload increment forms.");
         } finally {
-            setLoading(false);
+            setIsUploading(false);
         }
     };
 
@@ -184,6 +178,13 @@ const EmployeePersonalFile = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleDynamicFieldChange = (e) => {
+        setFormData({
+            ...formData,
+            dynamicFields: { ...formData.dynamicFields, [e.target.name]: e.target.value }
+        });
+    };
+
     const handlePasswordChange = (e) => {
         setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
     };
@@ -197,12 +198,14 @@ const EmployeePersonalFile = () => {
             setIsEditing(false);
             fetchUserData();
         } catch (err) {
-            alert("❌ Failed to update details. Check console for error.");
+            alert("❌ Failed to update details.");
             console.error(err);
         } finally {
             setIsSaving(false);
         }
     };
+
+    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
@@ -224,11 +227,7 @@ const EmployeePersonalFile = () => {
     };
 
     if (loading) return (
-        <div className="personalFile-container">
-            <div className="personalFile-glass-layout">
-                <h2 className="loading">Loading Profile...</h2>
-            </div>
-        </div>
+        <div className="personalFile-container"><div className="personalFile-glass-layout"><h2 className="loading">Loading Profile...</h2></div></div>
     );
 
     const DataItem = ({ label, value, icon: Icon }) => (
@@ -248,189 +247,78 @@ const EmployeePersonalFile = () => {
                     <header className="personalFile-header">
                         <h1>Employee Personal File</h1>
                         <p>View and manage your complete service history, track appointment and increment dates,
-                            securely change your account password, and update your personal details such as contact
-                            information and address. This section allows you to keep your employment records accurate,
-                            up to date, and easily accessible at all times.</p>
+                            securely change your account password, and update your personal details such as contact information
+                            and address. This section allows you to keep your employment records accurate, up to date, and
+                            easily accessible at all times.</p>
                     </header>
 
                     {notifications.length > 0 && (
                         <div className="notification-alert-banner">
                             {notifications.map(n => (
-                                <div key={n.id} className="alert-item" onClick={() => openIncrementForm(n)}>
-                                    <Mail size={15} /><span>{n.message}</span></div>
+                                <div key={n.id} className="alert-item" onClick={() => openIncrementModal(n)}>
+                                    <Mail size={15} />
+                                    <span>{n.message}</span>
+                                </div>
                             ))}
                         </div>
                     )}
 
-                    {isIncrementFormOpen && (
+                    {isIncrementModalOpen && selectedNotification && (
                         <div className="increment-modal-overlay">
                             <div className="increment-modal">
-                                <button className="increment-modal-close-btn" onClick={() => setIsIncrementFormOpen(false)}>&times;</button>
+                                <button className="increment-modal-close-btn" onClick={() => setIsIncrementModalOpen(false)}>&times;</button>
 
-                                <h2>සමුපකාර සංවර්ධන දෙපාර්තමේන්තුව - වාර්ෂික වැටුප් වර්ධක පත්‍රය</h2>
+                                <h2>Annual Salary Increment Request</h2>
+                                <p>Admin has requested you to fill out the following document format(s). Please download them, complete the details, and upload the final files below.</p>
 
-                                <div className="head-office-file-group">
-                                    <label>ප්‍රධාන කාර්යාලීය ලිපි ගොනු අංකය: </label>
-                                    <input
-                                        type="text"
-                                        className="head-office-input"
-                                        value={incrementFormData.headOfficeFileNumber}
-                                        onChange={(e) => setIncrementFormData({
-                                            ...incrementFormData,
-                                            headOfficeFileNumber: e.target.value
-                                        })}
-                                        placeholder="........................"
-                                    />
+
+                                <div>
+                                    <h4>Step 1: Download Requested Blank Templates</h4>
+                                    <div>
+                                        {selectedNotification.requestedTemplates && selectedNotification.requestedTemplates.length > 0 ? (
+                                            selectedNotification.requestedTemplates.map((templateName, index) => (
+                                                <a
+                                                    key={index}
+                                                    href={`/${templateName}`}
+                                                    download
+                                                    className="template-download-link-btn"
+                                                    onMouseEnter={(e) => e.target.style.background = '#edede9'}
+                                                    onMouseLeave={(e) => e.target.style.background = '#edede9'}
+                                                >
+                                                    <Download size={16} color="#2a9d8f" />
+                                                    <span>{templateName}</span>
+                                                </a>
+                                            ))
+                                        ) : (
+                                            <p>No specific template attached. Please check with HR.</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <form onSubmit={handleIncrementFormSubmit} className="increment-form">
+                                <form onSubmit={handleFormUploadSubmit}>
+                                    <div>
+                                        <h4>Step 2: Upload Completed Documents</h4>
 
-                                    <div className="form-row">
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>1. නිලධාරියාගේ නම</label>
-                                            <input type="text" value={incrementFormData.officerName} onChange={(e) => setIncrementFormData({ ...incrementFormData, officerName: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>2. ශ්‍රේණිය</label>
-                                            <input type="text" value={incrementFormData.grade} onChange={(e) => setIncrementFormData({ ...incrementFormData, grade: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>3. කොට්ඨාශය</label>
-                                            <input type="text" value={incrementFormData.assistantCommissionerDivision} onChange={(e) => setIncrementFormData({ ...incrementFormData, assistantCommissionerDivision: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>4. මාරු වූ දිනය</label>
-                                            <input type="date" value={incrementFormData.transferDateToACoffice} onChange={(e) => setIncrementFormData({ ...incrementFormData, transferDateToACoffice: e.target.value })} />
-                                        </div>
-                                    </div>
+                                        <input type="file" multiple accept=".docx,.pdf" onChange={handleFileChange} />
 
-                                    <div className="form-row">
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>5. වර්ධක දිනය</label>
-                                            <input type="date" value={incrementFormData.incrementDate} onChange={(e) => setIncrementFormData({ ...incrementFormData, incrementDate: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>6. වර්තමාන වැටුප</label>
-                                            <input type="number" value={incrementFormData.currentSalary} onChange={(e) => setIncrementFormData({ ...incrementFormData, currentSalary: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>7. ලැබිය යුතු වර්ධකය</label>
-                                            <input type="number" value={incrementFormData.incrementAmount} onChange={(e) => setIncrementFormData({ ...incrementFormData, incrementAmount: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group short-input">
-                                            <label>8. වර්ධකයේ එකතුව</label>
-                                            <input type="number" value={incrementFormData.totalWithIncrement} onChange={(e) => setIncrementFormData({ ...incrementFormData, totalWithIncrement: e.target.value })} />
-                                        </div>
-                                    </div>
-
-                                    <div className="form-row">
-                                        <div className="personalFile-increment-form-group medium-input">
-                                            <label>9. මාසික එකාබද්ධ වැටුප</label>
-                                            <input type="number" value={incrementFormData.monthlyConsolidatedSalary} onChange={(e) => setIncrementFormData({ ...incrementFormData, monthlyConsolidatedSalary: e.target.value })} />
-                                        </div>
-                                        <div className="personalFile-increment-form-group medium-input">
-                                            <label>10. අසනීප නිවාඩු ගණන</label>
-                                            <input type="number" value={incrementFormData.sickLeaveCount} onChange={(e) => setIncrementFormData({ ...incrementFormData, sickLeaveCount: e.target.value })} />
-                                        </div>
-                                    </div>
-
-                                    <div className="personalFile-increment-form-group full-width">
-                                        <label>11. පසුගිය වර්ෂයේ වර්ධකය අත්හිටුවා/නතර කර/අඩු කර තිබේද? එසේ නම් විස්තර:</label>
-                                        <textarea className="large-detail-box" value={incrementFormData.salaryIncrementSuspendedDetails} onChange={(e) => setIncrementFormData({ ...incrementFormData, salaryIncrementSuspendedDetails: e.target.value })} />
-                                    </div>
-
-                                    <div className="personalFile-increment-form-group full-width">
-                                        <label>12. පත්වීම ස්ථිර කිරීමට තිබේ නම්</label>
-
-                                        <div className="increment-form-row-12">
-                                            <div className="increment-column">
-                                                <label>(අ) නිලධාරියා නියමිත දෙවන භාෂා පරීක්ෂණයෙන් සමත් වී තිබේද?</label>
-                                                <label style={{ marginLeft: "25px", marginTop: "5px" }}>(අවශ්‍ය තැන්හි)</label>
-                                                <div className="checkbox-input-group">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={incrementFormData.passedSecondLanguageTest === "Yes"}
-                                                        onChange={(e) => setIncrementFormData({
-                                                            ...incrementFormData,
-                                                            passedSecondLanguageTest: e.target.checked ? "Yes" : "No"
-                                                        })}
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="විස්තර (අවශ්‍ය නම්)"
-                                                        value={incrementFormData.secondLanguageTestDetails || ""}
-                                                        onChange={(e) => setIncrementFormData({
-                                                            ...incrementFormData,
-                                                            secondLanguageTestDetails: e.target.value
-                                                        })}
-                                                    />
-                                                </div>
+                                        {selectedFiles.length > 0 && (
+                                            <div className="personalFile-increment-selected-file">
+                                                <span>Selected Files {selectedFiles.length}</span>
+                                                <ul> {selectedFiles.map((file, idx) => (
+                                                    <li key={idx}>{file.name} ({(file.size / 1024).toFixed(1)} KB)</li>
+                                                ))}
+                                                </ul>
                                             </div>
-
-                                            <div className="increment-column">
-                                                <label>(ආ) නිලධාරියා පරීක්ෂකවරුන්ගේ පළමු පරීක්ෂණයෙන් සමත් වී තිබේද?</label>
-                                                <label style={{ marginLeft: "25px", marginTop: "5px" }}>(සමත් නම් වර්ෂය හා දිනය)</label>
-                                                <div className="checkbox-input-group">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={incrementFormData.passedFirstInspectorExam === "Yes"}
-                                                        onChange={(e) => setIncrementFormData({
-                                                            ...incrementFormData,
-                                                            passedFirstInspectorExam: e.target.checked ? "Yes" : "No"
-                                                        })}
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="වර්ෂය හා දිනය සඳහන් කරන්න"
-                                                        value={incrementFormData.examPassedDateAndYear || ""}
-                                                        onChange={(e) => setIncrementFormData({
-                                                            ...incrementFormData,
-                                                            examPassedDateAndYear: e.target.value
-                                                        })}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    <div className="personalFile-increment-form-group full-width">
-                                        <div className="increment-row-inline">
-                                            <label className="inline-label">
-                                                13. කාර්යක්ෂමතා කඩඉමට පැමිණ තිබේද?
-                                            </label>
-
-                                            <div className="checkbox-wrap">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={incrementFormData.efficiencyBarReached === "Yes"}
-                                                    onChange={(e) => setIncrementFormData({
-                                                        ...incrementFormData,
-                                                        efficiencyBarReached: e.target.checked ? "Yes" : "No"
-                                                    })}
-                                                />
-                                                <span className="status-text">
-                                                    {incrementFormData.efficiencyBarReached === "Yes" ? "ඔව් (Yes)" : "නැත (No)"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="personalFile-increment-form-group full-width">
-                                        <label>14. විනයානුකූල ක්‍රියාමාර්ග තිබේද? විස්තර:</label>
-                                        <textarea className="large-detail-box" value={incrementFormData.disciplinaryActionsDetails} onChange={(e) => setIncrementFormData({ ...incrementFormData, disciplinaryActionsDetails: e.target.value })} />
-                                    </div>
-
-                                    <div className="personalFile-increment-form-group full-width">
-                                        <label>15. අවවාද හෝ දඬුවම් කර තිබේද? විස්තර:</label>
-                                        <textarea className="large-detail-box" value={incrementFormData.warningsOrPunishmentsDetails} onChange={(e) => setIncrementFormData({ ...incrementFormData, warningsOrPunishmentsDetails: e.target.value })} />
-                                    </div>
-
-                                    <button type="submit" className="personalFile-increment-submit-btn">Submit Increment Form</button>
+                                    <button type="submit" disabled={isUploading} className="personalFile-increment-submit-btn">
+                                        {isUploading ? "UPLOADING FILES..." : "SUBMIT COMPLETED FORMS"}
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     )}
-
 
                     <div className="personalFile-grid">
                         <section className="personalFile-card">
@@ -452,6 +340,16 @@ const EmployeePersonalFile = () => {
                                 <DataItem label="Grade I" value={formData.dateOfReceiptGradeI} />
                                 <DataItem label="Grade II" value={formData.dateOfReceiptGradeII} />
                                 <DataItem label="Grade III" value={formData.dateOfReceiptGradeIII} />
+
+                                {dynamicFieldConfigs
+                                    .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && field.isAdminOnly === true)
+                                    .map((field) => (
+                                        <DataItem
+                                            key={field.id}
+                                            label={field.displayName || field.fieldKey}
+                                            value={formData.dynamicFields && formData.dynamicFields[field.fieldKey] !== undefined ? formData.dynamicFields[field.fieldKey] : "—"}
+                                        />
+                                    ))}
                             </div>
                         </section>
                     </div>
@@ -482,6 +380,17 @@ const EmployeePersonalFile = () => {
                         <DataItem label="Birthday" value={formData.dateOfBirth} icon={Cake} />
                         <DataItem label="Gender" value={formData.gender} icon={Transgender} />
 
+                        {dynamicFieldConfigs
+                            .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && (field.isAdminOnly === false || field.isAdminOnly === undefined))
+                            .map((field) => (
+                                <DataItem
+                                    key={field.id}
+                                    label={field.displayName || field.fieldKey}
+                                    value={formData.dynamicFields && formData.dynamicFields[field.fieldKey] !== undefined ? formData.dynamicFields[field.fieldKey] : "—"}
+                                    icon={UserIcon}
+                                />
+                            ))}
+
                         <div className="personalFile-security-section">
                             <div className="personalFile-item-label">Account Security</div>
                             <div className="personalFile-password-display-row">
@@ -498,67 +407,32 @@ const EmployeePersonalFile = () => {
             {isEditing && (
                 <div className="personalFile-modal-overlay">
                     <div className="personalFile-modal">
-                        <div className="personalFile-modal-top">
-                            <h3>Update Personal Details</h3>
-                        </div>
+                        <div className="personalFile-modal-top"><h3>Update Personal Details</h3></div>
                         <form onSubmit={handleSubmit} className="personalFile-modal-form">
-
                             <div className="personalFile-modal-image-section">
                                 <div className="personalFile-modal-avatar-preview">
                                     {selectedImage ? (
                                         <img src={selectedImage} alt="Preview" className="personalFile-modal-img-circle" />
                                     ) : (
-                                        <div className="personalFile-modal-img-placeholder">
-                                            {formData.username?.charAt(0) || "?"}
-                                        </div>
+                                        <div className="personalFile-modal-img-placeholder">{formData.username?.charAt(0) || "?"}</div>
                                     )}
                                 </div>
-
                                 <div className="image-action-buttons" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
-                                    <label htmlFor="imageUpload" className="personalFile-image-upload-label">
-                                        Change Photo
-                                    </label>
-
+                                    <label htmlFor="imageUpload" className="personalFile-image-upload-label">Change Photo</label>
                                     {selectedImage && (
-                                        <button
-                                            type="button"
-                                            onClick={handleDeletePhoto}
-                                            className="delete-photo-btn"
-                                            title="Remove Photo"
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                                        >
+                                        <button type="button" onClick={handleDeletePhoto} className="delete-photo-btn" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                                             <LuTrash2 size={12} color="#ff4d4f" />
                                         </button>
                                     )}
                                 </div>
-
-                                <input
-                                    id="imageUpload"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageSelect}
-                                    style={{ display: 'none' }}
-                                />
+                                <input id="imageUpload" type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
                             </div>
 
                             <div className="personalFile-form-row">
-
-                                <div className="personalFile-form-group">
-                                    <label>Full Name</label>
-                                    <input name="username" value={formData.username} onChange={handleChange} required />
-                                </div>
-                                <div className="personalFile-form-group">
-                                    <label>Email</label>
-                                    <input name="email" value={formData.email} onChange={handleChange} required />
-                                </div>
-                                <div className="personalFile-form-group">
-                                    <label>NIC Number</label>
-                                    <input name="nic" value={formData.nic} onChange={handleChange} required />
-                                </div>
-                                <div className="personalFile-form-group">
-                                    <label>Phone Number</label>
-                                    <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
-                                </div>
+                                <div className="personalFile-form-group"><label>Full Name</label><input name="username" value={formData.username} onChange={handleChange} required /></div>
+                                <div className="personalFile-form-group"><label>Email</label><input name="email" value={formData.email} onChange={handleChange} required /></div>
+                                <div className="personalFile-form-group"><label>NIC Number</label><input name="nic" value={formData.nic} onChange={handleChange} required /></div>
+                                <div className="personalFile-form-group"><label>Phone Number</label><input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} /></div>
                                 <div className="personalFile-form-group">
                                     <label>Gender</label>
                                     <select name="gender" value={formData.gender} onChange={handleChange}>
@@ -566,20 +440,35 @@ const EmployeePersonalFile = () => {
                                         <option value="Female">Female</option>
                                     </select>
                                 </div>
-                                <div className="personalFile-form-group">
-                                    <label>Date Of Birth</label>
-                                    <input name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} />
-                                </div>
+                                <div className="personalFile-form-group"><label>Date Of Birth</label><input name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} /></div>
                             </div>
-                            <div className="personalFile-form-group">
-                                <label>Home Address</label>
-                                <textarea name="address" value={formData.address} onChange={handleChange} rows="3" />
-                            </div>
+
+                            <div className="personalFile-form-group"><label>Home Address</label><textarea name="address" value={formData.address} onChange={handleChange} rows="3" /></div>
+
+                            {dynamicFieldConfigs
+                                .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && (field.isAdminOnly === false || field.isAdminOnly === undefined))
+                                .map((field) => {
+                                    const rawType = field.fieldType || field.fieldtype || "text";
+                                    return (
+                                        <div className="personalFile-form-group" key={field.id}>
+                                            <label>
+                                                {field.displayName || field.fieldKey}
+                                                {field.required && <span style={{ color: 'red', marginLeft: '4px' }}>*</span>}
+                                            </label>
+                                            <input
+                                                type={rawType.toLowerCase()}
+                                                name={field.fieldKey}
+                                                value={formData.dynamicFields && formData.dynamicFields[field.fieldKey] !== undefined ? formData.dynamicFields[field.fieldKey] : ""}
+                                                onChange={handleDynamicFieldChange}
+                                                required={field.required}
+                                            />
+                                        </div>
+                                    );
+                                })}
+
                             <div className="personalFile-modal-footer">
                                 <button type="button" className="personalFile-btn-secondary" onClick={() => setIsEditing(false)}>Cancel</button>
-                                <button type="submit" className="personalFile-btn-primary" disabled={isSaving}>
-                                    {isSaving ? "Saving..." : "Save Changes"}
-                                </button>
+                                <button type="submit" className="personalFile-btn-primary" disabled={isSaving}>{isSaving ? "Saving..." : "Save Changes"}</button>
                             </div>
                         </form>
                     </div>
@@ -589,38 +478,20 @@ const EmployeePersonalFile = () => {
             {isChangingPassword && (
                 <div className="pfChangingPassword-modal-overlay">
                     <div className="pfChangingPassword-modal mini-modal">
-                        <div className="pfChangingPassword-modal-top">
-                            <h3>Security Settings</h3>
-                        </div>
+                        <div className="pfChangingPassword-modal-top"><h3>Security Settings</h3></div>
                         <form onSubmit={handlePasswordSubmit} className="pfChangingPassword-modal-form">
-                            <div className="pfChangingPassword-form-group">
-                                <label>Current Password</label>
-                                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required />
-                            </div>
+                            <div className="pfChangingPassword-form-group"><label>Current Password</label><input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required /></div>
                             <div className="pfChangingPassword-form-group">
                                 <label>New Password</label>
                                 <div className="password-input-wrapper">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="newPassword"
-                                        value={passwordData.newPassword}
-                                        onChange={handlePasswordChange}
-                                        required
-                                    />
-                                    <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>
-                                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                                    </button>
+                                    <input type={showPassword ? "text" : "password"} name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} required />
+                                    <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={15} /> : <Eye size={15} />}</button>
                                 </div>
                             </div>
-                            <div className="pfChangingPassword-form-group">
-                                <label>Confirm Password</label>
-                                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required />
-                            </div>
+                            <div className="pfChangingPassword-form-group"><label>Confirm Password</label><input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required /></div>
                             <div className="pfChangingPassword-modal-footer">
                                 <button type="button" className="pfChangingPassword-btn-secondary" onClick={() => setIsChangingPassword(false)}>Cancel</button>
-                                <button type="submit" className="pfChangingPassword-btn-primary" disabled={isSaving}>
-                                    {isSaving ? "Updating..." : "Update Password"}
-                                </button>
+                                <button type="submit" className="pfChangingPassword-btn-primary" disabled={isSaving}>{isSaving ? "Updating..." : "Update Password"}</button>
                             </div>
                         </form>
                     </div>

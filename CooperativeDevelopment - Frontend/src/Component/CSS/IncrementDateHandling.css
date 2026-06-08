@@ -16,8 +16,8 @@
 }
 
 .increment-Date-Handling-right-panel {
-    flex: 1;
-    padding-left: 30px;
+    flex: 1.1;
+    padding-left: 20px;
 }
 
 .increment-Date-Handling-title {
@@ -71,8 +71,9 @@
 }
 
 .increment-Date-Handling-date-text {
-    font-size: 12.5px;
-    color: #dc2f02;
+    font-size: 11px;
+    color: #c1121f;
+    font-weight: bold;
 }
 
 .notifications-container-flex {
@@ -136,8 +137,8 @@
 
 .send-email-btn {
     background-color: #dee2e6;
-    font-size: 11px;
-    color: #333;
+    font-size: 9.5px;
+    color: #000;
     border: none;
     padding: 8px 10px;
     cursor: pointer;
@@ -164,82 +165,227 @@
     text-transform: uppercase;
 }
 
-
-@media screen and (max-width: 1366px) {
-    .increment-Date-Handling-main-wrapper {
-        padding: 25px;
-        gap: 20px;
-    }
-
-    .increment-Date-Handling-th,
-    .increment-Date-Handling-td {
-        padding: 12px;
-    }
+.increment-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
-@media screen and (max-width: 1120px) {
+.increment-modal-content {
+    background-color: #fff;
+    color: #ffffff;
+    padding: 20px;
+    width: 500px;
+    max-width: 90%;
+}
+
+.modal-main-title {
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-align: center;
+    color: #e76f51;
+}
+
+.modal-subtitle {
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    color: #000;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.modal-templates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 25px;
+    max-height: 250px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.modal-template-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    text-transform: uppercase;
+    background-color: #edede9;
+    cursor: pointer;
+    color: #fff;
+    transition: background-color 0.2s;
+    border: 1px solid #edede9;
+}
+
+.modal-template-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #2a9d8f;
+}
+
+.template-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.template-display-name {
+    font-size: 12px;
+    color: #000;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.template-file-name {
+    font-size: 12px;
+    color: #000;
+}
+
+.modal-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn-cancel {
+    background-color: #5555;
+    color: #000;
+    border: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 8px 20px;
+    cursor: pointer;
+}
+
+.modal-btn-cancel:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+.modal-btn-confirm {
+    background-color: #2a9d8f;
+    color: #fff;
+    border: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 8px 20px;
+    cursor: pointer;
+}
+
+.modal-btn-confirm:hover {
+    background-color: #000;
+}
+
+@media screen and (max-width: 1024px) {
     .increment-Date-Handling-main-wrapper {
-        flex-direction: column;
+        padding: 20px;
         height: auto;
-        overflow-y: visible;
     }
 
-    .increment-Date-Handling-left-panel,
     .increment-Date-Handling-right-panel {
-        width: 100%;
-        flex: none;
-    }
-
-    .increment-Date-Handling-table-wrapper {
-        max-height: 50vh;
+        padding-left: 15px;
+        flex: 1.2;
     }
 
     .notifications-container-flex {
-        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .notification-section {
+        padding: 10px;
     }
 }
 
 @media screen and (max-width: 768px) {
     .increment-Date-Handling-main-wrapper {
-        padding: 20px 15px;
+        flex-direction: column;
+        height: auto;
+    }
+
+    .increment-Date-Handling-right-panel {
+        padding-left: 0;
+        margin-top: 30px;
+    }
+
+    .increment-Date-Handling-table-wrapper {
+        height: 50vh;
     }
 
     .notifications-container-flex {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
     }
 
     .notification-section {
         height: auto;
-        max-height: 450px;
+        max-height: 60vh;
     }
 
-    .increment-Date-Handling-table {
-        min-width: 550px;
+    .upcoming-list {
+        height: auto;
+        max-height: 50vh;
+    }
+
+    .increment-modal-content {
+        width: 90vw;
     }
 }
 
 @media screen and (max-width: 480px) {
-    .increment-Date-Handling-title {
-        font-size: 13.5px;
-        text-align: center;
+    .increment-Date-Handling-main-wrapper {
+        padding: 15px 10px;
     }
 
-    .increment-Date-Handling-description {
-        font-size: 10.5px;
-        text-align: center;
+    .increment-Date-Handling-title {
+        font-size: 13px;
+    }
+
+    .increment-Date-Handling-description,
+    .section-subtitle,
+    .upcoming-info strong {
+        font-size: 11px;
+    }
+
+    .increment-Date-Handling-table-wrapper {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .increment-Date-Handling-th,
+    .increment-Date-Handling-td {
+        padding: 10px 8px;
+        font-size: 11px;
     }
 
     .upcoming-card {
         flex-direction: column;
-        align-items: stretch;
-        text-align: left;
-        padding: 12px;
+        align-items: flex-start;
+        gap: 10px;
     }
 
     .send-email-btn {
         width: 100%;
         text-align: center;
-        margin-top: 5px;
+        padding: 10px;
+    }
+
+    .modal-action-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-btn-cancel,
+    .modal-btn-confirm {
+        width: 100%;
+        text-align: center;
     }
 }

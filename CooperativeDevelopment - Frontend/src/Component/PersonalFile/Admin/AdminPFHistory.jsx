@@ -3,7 +3,10 @@ import React, {
     useState
 } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import {
+    useNavigate,
+    useLocation
+} from 'react-router-dom';
 
 import API from '../../API/Axios';
 
@@ -11,6 +14,8 @@ import '../../CSS/AdminPFHistory.css';
 
 const AdminPFHistory = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [employees, setEmployees] = useState([]);
     const [filteredEmployees, setFilteredEmployees] = useState([]);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -24,6 +29,14 @@ const AdminPFHistory = () => {
     const [pageLoading, setPageLoading] = useState(true);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const [highlightedUserEmail, setHighlightedUserEmail] = useState(null);
+
+    useEffect(() => {
+        if (location.state && location.state.highlightUserEmail) {
+            setHighlightedUserEmail(location.state.highlightUserEmail);
+        }
+    }, [location]);
 
     useEffect(() => {
         const fetchAllEmployees = async () => {
@@ -69,6 +82,19 @@ const AdminPFHistory = () => {
         setHistoryData([]);
         setChangeCount(0);
 
+        if (highlightedUserEmail === emp.email) {
+            setHighlightedUserEmail(null);
+
+            window.history.replaceState({}, document.title);
+
+            try {
+                await API.put(`/personalfile/increment-notifications/mark-as-read/${emp.email}`);
+                console.log("Notification marked as read/resolved on backend.");
+            } catch (apiErr) {
+                console.error("Error updating notification status on backend:", apiErr);
+            }
+        }
+
         try {
             const [historyRes, countRes] = await Promise.all([
                 API.get(`/personalfile/history/by-email/${emp.email}`),
@@ -98,23 +124,18 @@ const AdminPFHistory = () => {
     if (error) return <div className="pf-history-error">{error}</div>;
 
     return (
-        <div className="pf-history-container">
-
+        <div className="pf-history-container fade-in">
             <div className="pf-history-top-navbar">
-
                 <div>
                     <h2 className="pf-history-main-title">Cooperative Department Employees</h2>
-                    <p className="pf-history-sub-title-desc"> All data changes made to the personal files of Cooperative Development
-                        Department employees, revision frequency, and relevant historical notes can be checked here.</p>
+                    <p className="pf-history-sub-title-desc"> All data changes made to the personal files of Cooperative Development Department employees, revision frequency, and relevant historical notes can be checked here.</p>
                 </div>
-
                 <button className="pf-history-back-btn" onClick={() => navigate('/AdminPersonalFile')}> ← Back</button>
             </div>
 
             <div className="pf-history-filter-section">
                 <input type="text" className="pf-history-search-input" placeholder="🔍 Search by Name or Email..."
                     value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-
 
                 <select className="pf-history-select-filter" value={selectedDesignation} onChange={(e) => setSelectedDesignation(e.target.value)}>
                     {designations.map((des, index) => (
@@ -141,25 +162,35 @@ const AdminPFHistory = () => {
                         <tbody>
                             {filteredEmployees.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="pf-history-no-match">ගැලපෙන සේවකයින් කිසිවෙකු හමු නොවීය.</td>
+                                    <td colSpan="8" className="pf-history-no-match">No suitable employees were found.</td>
                                 </tr>
                             ) : (
-                                filteredEmployees.map((emp, index) => (
-                                    <tr
-                                        key={emp._id || emp.id}
-                                        className={`pf-history-emp-row ${selectedEmployee?.email === emp.email ? 'active-row' : ''}`}>
-                                        <td>{emp.username}</td>
-                                        <td>{emp.email}</td>
-                                        <td>{emp.address}</td>
-                                        <td>{emp.dateOfBirth}</td>
-                                        <td>{emp.phoneNumber}</td>
-                                        <td>{emp.dutyPlace}</td>
-                                        <td>{emp.designation || 'N/A'}</td>
-                                        <td>
-                                            <button className="pf-history-view-btn" onClick={() => handleEmployeeClick(emp)}>🔍︎</button>
-                                        </td>
-                                    </tr>
-                                ))
+                                filteredEmployees.map((emp) => {
+                                    const isActive = selectedEmployee?.email === emp.email;
+                                    const isHighlighted = highlightedUserEmail === emp.email;
+
+                                    let rowClassName = "pf-history-emp-row";
+                                    if (isActive) {
+                                        rowClassName += " active-row";
+                                    } else if (isHighlighted) {
+                                        rowClassName += " pf-history-highlighted-row";
+                                    }
+
+                                    return (
+                                        <tr key={emp._id || emp.id} className={rowClassName}>
+                                            <td>{emp.username}</td>
+                                            <td>{emp.email}</td>
+                                            <td>{emp.address}</td>
+                                            <td>{emp.dateOfBirth}</td>
+                                            <td>{emp.phoneNumber}</td>
+                                            <td>{emp.dutyPlace}</td>
+                                            <td>{emp.designation || 'N/A'}</td>
+                                            <td>
+                                                <button className="pf-history-view-btn" onClick={() => handleEmployeeClick(emp)}>🔍︎</button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -168,17 +199,15 @@ const AdminPFHistory = () => {
 
             {selectedEmployee && (
                 <div className="pf-history-section-details">
-
                     <div className="pf-history-header">
                         <h3 className="pf-history-title">History for: <span>{selectedEmployee.username}</span></h3>
-
                         <div className="pf-history-badge">Total Changes: <span className="pf-history-count-num">{changeCount}</span></div>
                     </div>
 
                     {historyLoading ? (
-                        <div className="pf-history-sub-loading">ඉතිහාස දත්ත පූරණය වෙමින් පවතී...</div>
+                        <div className="pf-history-sub-loading">Loading historical data...</div>
                     ) : historyData.length === 0 ? (
-                        <div className="pf-history-empty">මෙම සේවකයාගේ දත්ත කිසිවක් තවමත් වෙනස් කර නොමැත.</div>
+                        <div className="pf-history-empty">None of this employee's data has been changed yet.</div>
                     ) : (
                         <div className="pf-history-timeline">
                             {historyData.map((record) => (
@@ -203,7 +232,6 @@ const AdminPFHistory = () => {
                                                     <th>New Value</th>
                                                 </tr>
                                             </thead>
-
                                             <tbody>
                                                 {record.changes && record.changes.map((change, index) => (
                                                     <tr key={index}>

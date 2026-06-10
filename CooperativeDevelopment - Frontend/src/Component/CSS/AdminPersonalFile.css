@@ -318,7 +318,7 @@
     font-size: 11px;
     outline: none;
     cursor: pointer;
-    width: 150px;
+    width: 200px;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 

@@ -38,10 +38,11 @@ const AdminPFDashboard = () => {
       try {
         const empRes = await API.get('/personalfile/all-employees');
         const deptRes = await API.get('/departments/all');
+
         const notificationRes = await API.get('/personalfile/increment-notifications');
 
         const profileAlerts = notificationRes.data.filter(
-          notif => notif.status === "PROFILE_UPDATED" && notif.status !== "RESOLVED"
+          notif => notif.status === "PROFILE_UPDATED"
         );
 
         setStats({
@@ -103,8 +104,8 @@ const AdminPFDashboard = () => {
             <div className="pf-admin-dashboard-stat-icon-wrapper"><Building2 size={24} /></div>
           </div>
           <div className="pf-admin-dashboard-stat-card-footer"><span>කළමනාකරණය කරන්න</span><ChevronRight size={14} />
-            
-            
+
+
           </div>
         </div>
 
@@ -152,7 +153,7 @@ const AdminPFDashboard = () => {
                 className="pf-admin-dashboard-reminder-item pf-admin-dashboard-reminder-profile-count-card"
                 onClick={() => navigate('/AdminPFHistory', { state: { highlightUserEmail: profileNotifications[0]?.email } })}
                 title="සියලුම සංශෝධන ඉතිහාසය පරීක්ෂා කරන්න">
-              
+
                 <div className="pf-admin-dashboard-count-badge-orange">{profileUpdatesCount}</div>
                 <div className="pf-admin-dashboard-reminder-details">
                   <p className="pf-admin-dashboard-reminder-text-bold">සේවකයින් විසින් පුද්ගලික ලිපිගොනු දත්ත සංශෝධනය කර ඇත.</p>

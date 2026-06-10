@@ -1,6 +1,6 @@
-import React, {
-    useState,
-    useEffect
+import {
+    useEffect,
+    useState
 } from 'react';
 
 import api from '../../API/Axios';
@@ -28,57 +28,58 @@ const IncrementDateHandling = () => {
         { id: "t5", name: "කාර්යසාධන ඇගයිම කළමනාකරණ - සහකාර සේවයේ නිලධාරින්.docx", displayName: "කාර්යසාධන ඇගයිම කළමනාකරණ - සහකාර සේවයේ නිලධාරින්" }
     ];
 
+    const fetchEmployees = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/personalfile/all-employees');
+            const allData = response.data;
+            setEmployees(allData);
+
+            const now = new Date();
+
+            const targetMonth1Date = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const t1Month = targetMonth1Date.getMonth();
+
+            const targetMonth2Date = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+            const t2Month = targetMonth2Date.getMonth();
+
+            const getParsedDate = (dateStr) => {
+                if (!dateStr) return null;
+                if (dateStr.includes('-') && dateStr.split('-').length === 2) {
+                    return new Date(`${now.getFullYear()}-${dateStr}`);
+                }
+                return new Date(dateStr);
+            };
+
+            const currentFiltered = allData.filter(emp => {
+                if (!emp.incrementDate) return false;
+                const incDate = getParsedDate(emp.incrementDate);
+                if (!incDate || isNaN(incDate.getTime())) return false;
+
+                const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
+                return (incDate.getMonth() === t1Month && !isProcessed);
+            });
+
+            const nextFiltered = allData.filter(emp => {
+                if (!emp.incrementDate) return false;
+                const incDate = getParsedDate(emp.incrementDate);
+                if (!incDate || isNaN(incDate.getTime())) return false;
+
+                const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
+                return (incDate.getMonth() === t2Month && !isProcessed);
+            });
+
+            setCurrentMonthIncrements(currentFiltered);
+            setNextMonthIncrements(nextFiltered);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+            setError("❌ Unable to retrieve data. Please try again.");
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const response = await api.get('/personalfile/all-employees');
-                const allData = response.data;
-                setEmployees(allData);
-
-                const now = new Date();
-
-                const targetMonth1Date = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                const t1Month = targetMonth1Date.getMonth();
-                const t1Year = targetMonth1Date.getFullYear();
-
-                const targetMonth2Date = new Date(now.getFullYear(), now.getMonth() + 2, 1);
-                const t2Month = targetMonth2Date.getMonth();
-                const t2Year = targetMonth2Date.getFullYear();
-
-                const currentFiltered = allData.filter(emp => {
-                    if (!emp.incrementDate) return false;
-
-                    const dateString = emp.incrementDate.includes('-') && emp.incrementDate.split('-').length === 2
-                        ? `${new Date().getFullYear()}-${emp.incrementDate}`
-                        : emp.incrementDate;
-
-                    const incDate = new Date(dateString);
-                    const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
-
-                    return (incDate.getMonth() === t1Month && !isProcessed);
-                });
-
-                const nextFiltered = allData.filter(emp => {
-                    if (!emp.incrementDate) return false;
-                    const incDate = new Date(emp.incrementDate);
-                    const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
-
-                    return (
-                        incDate.getMonth() === t2Month &&
-                        incDate.getFullYear() === t2Year &&
-                        !isProcessed
-                    );
-                });
-
-                setCurrentMonthIncrements(currentFiltered);
-                setNextMonthIncrements(nextFiltered);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error:", err);
-                setError("Data could not be retrieved...");
-                setLoading(false);
-            }
-        };
         fetchEmployees();
     }, []);
 
@@ -98,7 +99,7 @@ const IncrementDateHandling = () => {
 
     const handleSendEmailAndTemplates = async () => {
         if (selectedTemplates.length === 0) {
-            alert("⚠️ Please select at least one increment form format!");
+            alert("⚠️ Please select at least one template!");
             return;
         }
 
@@ -108,13 +109,12 @@ const IncrementDateHandling = () => {
         try {
             await api.post(`/personalfile/send-increment-email/${selectedEmployeeId}`, selectedTemplates);
 
-            setCurrentMonthIncrements(prev => prev.filter(emp => emp.id !== selectedEmployeeId));
-            setNextMonthIncrements(prev => prev.filter(emp => emp.id !== selectedEmployeeId));
+            alert("✅ Email and automated forms were successfully prepared and sent!");
 
-            alert("✅ Message & Selected Form Formats Sent Successfully!");
+            fetchEmployees();
         } catch (err) {
-            console.error("Error sending email:", err);
-            alert(err.response?.data || "❌ The Message Could Not Be Sent.");
+            console.error("Error sending templates:", err);
+            alert(err.response?.data || "❌ The message or form could not be sent.");
         } finally {
             setSendingEmailId(null);
             setSelectedEmployeeId(null);
@@ -135,7 +135,7 @@ const IncrementDateHandling = () => {
             month = parseInt(parts[0], 10) - 1;
             day = parseInt(parts[1], 10);
         } else {
-            return dateStr; 
+            return dateStr;
         }
 
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -185,7 +185,9 @@ const IncrementDateHandling = () => {
                     <div className="notifications-container-flex">
 
                         <div className="notification-section" style={{ backgroundColor: "#f5fff0" }}>
-                            <h4 className="section-subtitle">{new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS</h4>
+                            <h4 className="section-subtitle">
+                                {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
+                            </h4>
                             <div className="upcoming-list">
                                 {currentMonthIncrements.length > 0 ? (
                                     currentMonthIncrements.map((emp) => (
@@ -204,7 +206,9 @@ const IncrementDateHandling = () => {
                         </div>
 
                         <div className="notification-section" style={{ backgroundColor: "#f0f6ff" }}>
-                            <h4 className="section-subtitle">{new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS</h4>
+                            <h4 className="section-subtitle">
+                                {new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
+                            </h4>
                             <div className="upcoming-list">
                                 {nextMonthIncrements.length > 0 ? (
                                     nextMonthIncrements.map((emp) => (

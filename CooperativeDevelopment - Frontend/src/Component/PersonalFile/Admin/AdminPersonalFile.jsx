@@ -14,16 +14,15 @@ import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 import {
-    CalendarClock,
     CheckSquare,
     Download,
     FileText,
+    Pencil,
     RotateCcw,
     Search,
     Square,
     Trash2,
-    X,
-    Pencil
+    X
 } from 'lucide-react';
 
 import '../../CSS/AdminPersonalFile.css';
@@ -47,12 +46,15 @@ const AdminPersonalFile = () => {
     const [departments, setDepartments] = useState([]);
     const [newDeptName, setNewDeptName] = useState("");
 
-    const [selectedDeptFilter, setSelectedDeptFilter] = useState("");
-    const [selectedDesignationFilter, setSelectedDesignationFilter] = useState("");
+    const [selectedColumnFilter, setSelectedColumnFilter] = useState("");
+    const [selectedValueFilter, setSelectedValueFilter] = useState("");
 
     const [dynamicFieldConfigs, setDynamicFieldConfigs] = useState([]);
     const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
 
+    const [selectedYear, setSelectedYear] = useState("");
+    const [selectedMonth, setSelectedMonth] = useState("");
+    const [selectedDay, setSelectedDay] = useState("");
     const [isDateFocused, setIsDateFocused] = useState(false);
 
     const [newFieldData, setNewFieldData] = useState({
@@ -81,42 +83,83 @@ const AdminPersonalFile = () => {
     const [formData, setFormData] = useState(initialFormState);
 
     const formatDate = (date) => {
-        if (!(date instanceof Date)) return date;
+        if (!date) return "-";
+        if (typeof date === 'string') {
+            const cleanDate = date.split('T')[0];
+            const parts = cleanDate.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return date;
+        }
+
+        if (!(date instanceof Date) || isNaN(date.getTime())) return date;
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return `${day}/${month}/${year}`;
     };
 
     const handleExcelChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         setExcelFile(file);
-
         const reader = new FileReader();
-        reader.onload = (evt) => {
-            const bstr = evt.target.result;
-            const wb = XLSX.read(bstr, { type: 'binary', cellDates: true, cellNF: true, cellText: false });
-            const wsname = wb.SheetNames[0];
-            const ws = wb.Sheets[wsname];
 
-            const data = XLSX.utils.sheet_to_json(ws, {
-                header: [
-                    "No", "Name Of The Employee", "Email", "National ID", "Phone Number",
-                    "Address", "Date Of Birth", "Gender", "Service Number", "WNOP Number",
-                    "Designation", "Department", "Duty Place", "Salary Scale",
-                    "Date Of First Appointment", "Date Of Language Proficiency",
-                    "Appointment Date To Present Status", "Increment Date",
-                    "Date Of Compulsory Retirement", "Present Status Date", "Grade",
-                    "III", "II", "I"
-                ],
-                range: 2,
-                defval: ""
+        reader.onload = (evt) => {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {
+                type: 'array',
+                cellDates: true,
+                dateNF: 'yyyy-mm-dd'
             });
-            setPreviewData(data);
-            setIsPreviewOpen(true);
+
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+
+            const jsonData = XLSX.utils.sheet_to_json(sheet, {
+                header: 1,
+                raw: false
+            });
+
+            if (jsonData.length > 1) {
+                const mainHeaders = jsonData[0].map(h => h ? h.toString().trim() : "");
+                const subHeaders = jsonData[1] ? jsonData[1].map(h => h ? h.toString().trim() : "") : [];
+
+                const rows = jsonData.slice(2).map(row => {
+                    let rowData = {};
+
+                    mainHeaders.forEach((header, index) => {
+                        let cellValue = row[index] !== undefined ? row[index].toString().trim() : "";
+
+                        let actualHeader = header;
+                        if (!actualHeader && index > 0) {
+                            actualHeader = mainHeaders[index - 1] || mainHeaders[index - 2] || "";
+                        }
+
+                        if (actualHeader) {
+                            const sub = subHeaders[index];
+                            if (sub === "I" || sub === "II" || sub === "III") {
+                                if (actualHeader.includes("Grade")) {
+                                    rowData[`dateOfReceiptGrade${sub}`] = cellValue;
+                                } else {
+                                    rowData[`${actualHeader}_${sub}`] = cellValue;
+                                }
+                            } else {
+                                rowData[actualHeader] = cellValue;
+                            }
+                        }
+                    });
+                    return rowData;
+                }).filter(row => Object.values(row).some(val => val !== ""));
+
+                setPreviewData(rows);
+                setIsPreviewOpen(true);
+            }
         };
-        reader.readAsBinaryString(file);
+
+        reader.readAsArrayBuffer(file);
     };
 
     const handleBulkUpload = async () => {
@@ -134,7 +177,13 @@ const AdminPersonalFile = () => {
             fetchFiles();
         } catch (err) {
             console.error(err);
-            alert("❌ Upload failed: " + (err.response?.data || err.message));
+            const errorMessage = err.response?.data?.message || err.response?.data || err.message;
+
+            if (typeof errorMessage === 'string' && errorMessage.includes("දැනටමත්")) {
+                alert(`⚠️ Warning: ${errorMessage}`);
+            } else {
+                alert("❌ Upload failed: " + errorMessage);
+            }
         } finally {
             setLoading(false);
         }
@@ -169,12 +218,10 @@ const AdminPersonalFile = () => {
     const fetchDynamicFields = async () => {
         try {
             const res = await API.get('/dynamic-fields/all');
-
             const sanitizedFields = res.data.map(field => ({
                 ...field,
                 isAdminOnly: field.isAdminOnly === true
             }));
-
             setDynamicFieldConfigs(sanitizedFields);
         } catch (err) {
             console.error("Failed to load dynamic fields:", err);
@@ -222,11 +269,9 @@ const AdminPersonalFile = () => {
         const activeDynamicFieldKeys = [];
         dynamicFieldConfigs.forEach(field => {
             const isGlobal = field.isGlobal === true || String(field.isGlobal).toLowerCase() === "true";
-
             const isApplicableToAnySelected = dataToExport.some(emp =>
                 isGlobal || (emp.email && field.employeeEmail?.toLowerCase() === emp.email.toLowerCase())
             );
-
             if (isApplicableToAnySelected) {
                 activeDynamicFieldKeys.push({
                     key: field.fieldKey,
@@ -351,11 +396,51 @@ const AdminPersonalFile = () => {
             acc[key] = file[key] === null ? "" : file[key];
             return acc;
         }, {});
+
+        const mappedBirthDate = file["Date Of Birth"] || file.dateOfBirth || "";
+        const mappedFirstApp = file["Date Of First Appointment"] || file.dateOfFirstAppointment || "";
+        const mappedPresentStatus = file["Appointment Date To Present Status"] || file.appointmentDateToPresentStatus || "";
+        const mappedRetirement = file["Date Of Compulsory Retirement"] || file.dateOfCompulsoryRetirement || "";
+        const mappedStatusDate = file["Present Status Date"] || file.presentStatusDate || "";
+        const mappedI = file["I"] || file.dateOfReceiptGradeI || "";
+        const mappedII = file["II"] || file.dateOfReceiptGradeII || "";
+        const mappedIII = file["III"] || file.dateOfReceiptGradeIII || "";
+        const mappedIncrement = file["Increment Date"] || file.incrementDate || "";
+
+        const formatForInput = (dVal) => {
+            if (!dVal) return "";
+            return String(dVal).split('T')[0];
+        };
+
         setFormData({
             ...sanitized,
             id: file.id || file._id,
-            name: file.name || file.username || "",
-            username: file.username || "",
+            name: file.name || file["Name Of The Employee"] || file.username || "",
+            username: file.username || file["Name Of The Employee"] || "",
+            email: file.email || file["Email"] || "",
+            nic: file.nic || file["National ID"] || "",
+            phoneNumber: file.phoneNumber || file["Phone Number"] || "",
+            address: file.address || file["Address"] || "",
+            gender: file.gender || file["Gender"] || "",
+            serviceNumber: file.serviceNumber || file["Service Number"] || "",
+            wnopNumber: file.wnopNumber || file["WNOP Number"] || "",
+            designation: file.designation || file["Designation"] || "",
+            department: file.department || file["Department"] || "",
+            dutyPlace: file.dutyPlace || file["Duty Place"] || "",
+            salaryScale: file.salaryScale || file["Salary Scale"] || "",
+            grade: file.grade || file["Grade"] || "",
+            dateOfLanguageProficiency: file.dateOfLanguageProficiency || file["Date Of Language Proficiency"] || "",
+
+            dateOfBirth: formatForInput(mappedBirthDate),
+            dateOfFirstAppointment: formatForInput(mappedFirstApp),
+            appointmentDateToPresentStatus: formatForInput(mappedPresentStatus),
+            dateOfCompulsoryRetirement: formatForInput(mappedRetirement),
+            presentStatusDate: formatForInput(mappedStatusDate),
+            dateOfReceiptGradeI: formatForInput(mappedI),
+            dateOfReceiptGradeII: formatForInput(mappedII),
+            dateOfReceiptGradeIII: formatForInput(mappedIII),
+            incrementDate: mappedIncrement,
+
             password: "",
             dynamicFields: file.dynamicFields || {}
         });
@@ -365,7 +450,6 @@ const AdminPersonalFile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         let preparedFormData = { ...formData };
 
         if (preparedFormData.incrementDate) {
@@ -374,7 +458,6 @@ const AdminPersonalFile = () => {
 
             if (dateStr.includes('-')) {
                 const parts = dateStr.split('-');
-
                 if (parts.length === 2) {
                     if (isNaN(parts[0]) && !isNaN(parts[1])) {
                         preparedFormData.incrementDate = `${currentYear}-${parts[0]}-${parts[1]}`;
@@ -417,9 +500,7 @@ const AdminPersonalFile = () => {
 
     const handleFieldConfigSubmit = async (e) => {
         e.preventDefault();
-
         const isGlobalBoolean = newFieldData.isGlobal === true || String(newFieldData.isGlobal).toLowerCase() === "true";
-
         const isAdminOnlyBoolean = newFieldData.isAdminOnly === true || String(newFieldData.isAdminOnly).toLowerCase() === "true";
 
         if (!isGlobalBoolean && !newFieldData.employeeEmail) {
@@ -447,13 +528,8 @@ const AdminPersonalFile = () => {
             }
 
             setNewFieldData({
-                fieldKey: "",
-                displayName: "",
-                fieldType: "text",
-                required: false,
-                isGlobal: true,
-                employeeEmail: "",
-                isAdminOnly: false
+                fieldKey: "", displayName: "", fieldType: "text", required: false,
+                isGlobal: true, employeeEmail: "", isAdminOnly: false
             });
             setEditingFieldId(null);
             fetchDynamicFields();
@@ -465,22 +541,13 @@ const AdminPersonalFile = () => {
     };
 
     const handleEditFieldClick = (field) => {
-        const isDbAdmin = field.isAdminOnly === true ||
-            field.isadminonly === true ||
-            String(field.isAdminOnly).toLowerCase() === "true";
-
-        const isDbGlobal = field.isGlobal === true ||
-            field.isGlobal !== false ||
-            String(field.isGlobal).toLowerCase() === "true";
+        const isDbAdmin = field.isAdminOnly === true || field.isadminonly === true || String(field.isAdminOnly).toLowerCase() === "true";
+        const isDbGlobal = field.isGlobal === true || field.isGlobal !== false || String(field.isGlobal).toLowerCase() === "true";
 
         setNewFieldData({
-            fieldKey: field.fieldKey,
-            displayName: field.displayName,
-            fieldType: field.fieldType,
+            fieldKey: field.fieldKey, displayName: field.displayName, fieldType: field.fieldType,
             required: field.required === true || String(field.required).toLowerCase() === "true",
-            isGlobal: isDbGlobal,
-            employeeEmail: field.employeeEmail || "",
-            isAdminOnly: isDbAdmin
+            isGlobal: isDbGlobal, employeeEmail: field.employeeEmail || "", isAdminOnly: isDbAdmin
         });
         setEditingFieldId(field.id);
     };
@@ -520,20 +587,6 @@ const AdminPersonalFile = () => {
         }
     };
 
-    const uniqueDesignations = [...new Set(files.map(f => f.designation).filter(Boolean))].sort();
-
-    const filteredFiles = files.filter(f => {
-        const matchesSearch = (f.name || f.username || "").toLowerCase().includes(searchTerm.toLowerCase()) || (f.employeeId || "").includes(searchTerm);
-        const matchesDept = selectedDeptFilter === "" || f.department === selectedDeptFilter;
-        const matchesDesignation = selectedDesignationFilter === "" || f.designation === selectedDesignationFilter;
-        return matchesSearch && matchesDept && matchesDesignation;
-    });
-
-    const resetFilters = () => {
-        setSelectedDeptFilter("");
-        setSelectedDesignationFilter("");
-    };
-
     const getInitials = (name) => {
         if (!name) return "??";
         const parts = name.trim().split(/\s+/);
@@ -543,7 +596,6 @@ const AdminPersonalFile = () => {
 
     const formatDayMonth = (dateVal) => {
         if (!dateVal) return "-";
-
         let dateStr = dateVal;
 
         if (dateVal instanceof Date) {
@@ -553,9 +605,7 @@ const AdminPersonalFile = () => {
             dateStr = `${year}-${month}-${day}`;
         }
 
-        if (typeof dateStr !== 'string') {
-            dateStr = String(dateStr);
-        }
+        if (typeof dateStr !== 'string') dateStr = String(dateStr);
 
         const cleanDate = dateStr.split('T')[0];
         const parts = cleanDate.split('-');
@@ -573,6 +623,183 @@ const AdminPersonalFile = () => {
 
         const monthNames = ["Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         return `${day}-${monthNames[month]}`;
+    };
+
+    const filterableColumns = [
+        { key: "designation", label: "Designation" },
+        { key: "department", label: "Department" },
+        { key: "gender", label: "Gender" },
+        { key: "grade", label: "Grade" },
+        { key: "dutyPlace", label: "Duty Place" },
+        { key: "salaryScale", label: "Salary Scale" },
+        { key: "nic", label: "National ID (NIC)" },
+        { key: "serviceNumber", label: "Service Number" },
+        { key: "wnopNumber", label: "WNOP Number" },
+        { key: "dateOfBirth", label: "Date Of Birth", isDate: true },
+        { key: "dateOfFirstAppointment", label: "Date Of First Appointment", isDate: true },
+        { key: "appointmentDateToPresentStatus", label: "Appointment Date To Present Status", isDate: true },
+        { key: "incrementDate", label: "Increment Date", isDayMonth: true },
+        { key: "dateOfCompulsoryRetirement", label: "Date Of Compulsory Retirement", isDate: true },
+        { key: "presentStatusDate", label: "Present Status Date", isDate: true },
+        ...dynamicFieldConfigs.map(field => ({
+            key: field.fieldKey,
+            label: `${field.displayName} (Custom Field)`,
+            isDynamic: true,
+            isDate: field.fieldType === 'date'
+        }))
+    ];
+
+    const currentSelectedColumn = filterableColumns.find(c => c.key === selectedColumnFilter);
+    const isCurrentColumnDate = currentSelectedColumn?.isDate;
+
+    const getUniqueValuesForColumn = () => {
+        if (!selectedColumnFilter) return [];
+
+        const allVals = files.map(emp => {
+            if (currentSelectedColumn?.isDynamic) {
+                return emp.dynamicFields?.[selectedColumnFilter];
+            }
+            const val = emp[selectedColumnFilter];
+            if (!val) return null;
+            if (currentSelectedColumn?.isDayMonth) return formatDayMonth(val);
+            return val;
+        });
+
+        return [...new Set(allVals.filter(Boolean))].sort();
+    };
+
+    const getUniqueDateParts = (partType) => {
+        if (!selectedColumnFilter || !isCurrentColumnDate) return [];
+
+        const partsList = files.map(emp => {
+            let dateVal = currentSelectedColumn?.isDynamic ? emp.dynamicFields?.[selectedColumnFilter] : emp[selectedColumnFilter];
+            if (!dateVal) return null;
+
+            const dateStr = String(dateVal).split('T')[0];
+            const parts = dateStr.split('-');
+
+            if (parts.length === 3) {
+                if (partType === 'year') return parts[0];
+                if (partType === 'month') return parts[1];
+                if (partType === 'day') return parts[2];
+            } else {
+                const d = new Date(dateVal);
+                if (isNaN(d.getTime())) return null;
+                if (partType === 'year') return String(d.getFullYear());
+                if (partType === 'month') return String(d.getMonth() + 1).padStart(2, '0');
+                if (partType === 'day') return String(d.getDate()).padStart(2, '0');
+            }
+            return null;
+        });
+
+        return [...new Set(partsList.filter(Boolean))].sort();
+    };
+
+    const getMonthName = (monthNum) => {
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        return months[parseInt(monthNum, 10) - 1] || monthNum;
+    };
+
+    const getValueCountForColumn = (value) => {
+        if (!selectedColumnFilter) return 0;
+        return files.filter(user => {
+            let userVal = "";
+
+            if (selectedColumnFilter === "designation") userVal = user.designation;
+            else if (selectedColumnFilter === "department") userVal = user.department;
+            else if (selectedColumnFilter === "grade") userVal = user.grade;
+            else if (selectedColumnFilter === "dutyPlace") userVal = user.dutyPlace;
+            else if (selectedColumnFilter === "gender") userVal = user.gender;
+            else if (user.dynamicFields && user.dynamicFields[selectedColumnFilter]) {
+                userVal = user.dynamicFields[selectedColumnFilter];
+            }
+
+            const normalizedUserVal = userVal ? String(userVal).trim() : "Not Specified";
+            const normalizedTargetVal = value ? String(value).trim() : "Not Specified";
+
+            return normalizedUserVal === normalizedTargetVal;
+        }).length;
+    };
+
+    const getDatePartCount = (type, partValue) => {
+        if (!selectedColumnFilter) return 0;
+        return files.filter(user => {
+            const dateStr = user[selectedColumnFilter];
+            if (!dateStr) return false;
+
+            const dateObj = new Date(dateStr);
+            if (isNaN(dateObj.getTime())) return false;
+
+            if (type === 'year') {
+                return String(dateObj.getFullYear()) === String(partValue);
+            }
+            if (type === 'month') {
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                return m === String(partValue);
+            }
+            if (type === 'day') {
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                return d === String(partValue);
+            }
+            return false;
+        }).length;
+    };
+
+    const filteredFiles = files.filter(f => {
+        const matchesSearch = (f.name || f.username || "").toLowerCase().includes(searchTerm.toLowerCase()) || (f.employeeId || "").includes(searchTerm);
+
+        if (!selectedColumnFilter) return matchesSearch;
+
+        if (isCurrentColumnDate) {
+            let dateVal = currentSelectedColumn?.isDynamic ? f.dynamicFields?.[selectedColumnFilter] : f[selectedColumnFilter];
+            if (!dateVal) return false;
+
+            const dateStr = String(dateVal).split('T')[0];
+            const parts = dateStr.split('-');
+
+            let empYear = "";
+            let empMonth = "";
+            let empDay = "";
+
+            if (parts.length === 3) {
+                empYear = parts[0];
+                empMonth = parts[1];
+                empDay = parts[2];
+            } else {
+                const d = new Date(dateVal);
+                if (isNaN(d.getTime())) return false;
+                empYear = String(d.getFullYear());
+                empMonth = String(d.getMonth() + 1).padStart(2, '0');
+                empDay = String(d.getDate()).padStart(2, '0');
+            }
+
+            const matchesYear = selectedYear ? empYear === selectedYear : true;
+            const matchesMonth = selectedMonth ? empMonth === selectedMonth : true;
+            const matchesDay = selectedDay ? empDay === selectedDay : true;
+
+            return matchesSearch && matchesYear && matchesMonth && matchesDay;
+        }
+
+        if (!selectedValueFilter) return matchesSearch;
+
+        let actualValue = "";
+        if (currentSelectedColumn?.isDynamic) {
+            actualValue = f.dynamicFields?.[selectedColumnFilter];
+        } else {
+            actualValue = f[selectedColumnFilter];
+            if (currentSelectedColumn?.isDayMonth && actualValue) actualValue = formatDayMonth(actualValue);
+        }
+
+        const matchesDynamicFilter = String(actualValue || "").toLowerCase() === String(selectedValueFilter).toLowerCase();
+        return matchesSearch && matchesDynamicFilter;
+    });
+
+    const resetFilters = () => {
+        setSelectedColumnFilter("");
+        setSelectedValueFilter("");
+        setSelectedYear("");
+        setSelectedMonth("");
+        setSelectedDay("");
     };
 
     return (
@@ -648,18 +875,63 @@ const AdminPersonalFile = () => {
                 </div>
 
                 <div className="filter-controls-right">
-                    <div className="filter-dropdown-group">
-                        <select value={selectedDeptFilter} onChange={(e) => setSelectedDeptFilter(e.target.value)} className="admin-filter-dropdown">
-                            <option value="">All Departments</option>
-                            {departments.map((d) => (<option key={d.id} value={d.name}>{d.name}</option>))}
+                    <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+
+                        {/* Main Column Selector */}
+                        <select value={selectedColumnFilter} onChange={(e) => {
+                            setSelectedColumnFilter(e.target.value);
+                            setSelectedValueFilter("");
+                            setSelectedYear("");
+                            setSelectedMonth("");
+                            setSelectedDay("");
+                        }} className="admin-filter-dropdown">
+                            <option value="">Select Filter Column</option>
+                            {filterableColumns.map((col) => (
+                                <option key={col.key} value={col.key}>{col.label}</option>
+                            ))}
                         </select>
 
-                        <select value={selectedDesignationFilter} onChange={(e) => setSelectedDesignationFilter(e.target.value)} className="admin-filter-dropdown">
-                            <option value="">All Designations</option>
-                            {uniqueDesignations.map((des, idx) => (<option key={idx} value={des}>{des}</option>))}
-                        </select>
+                        {selectedColumnFilter && isCurrentColumnDate ? (
+                            <>
+                                <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}
+                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
+                                    <option value="">Year</option>
+                                    {getUniqueDateParts('year').map((yr, idx) => (
+                                        <option key={idx} value={yr}>{yr} - {getDatePartCount('year', yr)}</option>
+                                    ))}
+                                </select>
 
-                        {(selectedDeptFilter || selectedDesignationFilter) && (
+                                <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}
+                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '130px' }}>
+                                    <option value="">Month</option>
+                                    {getUniqueDateParts('month').map((mn, idx) => (
+                                        <option key={idx} value={mn}>{getMonthName(mn)} - {getDatePartCount('month', mn)}</option>
+                                    ))}
+                                </select>
+
+                                <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}
+                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
+                                    <option value="">Date</option>
+                                    {getUniqueDateParts('day').map((dy, idx) => (
+                                        <option key={idx} value={dy}>{dy} - {getDatePartCount('day', dy)}</option>
+                                    ))}
+                                </select>
+                            </>
+                        ) : (
+                            <select value={selectedValueFilter} disabled={!selectedColumnFilter}
+                                onChange={(e) => setSelectedValueFilter(e.target.value)} className="admin-filter-dropdown">
+                                <option value="">
+                                    {selectedColumnFilter ? "Choose Value" : "Select Column First"}
+                                </option>
+                                {getUniqueValuesForColumn().map((val, idx) => (
+                                    <option key={idx} value={val}>
+                                        {val || "Not Specified"} -  {getValueCountForColumn(val)}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+
+                        {(selectedColumnFilter || selectedValueFilter || selectedYear || selectedMonth || selectedDay) && (
                             <button onClick={resetFilters} className="btn-filter-reset" title="Clear Filters"><RotateCcw size={14} /></button>
                         )}
                     </div>
@@ -775,31 +1047,16 @@ const AdminPersonalFile = () => {
                             <h2 className="admin-personal-field-open-model-title">Manage System Dynamic Fields</h2>
                             <button className="admin-personal-field-open-close" onClick={() => {
                                 setIsFieldModalOpen(false); setEditingFieldId(null); setNewFieldData({
-                                    fieldKey: "",
-                                    displayName: "",
-                                    fieldType: "text",
-                                    required: false,
-                                    isGlobal: true,
-                                    employeeEmail: "",
-                                    isAdminOnly: false
+                                    fieldKey: "", displayName: "", fieldType: "text", required: false,
+                                    isGlobal: true, employeeEmail: "", isAdminOnly: false
                                 });
                             }}><X size={17} /></button>
                         </div>
 
                         <form onSubmit={handleFieldConfigSubmit} className="admin-personal-field-open-form-structured">
-
                             <div className="admin-personal-field-open-form-row">
                                 <label className="admin-personal-field-open-form-label">Field Permission</label>
-                                <select
-                                    value={newFieldData.isAdminOnly}
-                                    onChange={(e) => {
-                                        setNewFieldData({
-                                            ...newFieldData,
-                                            isAdminOnly: e.target.value === "true"
-                                        });
-                                    }}
-                                    className="admin-personal-field-open-form-input"
-                                    required>
+                                <select value={newFieldData.isAdminOnly} onChange={(e) => { setNewFieldData({ ...newFieldData, isAdminOnly: e.target.value === "true" }); }} className="admin-personal-field-open-form-input" required>
                                     <option value={true}>Admin Only</option>
                                     <option value={false}>Admin & Employee</option>
                                 </select>
@@ -807,15 +1064,10 @@ const AdminPersonalFile = () => {
 
                             <div className="admin-personal-field-open-form-row">
                                 <label className="admin-personal-field-open-form-label">Field Scope</label>
-                                <select value={newFieldData.isGlobal ? "global" : "specific"}
-                                    onChange={(e) => {
-                                        const isGlbl = e.target.value === "global";
-                                        setNewFieldData({
-                                            ...newFieldData,
-                                            isGlobal: isGlbl,
-                                            employeeEmail: isGlbl ? "" : newFieldData.employeeEmail
-                                        });
-                                    }} className="admin-personal-field-open-form-input">
+                                <select value={newFieldData.isGlobal ? "global" : "specific"} onChange={(e) => {
+                                    const isGlbl = e.target.value === "global";
+                                    setNewFieldData({ ...newFieldData, isGlobal: isGlbl, employeeEmail: isGlbl ? "" : newFieldData.employeeEmail });
+                                }} className="admin-personal-field-open-form-input">
                                     <option value="global">Global</option>
                                     <option value="specific">Specific Employee Only</option>
                                 </select>
@@ -824,8 +1076,7 @@ const AdminPersonalFile = () => {
                             {!newFieldData.isGlobal && (
                                 <div className="admin-personal-field-open-form-row admin-personal-field-open-fade-in">
                                     <label className="admin-personal-field-open-form-label">Select Employee</label>
-                                    <select value={newFieldData.employeeEmail} onChange={(e) => setNewFieldData({ ...newFieldData, employeeEmail: e.target.value })}
-                                        className="admin-personal-field-open-form-input" required>
+                                    <select value={newFieldData.employeeEmail} onChange={(e) => setNewFieldData({ ...newFieldData, employeeEmail: e.target.value })} className="admin-personal-field-open-form-input" required>
                                         <option value="">Choose Employee</option>
                                         {files.map((emp) => (
                                             <option key={emp.id} value={emp.email}>{emp.name || emp.username} ({emp.email})</option>))}
@@ -899,9 +1150,7 @@ const AdminPersonalFile = () => {
                                                     </td>
                                                     <td>
                                                         {String(field.isAdminOnly) === "true" ? (
-                                                            <span style={{ fontWeight: 'bold', color: '#c1121f' }}>
-                                                                Admin Only
-                                                            </span>
+                                                            <span style={{ fontWeight: 'bold', color: '#c1121f' }}>Admin Only</span>
                                                         ) : (
                                                             <span style={{ fontWeight: 'bold', color: '#0077b6' }}>Admin & Employee</span>
                                                         )}
@@ -1084,10 +1333,7 @@ const AdminPersonalFile = () => {
                             </div>
 
                             {dynamicFieldConfigs
-                                .filter(field =>
-                                    field.isGlobal ||
-                                    (formData.email && field.employeeEmail === formData.email)
-                                )
+                                .filter(field => field.isGlobal || (formData.email && field.employeeEmail === formData.email))
                                 .map((field) => (
                                     <div className="admin-personal-form-row" key={field.id}>
                                         <label className="admin-personal-form-label">

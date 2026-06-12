@@ -1,9 +1,4 @@
-import React, {
-    useState,
-    useEffect
-} from 'react';
-
-import axios from 'axios';
+import React, { useState } from 'react';
 
 import api from '../API/Axios';
 
@@ -16,13 +11,11 @@ const LoginRegister = () => {
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [step, setStep] = useState(1);
 
-    const [departments, setDepartments] = useState([]);
     const [formData, setFormData] = useState({
         username: '',
         email: '',
         password: '',
-        fullName: '',
-        department: '',
+        fullName: '', 
     });
 
     const [forgotData, setForgotData] = useState({
@@ -38,22 +31,6 @@ const LoginRegister = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
-    const API_URL = import.meta.env.VITE_BACKEND_URL;
-
-    useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const response = await api.get('/departments/all');
-                setDepartments(response.data);
-            } catch (err) {
-                console.error("Error fetching departments:", err);
-                if (err.response?.status === 403) {
-                    localStorage.removeItem('token');
-                }
-            }
-        };
-        fetchDepartments();
-    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -164,12 +141,11 @@ const LoginRegister = () => {
                 await api.post('/api/auth/register', {
                     username: formData.username,
                     email: formData.email,
-                    password: formData.password,
-                    department: formData.department
+                    password: formData.password
                 });
                 setMessage("Registration Successful! Please login.");
                 setIsLogin(true);
-                setFormData({ username: '', email: '', password: '', fullName: '', department: '' });
+                setFormData({ username: '', email: '', password: '', fullName: '' });
             }
         } catch (err) {
             setError(err.response?.data?.message || "Something went wrong. Please try again.");
@@ -207,9 +183,9 @@ const LoginRegister = () => {
                         <form className="form-group">
                             {step === 1 && (
                                 <>
-                                    <input name="email" type="email" placeholder="EMAIL ADDRESS" required
+                                    <input name="email" type="email" placeholder="Email Address" required
                                         value={forgotData.email} onChange={handleForgotChange} className="input-field" />
-                                    <input name="serviceNumber" type="text" placeholder="SERVICE NUMBER" required
+                                    <input name="serviceNumber" type="text" placeholder="Service Number" required
                                         value={forgotData.serviceNumber} onChange={handleForgotChange} className="input-field" />
                                     <button onClick={handleRequestOTP} className="submit-btn" disabled={isLoading}>
                                         {isLoading ? 'Sending...' : 'Send OTP'}
@@ -227,9 +203,9 @@ const LoginRegister = () => {
                             )}
                             {step === 3 && (
                                 <>
-                                    <input name="newPassword" type="password" placeholder="NEW PASSWORD" required
+                                    <input name="newPassword" type="password" placeholder="New Password" required
                                         value={forgotData.newPassword} onChange={handleForgotChange} className="input-field" />
-                                    <input name="confirmPassword" type="password" placeholder="CONFIRM PASSWORD" required
+                                    <input name="confirmPassword" type="password" placeholder="Confirm Password" required
                                         value={forgotData.confirmPassword} onChange={handleForgotChange} className="input-field" />
                                     <button onClick={handleResetPassword} className="submit-btn" disabled={isLoading}>
                                         Update Password
@@ -247,15 +223,11 @@ const LoginRegister = () => {
                         <form className="form-group" onSubmit={handleSubmit}>
                             {!isLogin && (
                                 <>
-                                    <input name="username" type="text" placeholder="FULL NAME" required value={formData.username} onChange={handleChange} className="input-field" />
-                                    <select name="department" required value={formData.department} onChange={handleChange} className="input-field arrow">
-                                        <option value="">SELECT YOUR DEPARTMENT</option>
-                                        {departments.map((dept) => <option key={dept.id} value={dept.name}>{dept.name}</option>)}
-                                    </select>
+                                    <input name="username" type="text" placeholder="Enter Full Name" required value={formData.username} onChange={handleChange} className="input-field" />
                                 </>
                             )}
-                            <input name="email" type="text" placeholder={isLogin ? "EMAIL / NIC" : "EMAIL ADDRESS"} required value={formData.email} onChange={handleChange} className="input-field" />
-                            <input name="password" type="password" placeholder={isLogin ? "PASSWORD / PHONE NUMBER" : "PASSWORD"} required value={formData.password} onChange={handleChange} className="input-field" />
+                            <input name="email" type="text" placeholder={isLogin ? "Enter Email / NIC" : "Enter Email Address"} required value={formData.email} onChange={handleChange} className="input-field" />
+                            <input name="password" type="password" placeholder={isLogin ? "Enter Password / Phone Number" : "Enter Password"} required value={formData.password} onChange={handleChange} className="input-field" />
 
                             <div className="options">
                                 <label><input type="checkbox" /> Remember me</label>

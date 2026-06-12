@@ -9,6 +9,7 @@ import '../../CSS/EmployeePersonalFile.css';
 
 import {
     Cake,
+    Download,
     Eye,
     EyeOff,
     Lock,
@@ -18,9 +19,7 @@ import {
     Phone,
     Transgender,
     User as UserIcon,
-    UserRoundCog,
-    Download,
-    Upload
+    UserRoundCog
 } from 'lucide-react';
 
 import { LuTrash2 } from "react-icons/lu";
@@ -55,6 +54,8 @@ const EmployeePersonalFile = () => {
     const [incrementNotifications, setIncrementNotifications] = useState([]);
 
     const userEmail = localStorage.getItem('employeeEmail');
+    
+    const BACKEND_BASE_URL = "http://localhost:8080"; 
 
     useEffect(() => {
         const initComponent = async () => {
@@ -269,33 +270,36 @@ const EmployeePersonalFile = () => {
                                 <button className="increment-modal-close-btn" onClick={() => setIsIncrementModalOpen(false)}>&times;</button>
 
                                 <h2>Annual Salary Increment Request</h2>
-                                <p>Admin has requested you to fill out the following document format(s). Please download them, complete the details, and upload the final files below.</p>
-
+                                <p>Admin has requested you to fill out the following document format(s). Your common service details have been automatically filled. Please download them, complete the remaining sections, and upload the final files below.</p>
 
                                 <div>
-                                    <h4>Step 1: Download Requested Blank Templates</h4>
-                                    <div>
-                                        {selectedNotification.requestedTemplates && selectedNotification.requestedTemplates.length > 0 ? (
-                                            selectedNotification.requestedTemplates.map((templateName, index) => (
-                                                <a
-                                                    key={index}
-                                                    href={`/${templateName}`}
-                                                    download
-                                                    className="template-download-link-btn"
-                                                    onMouseEnter={(e) => e.target.style.background = '#edede9'}
-                                                    onMouseLeave={(e) => e.target.style.background = '#edede9'}
-                                                >
-                                                    <Download size={16} color="#2a9d8f" />
-                                                    <span>{templateName}</span>
-                                                </a>
-                                            ))
+                                    <h4>Step 1: Download Auto-Filled Templates</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                                        {selectedNotification.submittedFileUrls && selectedNotification.submittedFileUrls.length > 0 ? (
+                                            selectedNotification.submittedFileUrls.map((fileUrl, index) => {
+                                                const originalName = selectedNotification.requestedTemplates?.[index] || `Increment_Form_${index + 1}.docx`;
+                                                return (
+                                                    <a
+                                                        key={index}
+                                                        href={`${BACKEND_BASE_URL}${fileUrl}`}
+                                                        download
+                                                        className="template-download-link-btn"
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: '#edede9', borderRadius: '6px', textDecoration: 'none', color: '#333' }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.background = '#e3e3dc'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.background = '#edede9'}
+                                                    >
+                                                        <Download size={16} color="#2a9d8f" />
+                                                        <span>{originalName}</span>
+                                                    </a>
+                                                );
+                                            })
                                         ) : (
-                                            <p>No specific template attached. Please check with HR.</p>
+                                            <p style={{ color: '#e63946', fontSize: '14px' }}>⚠️ No auto-filled documents found. Please contact the Admin section.</p>
                                         )}
                                     </div>
                                 </div>
 
-                                <form onSubmit={handleFormUploadSubmit}>
+                                <form onSubmit={handleFormUploadSubmit} style={{ marginTop: '20px' }}>
                                     <div>
                                         <h4>Step 2: Upload Completed Documents</h4>
 

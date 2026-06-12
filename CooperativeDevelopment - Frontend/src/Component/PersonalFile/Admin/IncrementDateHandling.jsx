@@ -7,6 +7,34 @@ import api from '../../API/Axios';
 
 import '../../CSS/IncrementDateHandling.css';
 
+const EmployeeLeaveBadge = ({ email, incrementDate }) => {
+    const [leaveCount, setLeaveCount] = useState('...');
+
+    useEffect(() => {
+        if (!email || !incrementDate) {
+            setLeaveCount('-');
+            return;
+        }
+        api.get('/personalfile/calculate-increment-leave', {
+            params: {
+                email: email,
+                incrementDate: incrementDate
+            }
+        })
+            .then(response => {
+                setLeaveCount(`${response.data} Days`);
+            })
+            .catch(error => {
+                console.error("Error fetching leave count for:", email, error);
+                setLeaveCount('0 Days');
+            });
+    }, [email, incrementDate]);
+
+    return (
+        <span className="increment-leave-badge-text" style={{ fontWeight: '600', color: '#0077b6' }}>{leaveCount}</span>
+    );
+};
+
 const IncrementDateHandling = () => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,6 +43,7 @@ const IncrementDateHandling = () => {
 
     const [currentMonthIncrements, setCurrentMonthIncrements] = useState([]);
     const [nextMonthIncrements, setNextMonthIncrements] = useState([]);
+    const [afterNextMonthIncrements, setAfterNextMonthIncrements] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
@@ -37,11 +66,13 @@ const IncrementDateHandling = () => {
 
             const now = new Date();
 
-            const targetMonth1Date = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-            const t1Month = targetMonth1Date.getMonth();
+            const currentMonth = now.getMonth();
 
-            const targetMonth2Date = new Date(now.getFullYear(), now.getMonth() + 2, 1);
-            const t2Month = targetMonth2Date.getMonth();
+            const nextMonthDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const nextMonth = nextMonthDate.getMonth();
+
+            const afterNextMonthDate = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+            const afterNextMonth = afterNextMonthDate.getMonth();
 
             const getParsedDate = (dateStr) => {
                 if (!dateStr) return null;
@@ -57,7 +88,7 @@ const IncrementDateHandling = () => {
                 if (!incDate || isNaN(incDate.getTime())) return false;
 
                 const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
-                return (incDate.getMonth() === t1Month && !isProcessed);
+                return (incDate.getMonth() === currentMonth && !isProcessed);
             });
 
             const nextFiltered = allData.filter(emp => {
@@ -66,15 +97,24 @@ const IncrementDateHandling = () => {
                 if (!incDate || isNaN(incDate.getTime())) return false;
 
                 const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
-                return (incDate.getMonth() === t2Month && !isProcessed);
+                return (incDate.getMonth() === nextMonth && !isProcessed);
+            });
+
+            const afterNextFiltered = allData.filter(emp => {
+                if (!emp.incrementDate) return false;
+                const incDate = getParsedDate(emp.incrementDate);
+                if (!incDate || isNaN(incDate.getTime())) return false;
+
+                const isProcessed = emp.incrementStatus === "EMAIL_SENT" || emp.incrementStatus === "COMPLETED";
+                return (incDate.getMonth() === afterNextMonth && !isProcessed);
             });
 
             setCurrentMonthIncrements(currentFiltered);
             setNextMonthIncrements(nextFiltered);
+            setAfterNextMonthIncrements(afterNextFiltered);
             setLoading(false);
         } catch (err) {
             console.error("Error fetching employees:", err);
-            setError("❌ Unable to retrieve data. Please try again.");
             setLoading(false);
         }
     };
@@ -108,9 +148,7 @@ const IncrementDateHandling = () => {
 
         try {
             await api.post(`/personalfile/send-increment-email/${selectedEmployeeId}`, selectedTemplates);
-
             alert("✅ Email and automated forms were successfully prepared and sent!");
-
             fetchEmployees();
         } catch (err) {
             console.error("Error sending templates:", err);
@@ -148,31 +186,37 @@ const IncrementDateHandling = () => {
         <div className="increment-Date-Handling-main-wrapper fade-in">
             <div className="increment-Date-Handling-left-panel">
                 <h2 className="increment-Date-Handling-title">Employee Salary Increment Date Register</h2>
-                <p className="increment-Date-Handling-description">
-                    This register provides a comprehensive overview of upcoming salary increment dates for all employees.
-                </p>
+                <p className="increment-Date-Handling-description"> Provides a detailed overview of upcoming salary increment dates for all employees.</p>
 
                 <div className="increment-Date-Handling-table-wrapper">
                     <table className="increment-Date-Handling-table">
                         <thead className="increment-Date-Handling-thead">
                             <tr>
-                                <th className="increment-Date-Handling-th">Name</th>
-                                <th className="increment-Date-Handling-th">Phone</th>
-                                <th className="increment-Date-Handling-th" style={{ width: '260px' }}>Designation</th>
-                                <th className="increment-Date-Handling-th">In: Date</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Name</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Email</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Address</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Phone Number</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>NIC</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '420px' }}>Designation</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '150px' }}>In: Date</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '150px' }}>Leaves</th>
                             </tr>
                         </thead>
                         <tbody className="increment-Date-Handling-tbody">
                             {employees.map((emp) => (
                                 <tr key={emp.id} className="increment-Date-Handling-tr">
                                     <td className="increment-Date-Handling-td">{emp.username}</td>
+                                    <td className="increment-Date-Handling-td">{emp.email}</td>
+                                    <td className="increment-Date-Handling-td">{emp.address}</td>
                                     <td className="increment-Date-Handling-td">{emp.phoneNumber}</td>
+                                    <td className="increment-Date-Handling-td">{emp.nic}</td>
                                     <td className="increment-Date-Handling-td">{emp.designation}</td>
                                     <td className="increment-Date-Handling-td">
                                         <span className="increment-Date-Handling-date-text">
-                                            {emp.incrementDate ? formatDayMonth(emp.incrementDate) : '-----'}
+                                            {emp.incrementDate ? formatDayMonth(emp.incrementDate) : '-'}
                                         </span>
                                     </td>
+                                    <td className="increment-Date-Handling-td"><EmployeeLeaveBadge email={emp.email} incrementDate={emp.incrementDate} /></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -184,9 +228,9 @@ const IncrementDateHandling = () => {
                 <div className="upcoming-notifications-wrapper">
                     <div className="notifications-container-flex">
 
-                        <div className="notification-section" style={{ backgroundColor: "#f5fff0" }}>
+                        <div className="notification-section" style={{ backgroundColor: "#e2eafc" }}>
                             <h4 className="section-subtitle">
-                                {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
+                                {new Date().toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
                             </h4>
                             <div className="upcoming-list">
                                 {currentMonthIncrements.length > 0 ? (
@@ -196,7 +240,11 @@ const IncrementDateHandling = () => {
                                                 <strong>{emp.username}</strong>
                                                 <span>{emp.email}</span>
                                             </div>
-                                            <button className="send-email-btn" onClick={() => openTemplateModal(emp.id)} disabled={sendingEmailId === emp.id}>
+                                            <button
+                                                className="send-email-btn"
+                                                onClick={() => openTemplateModal(emp.id)}
+                                                disabled={sendingEmailId !== null}
+                                            >
                                                 {sendingEmailId === emp.id ? 'PROCESSING...' : 'CHOOSE & SEND'}
                                             </button>
                                         </div>
@@ -205,9 +253,9 @@ const IncrementDateHandling = () => {
                             </div>
                         </div>
 
-                        <div className="notification-section" style={{ backgroundColor: "#f0f6ff" }}>
+                        <div className="notification-section" style={{ backgroundColor: "#eae4e9" }}>
                             <h4 className="section-subtitle">
-                                {new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
+                                {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
                             </h4>
                             <div className="upcoming-list">
                                 {nextMonthIncrements.length > 0 ? (
@@ -217,12 +265,41 @@ const IncrementDateHandling = () => {
                                                 <strong>{emp.username}</strong>
                                                 <span>{emp.email}</span>
                                             </div>
-                                            <button className="send-email-btn" onClick={() => openTemplateModal(emp.id)} disabled={sendingEmailId === emp.id}>
+                                            <button
+                                                className="send-email-btn"
+                                                onClick={() => openTemplateModal(emp.id)}
+                                                disabled={sendingEmailId !== null}
+                                            >
                                                 {sendingEmailId === emp.id ? 'PROCESSING...' : 'CHOOSE & SEND'}
                                             </button>
                                         </div>
                                     ))
                                 ) : <p className="notification-section-no-data">No records for next month.</p>}
+                            </div>
+                        </div>
+
+                        <div className="notification-section" style={{ backgroundColor: "#d8e2dc" }}>
+                            <h4 className="section-subtitle">
+                                {new Date(new Date().getFullYear(), new Date().getMonth() + 2, 1).toLocaleString('default', { month: 'long' }).toUpperCase()} INCREMENTS
+                            </h4>
+                            <div className="upcoming-list">
+                                {afterNextMonthIncrements.length > 0 ? (
+                                    afterNextMonthIncrements.map((emp) => (
+                                        <div key={emp.id} className="upcoming-card">
+                                            <div className="upcoming-info">
+                                                <strong>{emp.username}</strong>
+                                                <span>{emp.email}</span>
+                                            </div>
+                                            <button
+                                                className="send-email-btn"
+                                                onClick={() => openTemplateModal(emp.id)}
+                                                disabled={sendingEmailId !== null}
+                                            >
+                                                {sendingEmailId === emp.id ? 'PROCESSING...' : 'CHOOSE & SEND'}
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : <p className="notification-section-no-data">No records for this month.</p>}
                             </div>
                         </div>
 
@@ -234,9 +311,6 @@ const IncrementDateHandling = () => {
                 <div className="increment-modal-backdrop">
                     <div className="increment-modal-content">
                         <h3 className="modal-main-title">Select Increment Form Formats</h3>
-                        <p className="modal-subtitle">
-                            Select one or multiple formats based on the employee's designation to attach to their file request.
-                        </p>
 
                         <div className="modal-templates-list">
                             {availableTemplates.map((template) => (
@@ -255,12 +329,8 @@ const IncrementDateHandling = () => {
                         </div>
 
                         <div className="modal-action-buttons">
-                            <button className="modal-btn-cancel" onClick={() => setIsModalOpen(false)}>
-                                Cancel
-                            </button>
-                            <button className="modal-btn-confirm" onClick={handleSendEmailAndTemplates}>
-                                Confirm & Send Request
-                            </button>
+                            <button className="modal-btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            <button className="modal-btn-confirm" onClick={handleSendEmailAndTemplates}>Confirm & Send Request</button>
                         </div>
                     </div>
                 </div>

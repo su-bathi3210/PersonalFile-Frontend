@@ -15,9 +15,26 @@ const IncrementFormsHandling = () => {
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('');
 
+    const [isHovered, setIsHovered] = useState(false);
+
     useEffect(() => {
         fetchAdminNotifications();
     }, []);
+
+    const handleGeneratePodu232 = async (notificationId, employeeName) => {
+        try {
+            const response = await api.get(`/personalfile/increment-notifications/${notificationId}/generate-podu232`);
+            const fileUrl = response.data.fileUrl;
+
+            if (fileUrl) {
+                await handleDownloadFile(fileUrl, employeeName);
+                alert("✅ The Gen 232 form was successfully prepared and downloaded!");
+            }
+        } catch (error) {
+            console.error("Error generating Podu 232 form:", error);
+            alert("❌ Gen 232 format preparation failed: " + (error.response?.data?.message || error.message));
+        }
+    };
 
     const fetchAdminNotifications = async () => {
         try {
@@ -200,17 +217,19 @@ const IncrementFormsHandling = () => {
                             <tr>
                                 <th>Employee Name</th>
                                 <th>Email</th>
-                                <th>Inc. From Send Date</th>
+                                <th>Send Date</th>
+                                <th>Prev. Year Sick Used</th>
+                                <th>Curr. Year Sick Used</th>
                                 <th>Status</th>
-                                <th>Submitted Date</th>
-                                <th>Documents to download</th>
+                                <th>Submitted</th>
+                                <th>Download</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredNotifications.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="no-data-td">No data was found matching the search criteria.</td>
+                                    <td colSpan="9" className="no-data-td">No data was found matching the search criteria.</td>
                                 </tr>
                             ) : (
                                 filteredNotifications.map((notif) => (
@@ -219,7 +238,18 @@ const IncrementFormsHandling = () => {
                                         <td>{notif.email}</td>
                                         <td><span className="date-increment">{notif.sentDate
                                             ? new Date(notif.sentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                                            : '-'}</span></td>
+                                            : '-'}</span>
+                                        </td>
+                                        <td>
+                                            <span className="sick-leave-count-badge old-year">
+                                                {Number(notif.oldYearSickUsed ?? 0)} Days
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className="sick-leave-count-badge current-year">
+                                                {Number(notif.currentYearSickUsed ?? 0)} Days
+                                            </span>
+                                        </td>
                                         <td>
                                             <span className={`increment-forms-handling-badge ${notif.status === 'SUBMITTED'
                                                 ? 'increment-forms-handling-badge-submitted'
@@ -249,10 +279,20 @@ const IncrementFormsHandling = () => {
                                             )}
                                         </td>
                                         <td>
+                                            {(notif.status === "SUBMITTED" || notif.status === "APPROVED") && (
+                                                <button
+                                                    onClick={() => handleGeneratePodu232(notif.notificationId, notif.employeeName)} className="btn-gen"
+                                                    style={{ backgroundColor: isHovered ? '#000' : '#17a2b8', cursor: 'pointer', marginBottom: '5px', width: '80%' }}
+                                                    onMouseEnter={() => setIsHovered(true)}
+                                                    onMouseLeave={() => setIsHovered(false)}>Gen 232</button>
+                                            )}
+
                                             {notif.status === "SUBMITTED" ? (
-                                                <button onClick={() => handleApproveIncrement(notif.notificationId)} className="btn-approve-increment">Approve & Update Next Year</button>
+                                                <button onClick={() => handleApproveIncrement(notif.notificationId)} className="btn-approve-increment" style={{ width: '80%' }}>
+                                                    Update Next Year
+                                                </button>
                                             ) : notif.status === "APPROVED" ? (
-                                                <span style={{ color: '#28a745', fontWeight: 'bold' }}>APPROVED</span>
+                                                <span style={{ color: '#28a745', fontWeight: 'bold', display: 'block', textAlign: 'center', marginTop: '5px' }}>APPROVED</span>
                                             ) : (
                                                 <span style={{ color: '#777' }}>{notif.status}</span>
                                             )}

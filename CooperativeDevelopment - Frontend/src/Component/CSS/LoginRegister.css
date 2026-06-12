@@ -75,20 +75,9 @@
     width: 100%;
     padding: 12px;
     border: none;
-    font-size: 12px;
+    font-size: 13.5px;
     box-sizing: border-box;
     background: rgba(255, 255, 255, 0.5);
-}
-
-.arrow {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-
-    background-image: url("data:image/svg+xml;utf8,<svg fill='%235b5a5a' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 16px;
 }
 
 .input-field:focus {

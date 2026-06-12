@@ -30,11 +30,10 @@ const EmployeeNavBar = () => {
 
     useEffect(() => {
         const savedImage = localStorage.getItem('userImage');
-        // හිස් string එකක් නොවන්නේ නම් පමණක් setUserImage කරන්න
         if (savedImage && savedImage.trim() !== "" && savedImage !== "null") {
             setUserImage(savedImage);
         } else {
-            setUserImage(null); // පින්තූරයක් නැතිනම් null කරන්න
+            setUserImage(null);
         }
     }, []);
 

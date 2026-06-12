@@ -166,24 +166,26 @@ const AdminPersonalFile = () => {
         if (!excelFile) return;
         const formData = new FormData();
         formData.append("file", excelFile);
+
         try {
             setLoading(true);
-            await API.post('/personalfile/upload-employees', formData, {
+            const response = await API.post('/personalfile/upload-employees', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert("✅ All employees uploaded successfully!");
+
+            if (response.data) {
+                alert(`✅ ${response.data}`);
+            } else {
+                alert("✅ Excel process completed successfully!");
+            }
+
             setIsPreviewOpen(false);
             setExcelFile(null);
             fetchFiles();
         } catch (err) {
             console.error(err);
-            const errorMessage = err.response?.data?.message || err.response?.data || err.message;
-
-            if (typeof errorMessage === 'string' && errorMessage.includes("දැනටමත්")) {
-                alert(`⚠️ Warning: ${errorMessage}`);
-            } else {
-                alert("❌ Upload failed: " + errorMessage);
-            }
+            const errorMessage = err.response?.data || err.message;
+            alert("❌ Upload failed: " + errorMessage);
         } finally {
             setLoading(false);
         }
@@ -877,7 +879,6 @@ const AdminPersonalFile = () => {
                 <div className="filter-controls-right">
                     <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
 
-                        {/* Main Column Selector */}
                         <select value={selectedColumnFilter} onChange={(e) => {
                             setSelectedColumnFilter(e.target.value);
                             setSelectedValueFilter("");
@@ -1000,34 +1001,47 @@ const AdminPersonalFile = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {previewData.map((row, index) => (
-                                        <tr key={index}>
-                                            <td>{row["No"]}</td>
-                                            <td>{row["Name Of The Employee"]}</td>
-                                            <td>{row["Email"]}</td>
-                                            <td>{row["National ID"]}</td>
-                                            <td>{row["Phone Number"]}</td>
-                                            <td>{row["Address"]}</td>
-                                            <td>{formatDate(row["Date Of Birth"])}</td>
-                                            <td>{row["Gender"]}</td>
-                                            <td>{row["Service Number"]}</td>
-                                            <td>{row["WNOP Number"]}</td>
-                                            <td>{row["Designation"]}</td>
-                                            <td>{row["Department"]}</td>
-                                            <td>{row["Duty Place"]}</td>
-                                            <td>{row["Salary Scale"]}</td>
-                                            <td>{row["Date Of First Appointment"] instanceof Date ? row["Date Of First Appointment"].toLocaleDateString() : row["Date Of First Appointment"]}</td>
-                                            <td>{row["Date Of Language Proficiency"] instanceof Date ? row["Date Of Language Proficiency"].toLocaleDateString() : row["Date Of Language Proficiency"]}</td>
-                                            <td>{row["Appointment Date To Present Status"] instanceof Date ? row["Appointment Date To Present Status"].toLocaleDateString() : row["Appointment Date To Present Status"]}</td>
-                                            <td>{formatDayMonth(row["Increment Date"])}</td>
-                                            <td>{row["Date Of Compulsory Retirement"] instanceof Date ? row["Date Of Compulsory Retirement"].toLocaleDateString() : row["Date Of Compulsory Retirement"]}</td>
-                                            <td>{row["Present Status Date"] instanceof Date ? row["Present Status Date"].toLocaleDateString() : row["Present Status Date"]}</td>
-                                            <td>{row["Grade"]}</td>
-                                            <td>{row["III"] instanceof Date ? row["III"].toLocaleDateString() : row["III"]}</td>
-                                            <td>{row["II"] instanceof Date ? row["II"].toLocaleDateString() : row["II"]}</td>
-                                            <td>{row["I"] instanceof Date ? row["I"].toLocaleDateString() : row["I"]}</td>
-                                        </tr>
-                                    ))}
+                                    {previewData.map((row, index) => {
+                                        const isDuplicateNIC = files.some(emp =>
+                                            emp.nic && row["National ID"] &&
+                                            String(emp.nic).trim().toLowerCase() === String(row["National ID"]).trim().toLowerCase());
+
+                                        return (
+                                            <tr key={index} style={isDuplicateNIC ? { backgroundColor: '#eaf4ff', color: '#0056b3' } : {}}>
+                                                <td>{row["No"]}</td>
+
+                                                <td>
+                                                    {row["Name Of The Employee"]}
+                                                    {isDuplicateNIC && <span style={{ fontSize: '10px', marginLeft: '5px', fontWeight: 'bold', color: '#0077b6' }}>(Will be Updated)</span>}
+                                                </td>
+
+                                                <td>{row["Email"]}</td>
+
+                                                <td style={isDuplicateNIC ? { fontWeight: 'bold', color: '#0056b3' } : {}}>{row["National ID"]}</td>
+
+                                                <td>{row["Phone Number"]}</td>
+                                                <td>{row["Address"]}</td>
+                                                <td>{formatDate(row["Date Of Birth"])}</td>
+                                                <td>{row["Gender"]}</td>
+                                                <td>{row["Service Number"]}</td>
+                                                <td>{row["WNOP Number"]}</td>
+                                                <td>{row["Designation"]}</td>
+                                                <td>{row["Department"]}</td>
+                                                <td>{row["Duty Place"]}</td>
+                                                <td>{row["Salary Scale"]}</td>
+                                                <td>{row["Date Of First Appointment"] instanceof Date ? row["Date Of First Appointment"].toLocaleDateString() : row["Date Of First Appointment"]}</td>
+                                                <td>{row["Date Of Language Proficiency"] instanceof Date ? row["Date Of Language Proficiency"].toLocaleDateString() : row["Date Of Language Proficiency"]}</td>
+                                                <td>{row["Appointment Date To Present Status"] instanceof Date ? row["Appointment Date To Present Status"].toLocaleDateString() : row["Appointment Date To Present Status"]}</td>
+                                                <td>{formatDayMonth(row["Increment Date"])}</td>
+                                                <td>{row["Date Of Compulsory Retirement"] instanceof Date ? row["Date Of Compulsory Retirement"].toLocaleDateString() : row["Date Of Compulsory Retirement"]}</td>
+                                                <td>{row["Present Status Date"] instanceof Date ? row["Present Status Date"].toLocaleDateString() : row["Present Status Date"]}</td>
+                                                <td>{row["Grade"]}</td>
+                                                <td>{row["III"] instanceof Date ? row["III"].toLocaleDateString() : row["III"]}</td>
+                                                <td>{row["II"] instanceof Date ? row["II"].toLocaleDateString() : row["II"]}</td>
+                                                <td>{row["I"] instanceof Date ? row["I"].toLocaleDateString() : row["I"]}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

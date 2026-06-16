@@ -54,8 +54,8 @@ const EmployeePersonalFile = () => {
     const [incrementNotifications, setIncrementNotifications] = useState([]);
 
     const userEmail = localStorage.getItem('employeeEmail');
-    
-    const BACKEND_BASE_URL = "http://localhost:8080"; 
+
+    const BACKEND_BASE_URL = "https://personalfile-backend.onrender.com";
 
     useEffect(() => {
         const initComponent = async () => {
@@ -275,26 +275,32 @@ const EmployeePersonalFile = () => {
                                 <div>
                                     <h4>Step 1: Download Auto-Filled Templates</h4>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
-                                        {selectedNotification.submittedFileUrls && selectedNotification.submittedFileUrls.length > 0 ? (
+                                        {selectedNotification && selectedNotification.submittedFileUrls && selectedNotification.submittedFileUrls.length > 0 ? (
                                             selectedNotification.submittedFileUrls.map((fileUrl, index) => {
-                                                const originalName = selectedNotification.requestedTemplates?.[index] || `Increment_Form_${index + 1}.docx`;
+                                                let originalName = selectedNotification.requestedTemplates;
+
+                                                if (selectedNotification.submittedFileUrls.length > 1) {
+                                                    originalName = originalName ? originalName.replace(".docx", ` (Part ${index + 1}).docx`) : `Increment_Form_${index + 1}.docx`;
+                                                } else {
+                                                    originalName = originalName || `Increment_Form_${index + 1}.docx`;
+                                                }
+
                                                 return (
                                                     <a
                                                         key={index}
                                                         href={`${BACKEND_BASE_URL}${fileUrl}`}
                                                         download
                                                         className="template-download-link-btn"
-                                                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: '#edede9', borderRadius: '6px', textDecoration: 'none', color: '#333' }}
                                                         onMouseEnter={(e) => e.currentTarget.style.background = '#e3e3dc'}
                                                         onMouseLeave={(e) => e.currentTarget.style.background = '#edede9'}
                                                     >
-                                                        <Download size={16} color="#2a9d8f" />
+                                                        <Download size={18} color="#2a9d8f" />
                                                         <span>{originalName}</span>
                                                     </a>
                                                 );
                                             })
                                         ) : (
-                                            <p style={{ color: '#e63946', fontSize: '14px' }}>⚠️ No auto-filled documents found. Please contact the Admin section.</p>
+                                            <p style={{ color: '#e63946', fontSize: '12px', fontWeight: '500' }}>⚠️ No auto-filled documents found. Please contact the Admin section.</p>
                                         )}
                                     </div>
                                 </div>

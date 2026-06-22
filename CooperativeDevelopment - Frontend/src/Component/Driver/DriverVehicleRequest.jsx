@@ -29,8 +29,8 @@ const DriverVehicleRequest = () => {
 
             setTrips(sortedTrips);
         } catch (err) {
-            console.error("Error fetching driver trips:", err);
-            setError('Failed to load assigned trips. Please try again later.');
+            console.error("❌ Error fetching driver trips:", err);
+            setError('❌ Failed to load assigned trips. Please try again later.');
         } finally {
             setLoading(false);
         }
@@ -41,34 +41,34 @@ const DriverVehicleRequest = () => {
     }, []);
 
     const handleStartTrip = async (requestId) => {
-        const isConfirmed = window.confirm("Are you sure you want to START this journey now?");
+        const isConfirmed = window.confirm("⚠️ Are you sure you want to START this journey now?");
         if (!isConfirmed) return;
 
         try {
             setProcessingId(requestId);
             await API.post(`/vehicle-requests/start-trip/${requestId}`);
-            alert("The trip has been STARTED successfully! Have a safe journey.");
+            alert("✅ The trip has been STARTED successfully! Have a safe journey.");
             fetchDriverTrips();
         } catch (err) {
             console.error("Error starting trip:", err);
-            alert("Unable to start the journey. Please try again.");
+            alert("❌ Unable to start the journey. Please try again.");
         } finally {
             setProcessingId(null);
         }
     };
 
     const handleEndTrip = async (requestId) => {
-        const isConfirmed = window.confirm("Do you guarantee that you successfully completed this journey?");
+        const isConfirmed = window.confirm("⚠️ Do you guarantee that you successfully completed this journey?");
         if (!isConfirmed) return;
 
         try {
             setProcessingId(requestId);
             await API.post(`/vehicle-requests/end-trip/${requestId}`);
-            alert("The journey was successfully completed! The vehicle and you are now AVAILABLE.");
+            alert("✅ The journey was successfully completed! The vehicle and you are now AVAILABLE.");
             fetchDriverTrips();
         } catch (err) {
             console.error("Error ending trip:", err);
-            alert("Unable to complete the journey. Please try again.");
+            alert("❌ Unable to complete the journey. Please try again.");
         } finally {
             setProcessingId(null);
         }

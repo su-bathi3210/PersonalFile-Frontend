@@ -20,7 +20,7 @@ const ApprovalVehicleDashboard = () => {
                 setOfficerEmail(response.data);
             }
         } catch (err) {
-            console.error("Error fetching officer email:", err);
+            console.error("❌ Error fetching officer email:", err);
         }
     };
 
@@ -36,11 +36,11 @@ const ApprovalVehicleDashboard = () => {
 
         try {
             await api.put(`/vehicle-requests/officer-email?email=${encodeURIComponent(officerEmail)}`);
-            setEmailSuccessMessage('Notification Email updated successfully!');
+            setEmailSuccessMessage('✅ Notification Email updated successfully!');
             setTimeout(() => setEmailSuccessMessage(''), 3000);
         } catch (err) {
             console.error("Error updating officer email:", err);
-            setEmailErrorMessage('Failed to update email. Please try again.');
+            setEmailErrorMessage('❌ Failed to update email. Please try again.');
         } finally {
             setEmailLoading(false);
         }

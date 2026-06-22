@@ -47,8 +47,8 @@ const ApproveOfficerVehicle = () => {
             setDrivers(driversRes.data);
 
         } catch (error) {
-            console.error("Unable to retrieve data:", error);
-            setErrorMsg('There was an error retrieving data. Please try again.');
+            console.error("❌ Unable to retrieve data:", error);
+            setErrorMsg('❌ There was an error retrieving data. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -101,7 +101,7 @@ const ApproveOfficerVehicle = () => {
     const handleFinalApprove = async (requestId) => {
         const finalRemark = getFinalRemark(requestId);
 
-        if (!window.confirm('Would you like to give final approval to this vehicle request?')) {
+        if (!window.confirm('⚠️ Would you like to give final approval to this vehicle request?')) {
             return;
         }
 
@@ -110,11 +110,11 @@ const ApproveOfficerVehicle = () => {
                 params: { remarks: finalRemark }
             });
 
-            alert('The vehicle request was successfully granted final approval.');
+            alert('✅ The vehicle request was successfully granted final approval.');
             fetchAllData();
         } catch (error) {
-            console.error("Unable to approve:", error);
-            alert('Unable to approve: ' + (error.response?.data?.message || 'There is an error in the system.'));
+            console.error("❌ Unable to approve:", error);
+            alert('❌ Unable to approve: ' + (error.response?.data?.message || 'There is an error in the system.'));
         }
     };
 
@@ -122,11 +122,11 @@ const ApproveOfficerVehicle = () => {
         const finalRemark = getFinalRemark(requestId);
 
         if (!finalRemark.trim()) {
-            alert('Please select a reason (Remarks) or write a reason under "Other" for rejecting the request.');
+            alert('⚠️ Please select a reason (Remarks) or write a reason under "Other" for rejecting the request.');
             return;
         }
 
-        if (!window.confirm('Would you like to permanently deny this vehicle request?')) {
+        if (!window.confirm('⚠️ Would you like to permanently deny this vehicle request?')) {
             return;
         }
 
@@ -135,10 +135,10 @@ const ApproveOfficerVehicle = () => {
                 params: { remarks: finalRemark }
             });
 
-            alert('The vehicle request was successfully denied.');
+            alert('✅ The vehicle request was successfully denied.');
             fetchAllData();
         } catch (error) {
-            console.error("Couldn't refuse:", error);
+            console.error("❌ Couldn't refuse:", error);
             alert('Unable to reject:' + (error.response?.data?.message || 'There is an error in the system.'));
         }
     };

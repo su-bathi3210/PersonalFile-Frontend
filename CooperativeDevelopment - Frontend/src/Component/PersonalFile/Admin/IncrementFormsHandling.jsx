@@ -1,6 +1,6 @@
-import React, {
-    useState,
-    useEffect
+import {
+    useEffect,
+    useState
 } from 'react';
 
 import api from '../../API/Axios';
@@ -31,7 +31,7 @@ const IncrementFormsHandling = () => {
                 alert("✅ The Gen 232 form was successfully prepared and downloaded!");
             }
         } catch (error) {
-            console.error("Error generating Podu 232 form:", error);
+            console.error("❌ Error generating Podu 232 form:", error);
             alert("❌ Gen 232 format preparation failed: " + (error.response?.data?.message || error.message));
         }
     };
@@ -41,12 +41,12 @@ const IncrementFormsHandling = () => {
             const response = await api.get('/personalfile/increment-notifications');
             setIncrementNotifications(response.data);
         } catch (error) {
-            showAlert('Failed to retrieve data.', 'error');
+            showAlert('❌ Failed to retrieve data.', 'error');
         }
     };
 
     const handleApproveIncrement = async (notificationId) => {
-        if (!window.confirm("Are you sure you want to approve this salary increment form and update the date for next year?")) {
+        if (!window.confirm("⚠️ Are you sure you want to approve this salary increment form and update the date for next year?")) {
             return;
         }
 
@@ -56,6 +56,21 @@ const IncrementFormsHandling = () => {
             fetchAdminNotifications();
         } catch (error) {
             alert("❌ Failed to approve: " + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleCancelIncrement = async (notificationId) => {
+        if (!window.confirm("⚠️ Are you sure you want to cancel and delete this increment notification? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            await api.delete(`/personalfile/increment-notifications/${notificationId}/cancel`);
+            alert("✅ Increment request successfully cancelled and deleted!");
+            fetchAdminNotifications();
+        } catch (error) {
+            console.error("❌ Error cancelling increment:", error);
+            alert("❌ Failed to cancel: " + (error.response?.data?.message || error.message));
         }
     };
 
@@ -87,7 +102,7 @@ const IncrementFormsHandling = () => {
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(downloadUrl);
         } catch (error) {
-            console.error("Download error:", error);
+            console.error("❌ Download error:", error);
             showAlert('❌ Document download failed.', 'error');
         }
     };
@@ -288,13 +303,19 @@ const IncrementFormsHandling = () => {
                                             )}
 
                                             {notif.status === "SUBMITTED" ? (
-                                                <button onClick={() => handleApproveIncrement(notif.notificationId)} className="btn-approve-increment" style={{ width: '80%' }}>
-                                                    Update Next Year
-                                                </button>
+                                                <button onClick={() => handleApproveIncrement(notif.notificationId)}
+                                                    className="btn-approve-increment" style={{ width: '80%' }}>Update Next Year</button>
+
                                             ) : notif.status === "APPROVED" ? (
-                                                <span style={{ color: '#28a745', fontWeight: 'bold', display: 'block', textAlign: 'center', marginTop: '5px' }}>APPROVED</span>
+                                                <span style={{ color: '#28a745', fontWeight: 'bold', display: 'block', textAlign: 'center', marginTop: '0px' }}></span>
                                             ) : (
-                                                <span style={{ color: '#777' }}>{notif.status}</span>
+                                                <span style={{ color: '#000' }}>{notif.status}</span>
+                                            )}
+
+                                            {notif.status !== "SUBMITTED" && notif.status !== "APPROVED" && (
+                                                <button onClick={() => handleCancelIncrement(notif.notificationId)}
+                                                    className="btn-cancel-increment"
+                                                    style={{ width: '80%', marginTop: '6px', background: '#c1121f'}}>Cancel Request</button>
                                             )}
                                         </td>
                                     </tr>

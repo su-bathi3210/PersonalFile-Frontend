@@ -1,0 +1,159 @@
+.employee-dashboard-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.employee-dashboard-header h1 {
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 20px;
+}
+
+.employee-dashboard-profile-wrapper {
+    margin-bottom: 30px;
+}
+
+.employee-dashboard-card {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.employee-dashboard-details-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.employee-dashboard-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 17px;
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.employee-dashboard-detail-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.employee-dashboard-label {
+    color: #000;
+    font-size: 15px;
+}
+
+.employee-dashboard-value {
+    color: #000;
+    font-weight: 500;
+    font-size: 13.5px;
+    text-transform: uppercase;
+    text-align: right;
+}
+
+
+.employee-dashboard-actions-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #0096c7;
+    margin-bottom: 15px;
+}
+
+.employee-dashboard-buttons-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.employee-dashboard-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    background: #e9ecef;
+}
+
+.employee-dashboard-btn-icon {
+    font-size: 2.2rem;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+}
+
+.employee-dashboard-btn-text h3 {
+    margin: 0 0 7px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.employee-dashboard-btn-text p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #000;
+}
+
+.employee-dashboard-btn-vehicle {
+    border-left: 5px solid #e76f51;
+}
+
+.employee-dashboard-btn-vehicle:hover {
+    background: #fdf6effa;
+    transform: translateY(-3px);
+}
+
+.employee-dashboard-btn-vehicle h3 {
+    color: #e76f51;
+}
+
+.employee-dashboard-btn-profile {
+    border-left: 5px solid #2a9d8f;
+}
+
+.employee-dashboard-btn-profile:hover {
+    background: #f4fbf7fa;
+    transform: translateY(-3px);
+}
+
+.employee-dashboard-btn-profile h3 {
+    color: #2a9d8f;
+}
+
+.employee-dashboard-loading,
+.employee-dashboard-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-top: 50px;
+}
+
+.employee-dashboard-error {
+    color: #c1121f;
+}
+
+@media (max-width: 768px) {
+    .employee-dashboard-buttons-container {
+        grid-template-columns: 1fr;
+    }
+
+    .employee-dashboard-header h1 {
+        font-size: 1.6rem;
+    }
+
+    .employee-dashboard-btn {
+        padding: 15px;
+    }
+}

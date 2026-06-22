@@ -230,6 +230,7 @@
 }
 
 .btn-gen,
+.btn-cancel-increment,
 .btn-approve-increment {
     background-color: #2a9d8f;
     color: #ffffff;

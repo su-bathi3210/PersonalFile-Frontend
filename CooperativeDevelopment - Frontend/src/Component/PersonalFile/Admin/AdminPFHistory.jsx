@@ -50,8 +50,8 @@ const AdminPFHistory = () => {
                 const uniqueDesignations = ['All', ...new Set(empList.map(emp => emp.designation).filter(Boolean))];
                 setDesignations(uniqueDesignations);
             } catch (err) {
-                console.error("Error fetching employees:", err);
-                setError("Unable to retrieve employee list.");
+                console.error("❌ Error fetching employees:", err);
+                setError("❌ Unable to retrieve employee list.");
             } finally {
                 setPageLoading(false);
             }
@@ -89,9 +89,9 @@ const AdminPFHistory = () => {
 
             try {
                 await API.put(`/personalfile/increment-notifications/mark-as-read/${emp.email}`);
-                console.log("Notification marked as read/resolved on backend.");
+                console.log("✅ Notification marked as read/resolved on backend.");
             } catch (apiErr) {
-                console.error("Error updating notification status on backend:", apiErr);
+                console.error("❌ Error updating notification status on backend:", apiErr);
             }
         }
 
@@ -104,7 +104,7 @@ const AdminPFHistory = () => {
             setHistoryData(Array.isArray(historyRes.data) ? historyRes.data : []);
             setChangeCount(countRes.data || 0);
         } catch (err) {
-            console.error("Error fetching history:", err);
+            console.error("❌ Error fetching history:", err);
         } finally {
             setHistoryLoading(false);
         }

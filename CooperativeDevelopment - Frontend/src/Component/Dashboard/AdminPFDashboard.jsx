@@ -55,7 +55,7 @@ const AdminPFDashboard = () => {
         setProfileUpdatesCount(profileAlerts.length);
 
       } catch (err) {
-        console.error("An error occurred while retrieving Dashboard data:", err);
+        console.error("❌ An error occurred while retrieving Dashboard data:", err);
       } finally {
         setLoading(false);
       }

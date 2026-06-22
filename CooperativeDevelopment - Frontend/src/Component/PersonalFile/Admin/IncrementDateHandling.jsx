@@ -25,7 +25,7 @@ const EmployeeLeaveBadge = ({ email, incrementDate }) => {
                 setLeaveCount(`${response.data} Days`);
             })
             .catch(error => {
-                console.error("Error fetching leave count for:", email, error);
+                console.error("❌ Error fetching leave count for:", email, error);
                 setLeaveCount('0 Days');
             });
     }, [email, incrementDate]);
@@ -114,7 +114,7 @@ const IncrementDateHandling = () => {
             setAfterNextMonthIncrements(afterNextFiltered);
             setLoading(false);
         } catch (err) {
-            console.error("Error fetching employees:", err);
+            console.error("❌ Error fetching employees:", err);
             setLoading(false);
         }
     };
@@ -192,10 +192,10 @@ const IncrementDateHandling = () => {
                     <table className="increment-Date-Handling-table">
                         <thead className="increment-Date-Handling-thead">
                             <tr>
-                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Name</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '200px' }}>Name</th>
                                 <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Email</th>
-                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Address</th>
-                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Phone Number</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '300px' }}>Address</th>
+                                <th className="increment-Date-Handling-th" style={{ width: '0px' }}>Ph:Number</th>
                                 <th className="increment-Date-Handling-th" style={{ width: '0px' }}>NIC</th>
                                 <th className="increment-Date-Handling-th" style={{ width: '420px' }}>Designation</th>
                                 <th className="increment-Date-Handling-th" style={{ width: '150px' }}>In: Date</th>

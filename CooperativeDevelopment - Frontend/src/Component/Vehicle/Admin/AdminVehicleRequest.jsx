@@ -38,7 +38,7 @@ const AdminVehicleRequest = () => {
                 if (updatedSelected) setSelectedRequest(updatedSelected);
             }
         } catch (error) {
-            console.error('Error fetching admin vehicle requests:', error);
+            console.error('❌ Error fetching admin vehicle requests:', error);
             setMessage({ type: 'danger', text: 'Failed to load vehicle requests.' });
         } finally {
             setLoading(false);
@@ -52,7 +52,7 @@ const AdminVehicleRequest = () => {
             console.log("Backend Data:", response.data);
             setAllApprovedRequests(response.data);
         } catch (error) {
-            console.error("Error fetching requests:", error);
+            console.error("❌ Error fetching requests:", error);
         } finally {
             setAllReqLoading(false);
         }
@@ -72,7 +72,7 @@ const AdminVehicleRequest = () => {
             setVehicles(vehicleRes.data);
             setDrivers(driverRes.data);
         } catch (error) {
-            console.error('Error fetching vehicles or drivers:', error);
+            console.error('❌ Error fetching vehicles or drivers:', error);
         }
     };
 
@@ -91,11 +91,11 @@ const AdminVehicleRequest = () => {
                 : adminRejectRemark;
 
         if (!finalRejectReason.trim()) {
-            alert('Please enter the reason for rejecting the request.');
+            alert('⚠️ Please enter the reason for rejecting the request.');
             return;
         }
 
-        if (!window.confirm('Would you like to permanently deny this vehicle request?')) {
+        if (!window.confirm('⚠️ Would you like to permanently deny this vehicle request?')) {
             return;
         }
 
@@ -110,7 +110,7 @@ const AdminVehicleRequest = () => {
             });
 
             if (response.status === 200 || response.status === 201) {
-                setMessage({ type: 'success', text: 'Vehicle request has been successfully REJECTED by Admin.' });
+                setMessage({ type: 'success', text: '✅ Vehicle request has been successfully REJECTED by Admin.' });
                 setSelectedRequest(null);
                 setAdminRejectRemark('');
                 setCustomRejectReason('');
@@ -118,7 +118,7 @@ const AdminVehicleRequest = () => {
             }
         } catch (error) {
             console.error('Error rejecting request:', error);
-            const errorMsg = error.response?.data?.message || 'Failed to reject vehicle request.';
+            const errorMsg = error.response?.data?.message || '❌ Failed to reject vehicle request.';
             setMessage({ type: 'danger', text: errorMsg });
         } finally {
             setActionLoading(false);
@@ -127,11 +127,11 @@ const AdminVehicleRequest = () => {
 
     const handleVehicleApproval = async (requestId) => {
         if (!selectedVehicle || !selectedDriver) {
-            setMessage({ type: 'danger', text: 'Please select both a vehicle and a driver before approving!' });
+            setMessage({ type: 'danger', text: '⚠️ Please select both a vehicle and a driver before approving!' });
             return;
         }
 
-        if (!window.confirm('Would you like to reserve this vehicle and driver and forward it?')) {
+        if (!window.confirm('⚠️ Would you like to reserve this vehicle and driver and forward it?')) {
             return;
         }
 
@@ -147,7 +147,7 @@ const AdminVehicleRequest = () => {
             const response = await API.put(`/vehicle-requests/${requestId}/approve`, approvalDTO);
 
             if (response.status === 200 || response.status === 201) {
-                setMessage({ type: 'success', text: 'Vehicle request successfully approved and assigned!' });
+                setMessage({ type: 'success', text: '✅ Vehicle request successfully approved and assigned!' });
                 setSelectedRequest(null);
                 setSelectedVehicle('');
                 setSelectedDriver('');
@@ -155,7 +155,7 @@ const AdminVehicleRequest = () => {
             }
         } catch (error) {
             console.error('Error approving vehicle request:', error);
-            const errorMsg = error.response?.data?.message || 'Failed to approve and assign vehicle request.';
+            const errorMsg = error.response?.data?.message || '❌ Failed to approve and assign vehicle request.';
             setMessage({ type: 'danger', text: errorMsg });
         } finally {
             setActionLoading(false);
@@ -163,7 +163,7 @@ const AdminVehicleRequest = () => {
     };
 
     const handleCompleteRequest = async (requestId) => {
-        const isConfirmed = window.confirm("Are you sure you want to complete this request and send the confirmation email?");
+        const isConfirmed = window.confirm("⚠️ Are you sure you want to complete this request and send the confirmation email?");
 
         if (!isConfirmed) return;
 
@@ -173,7 +173,7 @@ const AdminVehicleRequest = () => {
 
             setAllApprovedRequests(allApprovedRequests.filter(req => req.id !== requestId));
         } catch (error) {
-            console.error("Error completing request:", error);
+            console.error("❌ Error completing request:", error);
         } finally {
             setProcessingId(null);
         }

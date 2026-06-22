@@ -1,6 +1,16 @@
-import React, { useState } from 'react';
+import React, {
+    useState,
+    useEffect
+} from 'react';
 
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+    NavLink,
+    Link,
+    useNavigate,
+    useLocation
+} from 'react-router-dom';
+
+import api from '../API/Axios';
 
 import '../CSS/EmployeeNavBar.css';
 
@@ -24,9 +34,45 @@ const MenuIcon = () => (
 const AdminPersonalFileNavBar = () => {
     const location = useLocation();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [submittedCount, setSubmittedCount] = useState(0);
     const navigate = useNavigate();
 
     const displayName = localStorage.getItem('username') || "User";
+
+    useEffect(() => {
+        const fetchNotificationCount = async () => {
+            try {
+                const response = await api.get('/personalfile/increment-notifications');
+
+                if (response && response.data) {
+                    let notificationsArray = [];
+
+                    if (Array.isArray(response.data)) {
+                        notificationsArray = response.data;
+                    } else if (response.data.notifications && Array.isArray(response.data.notifications)) {
+                        notificationsArray = response.data.notifications;
+                    } else if (typeof response.data === 'object') {
+                        notificationsArray = Object.keys(response.data).length ? [response.data] : [];
+                    }
+
+                    if (notificationsArray.length > 0) {
+                        const pendingApprovals = notificationsArray.filter(noti => noti && noti.status === 'SUBMITTED');
+                        setSubmittedCount(pendingApprovals.length);
+                    } else {
+                        setSubmittedCount(0);
+                    }
+                }
+            } catch (error) {
+                console.error("❌ Error fetching notification count:", error);
+                setSubmittedCount(0);
+            }
+        };
+
+        fetchNotificationCount();
+
+        const interval = setInterval(fetchNotificationCount, 60000);
+        return () => clearInterval(interval);
+    }, [location.pathname]);
 
     const getInitials = (name) => {
         if (!name || name === "User") return "??";
@@ -43,7 +89,7 @@ const AdminPersonalFileNavBar = () => {
         { name: 'Dashboard', path: '/AdminPFDashboard' },
         { name: 'Personal File', path: '/AdminPersonalFile', relatedPaths: ["/AdminPFHistory"] },
         { name: 'In:Date', path: '/IncrementDateHandling' },
-        { name: 'In:Forms', path: '/IncrementFormsHandling' },
+        { name: 'In:Forms', path: '/IncrementFormsHandling', hasBadge: true }, 
     ];
 
     return (
@@ -71,6 +117,12 @@ const AdminPersonalFileNavBar = () => {
                                     className={isActiveLink ? 'menuLink active' : 'menuLink'}
                                 >
                                     {item.name}
+
+                                    {item.hasBadge && submittedCount > 0 && (
+                                        <span className="admin-personalfile-navbar-notification-badge">
+                                            {submittedCount}
+                                        </span>
+                                    )}
                                 </NavLink>
                             </li>
                         );

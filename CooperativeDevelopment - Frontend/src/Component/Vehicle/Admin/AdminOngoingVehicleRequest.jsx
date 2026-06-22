@@ -22,8 +22,8 @@ const AdminOngoingVehicleRequest = () => {
             setRequests(response.data);
             setError(null);
         } catch (err) {
-            console.error("Error fetching today's vehicle requests:", err);
-            setError("Unable to receive vehicle requests today.");
+            console.error("❌ Error fetching today's vehicle requests:", err);
+            setError("❌ Unable to receive vehicle requests today.");
         } finally {
             setLoading(false);
         }

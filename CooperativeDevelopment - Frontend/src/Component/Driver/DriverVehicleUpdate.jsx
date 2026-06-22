@@ -32,7 +32,7 @@ const DriverVehicleUpdate = () => {
             setVehicles(response.data);
             setError('');
         } catch (err) {
-            setError('Unable to retrieve vehicle details. Please try again.');
+            setError('⚠️ Unable to retrieve vehicle details. Please try again.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -41,19 +41,19 @@ const DriverVehicleUpdate = () => {
 
     const handleAddServiceRecord = async (vehicleId) => {
         if (!serviceKm || isNaN(serviceKm) || parseFloat(serviceKm) <= 0) {
-            alert('Please enter the correct meter reading for the service.');
+            alert('⚠️ Please enter the correct meter reading for the service.');
             return;
         }
         if (!serviceCost || isNaN(serviceCost) || parseFloat(serviceCost) < 0) {
-            alert('Please enter the correct service cost.');
+            alert('⚠️ Please enter the correct service cost.');
             return;
         }
         if (!nextServiceKm || isNaN(nextServiceKm) || parseFloat(nextServiceKm) <= parseFloat(serviceKm)) {
-            alert('The next service kilometer value must be greater than the meter value at which the service was performed.');
+            alert('⚠️ The next service kilometer value must be greater than the meter value at which the service was performed.');
             return;
         }
         if (!description.trim()) {
-            alert('Please briefly describe the service performed.');
+            alert('⚠️ Please briefly describe the service performed.');
             return;
         }
 
@@ -66,13 +66,13 @@ const DriverVehicleUpdate = () => {
                 `/vehicles/${vehicleId}/service-record?serviceKm=${serviceKm}&serviceCost=${serviceCost}&nextServiceKm=${nextServiceKm}&description=${encodeURIComponent(description)}`
             );
 
-            setSuccessMessage('Vehicle service record and current meter value successfully updated!');
+            setSuccessMessage('✅ Vehicle service record and current meter value successfully updated!');
             resetForm();
             await fetchVehicles();
             setTimeout(() => setSuccessMessage(''), 4000);
         } catch (err) {
-            const errorMsg = err.response?.data || 'Failed to insert service report.';
-            setError(typeof errorMsg === 'string' ? errorMsg : 'Failed to insert service report.');
+            const errorMsg = err.response?.data || '❌ Failed to insert service report.';
+            setError(typeof errorMsg === 'string' ? errorMsg : '❌ Failed to insert service report.');
             console.error(err);
         } finally {
             setSubmitting(false);

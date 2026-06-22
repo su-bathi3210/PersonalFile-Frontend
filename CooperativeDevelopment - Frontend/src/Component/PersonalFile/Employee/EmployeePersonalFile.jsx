@@ -17,6 +17,7 @@ import {
     MapPin,
     Pencil,
     Phone,
+    Siren,
     Transgender,
     User as UserIcon,
     UserRoundCog
@@ -27,8 +28,8 @@ import { LuTrash2 } from "react-icons/lu";
 const EmployeePersonalFile = () => {
     const [formData, setFormData] = useState({
         name: "", email: "", password: "", username: "",
-        phoneNumber: "", designation: "", nic: "", address: "", dutyPlace: "",
-        grade: "", salaryScale: "", department: "", gender: "",
+        phoneNumber: "", emergencyContact: "", designation: "", nic: "", address: "", dutyPlace: "",
+        grade: "", salaryScale: "", salary: "", department: "", gender: "",
         dateOfBirth: "", dateOfFirstAppointment: "", appointmentDateToPresentStatus: "",
         incrementDate: "", dateOfReceiptGradeI: "", dateOfReceiptGradeII: "",
         dateOfReceiptGradeIII: "", dateOfCompulsoryRetirement: "", dateOfReceiptOfRelevantGrade: "",
@@ -73,7 +74,7 @@ const EmployeePersonalFile = () => {
                 const response = await API.get(`/personalfile/notifications/${formData.id}`);
                 setNotifications(response.data.filter(n => !n.read && n.status === "PENDING"));
             } catch (err) {
-                console.error("Error fetching notifications", err);
+                console.error("❌ Error fetching notifications", err);
             }
         };
         if (formData.id) fetchNotifications();
@@ -84,7 +85,7 @@ const EmployeePersonalFile = () => {
             const res = await API.get('/dynamic-fields/all');
             setDynamicFieldConfigs(res.data);
         } catch (err) {
-            console.error("Error fetching dynamic field configurations:", err);
+            console.error("❌ Error fetching dynamic field configurations:", err);
         }
     };
 
@@ -105,7 +106,7 @@ const EmployeePersonalFile = () => {
                 localStorage.setItem('userImage', response.data.profileImage);
             }
         } catch (err) {
-            console.error("Error fetching data", err);
+            console.error("❌ Error fetching data", err);
         }
     };
 
@@ -149,7 +150,7 @@ const EmployeePersonalFile = () => {
 
             setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
         } catch (err) {
-            console.error("Error uploading forms:", err);
+            console.error("❌ Error uploading forms:", err);
             alert(err.response?.data || "❌ Failed to upload increment forms.");
         } finally {
             setIsUploading(false);
@@ -271,11 +272,12 @@ const EmployeePersonalFile = () => {
                                 <div>
                                     <h4>Step 1: Download Auto-Filled Templates</h4>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
-                                        {selectedNotification && selectedNotification.submittedFileUrls && selectedNotification.submittedFileUrls.length > 0 ? (
-                                            selectedNotification.submittedFileUrls.map((fileUrl, index) => {
+
+                                        {selectedNotification && selectedNotification.generatedFileUrls && selectedNotification.generatedFileUrls.length > 0 ? (
+                                            selectedNotification.generatedFileUrls.map((fileUrl, index) => {
                                                 let originalName = selectedNotification.requestedTemplates;
 
-                                                if (selectedNotification.submittedFileUrls.length > 1) {
+                                                if (selectedNotification.generatedFileUrls.length > 1) {
                                                     originalName = originalName ? originalName.replace(".docx", ` (Part ${index + 1}).docx`) : `Increment_Form_${index + 1}.docx`;
                                                 } else {
                                                     originalName = originalName || `Increment_Form_${index + 1}.docx`;
@@ -336,6 +338,7 @@ const EmployeePersonalFile = () => {
                                 <DataItem label="Department" value={formData.department} />
                                 <DataItem label="Duty Place" value={formData.dutyPlace} />
                                 <DataItem label="Salary Scale" value={formData.salaryScale} />
+                                <DataItem label="Current Salary" value={formData.salary} />
                                 <DataItem label="Grade" value={formData.grade} />
                                 <DataItem label="Date Of First Appointment" value={formData.dateOfFirstAppointment} />
                                 <DataItem label="Appointment Date To Present Status" value={formData.appointmentDateToPresentStatus} />
@@ -382,6 +385,7 @@ const EmployeePersonalFile = () => {
                     <div className="personalFile-sidebar-info-list">
                         <DataItem label="NIC" value={formData.nic} icon={UserIcon} />
                         <DataItem label="Phone" value={formData.phoneNumber} icon={Phone} />
+                        <DataItem label="Emergency Contact" value={formData.emergencyContact} icon={Siren} />
                         <DataItem label="Address" value={formData.address} icon={MapPin} />
                         <DataItem label="Birthday" value={formData.dateOfBirth} icon={Cake} />
                         <DataItem label="Gender" value={formData.gender} icon={Transgender} />
@@ -439,6 +443,7 @@ const EmployeePersonalFile = () => {
                                 <div className="personalFile-form-group"><label>Email</label><input name="email" value={formData.email} onChange={handleChange} required /></div>
                                 <div className="personalFile-form-group"><label>NIC Number</label><input name="nic" value={formData.nic} onChange={handleChange} required /></div>
                                 <div className="personalFile-form-group"><label>Phone Number</label><input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} /></div>
+                                <div className="personalFile-form-group"><label>Emergency Contact</label><input name="emergencyContact" value={formData.emergencyContact} onChange={handleChange} /></div>
                                 <div className="personalFile-form-group">
                                     <label>Gender</label>
                                     <select name="gender" value={formData.gender} onChange={handleChange}>

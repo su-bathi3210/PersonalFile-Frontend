@@ -31,7 +31,7 @@ const EmployeeVehicle = () => {
     const [loading, setLoading] = useState(false);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [cancelLoadingId, setCancelLoadingId] = useState(null); 
+    const [cancelLoadingId, setCancelLoadingId] = useState(null);
 
     const fetchEmployeeRequests = useCallback(async () => {
         if (!currentEmployeeEmail) return;
@@ -41,7 +41,7 @@ const EmployeeVehicle = () => {
             const response = await API.get(`/vehicle-requests/employee/${currentEmployeeEmail}`);
             setRequestsList(response.data);
         } catch (error) {
-            console.error('Error fetching employee requests:', error);
+            console.error('❌ Error fetching employee requests:', error);
             if (error.response && error.response.status === 403) {
                 setMessage({ type: 'danger', text: 'Session expired or Unauthorized. Please login again.' });
             }
@@ -117,7 +117,7 @@ const EmployeeVehicle = () => {
     };
 
     const handleCancelRequest = async (requestId) => {
-        if (!window.confirm("Are you sure you want to cancel this vehicle request?")) {
+        if (!window.confirm("⚠️ Are you sure you want to cancel this vehicle request?")) {
             return;
         }
 
@@ -128,7 +128,7 @@ const EmployeeVehicle = () => {
             const response = await API.put(`/vehicle-requests/${requestId}/cancel`);
             if (response.status === 200) {
                 setMessage({ type: 'success', text: ' ✅ Vehicle request cancelled successfully!' });
-                fetchEmployeeRequests(); 
+                fetchEmployeeRequests();
             }
         } catch (error) {
             console.error('❌ Error cancelling vehicle request:', error);
@@ -143,10 +143,10 @@ const EmployeeVehicle = () => {
         switch (status) {
             case 'APPROVED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-approved';
             case 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER': return 'employee-vehicle-status-approved';
-            
+
             case 'REJECTED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-rejected';
             case 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER': return 'employee-vehicle-status-rejected';
-            case 'EMPLOYEE_CANCELLED': return 'employee-vehicle-status-cancelled'; 
+            case 'EMPLOYEE_CANCELLED': return 'employee-vehicle-status-cancelled';
 
             default: return 'employee-vehicle-status-pending';
         }
@@ -208,7 +208,7 @@ const EmployeeVehicle = () => {
                                 </div>
 
                                 <h5 className="employee-vehicle-section-title" style={{ marginTop: '30px' }}>2. Journey & Duty Details</h5>
-                                
+
                                 <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Nature of Duty</label>
@@ -304,7 +304,7 @@ const EmployeeVehicle = () => {
                                                     </td>
                                                     <td className="employee-vehicle-td">
                                                         {['PENDING', 'APPROVED_BY_VEHICLE_ADMIN', 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER'].includes(req.status) ? (
-                                                            <button 
+                                                            <button
                                                                 className="employee-vehicle-btn-cancel"
                                                                 onClick={() => handleCancelRequest(req.id || req._id)} disabled={cancelLoadingId === (req.id || req._id)}>
                                                                 {cancelLoadingId === (req.id || req._id) ? 'Cancelling...' : 'Cancel'}

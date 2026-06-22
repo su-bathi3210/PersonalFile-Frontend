@@ -81,7 +81,7 @@ const AdminDriversVehicles = () => {
                 setVehiclesList(vehiclesRes.data);
             }
         } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error("❌ Error fetching data:", error);
         } finally {
             setLoadingData(false);
         }
@@ -116,14 +116,14 @@ const AdminDriversVehicles = () => {
 
             if (response.status === 200 || response.status === 201) {
                 setDriverMessage({
-                    text: editingDriverId ? 'Driver records successfully updated!' : 'Driver successfully entered into the system!',
+                    text: editingDriverId ? '✅ Driver records successfully updated!' : 'Driver successfully entered into the system!',
                     type: 'success'
                 });
                 resetDriverForm();
                 fetchData();
             }
         } catch (error) {
-            const errorMsg = error.response?.data ? error.response.data : 'Driver operation failed.';
+            const errorMsg = error.response?.data ? error.response.data : '❌ Driver operation failed.';
             setDriverMessage({ text: errorMsg, type: 'error' });
         } finally {
             setLoadingDriver(false);
@@ -147,14 +147,14 @@ const AdminDriversVehicles = () => {
 
             if (response.status === 200 || response.status === 201) {
                 setVehicleMessage({
-                    text: editingVehicleId ? 'Vehicle records successfully updated!' : 'Vehicle successfully entered into the system!',
+                    text: editingVehicleId ? '✅ Vehicle records successfully updated!' : 'Vehicle successfully entered into the system!',
                     type: 'success'
                 });
                 resetVehicleForm();
                 fetchData();
             }
         } catch (error) {
-            const errorMsg = error.response?.data ? error.response.data : 'Vehicle operation failed.';
+            const errorMsg = error.response?.data ? error.response.data : '❌ Vehicle operation failed.';
             setVehicleMessage({ text: errorMsg, type: 'error' });
         } finally {
             setLoadingVehicle(false);
@@ -162,32 +162,32 @@ const AdminDriversVehicles = () => {
     };
 
     const handleDriverDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this driver? This is a non-reversible action.")) return;
+        if (!window.confirm("⚠️ Are you sure you want to delete this driver? This is a non-reversible action.")) return;
 
         const token = localStorage.getItem('token');
         try {
             const response = await API.delete(`/drivers/delete/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert(response.data || "Driver deleted successfully.");
+            alert(response.data || "✅ Driver deleted successfully.");
             fetchData();
         } catch (error) {
-            alert(error.response?.data || "Driver deletion failed.");
+            alert(error.response?.data || "✅ Driver deletion failed.");
         }
     };
 
     const handleVehicleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this vehicle? This is a non-reversible action.")) return;
+        if (!window.confirm("⚠️ Are you sure you want to delete this vehicle? This is a non-reversible action.")) return;
 
         const token = localStorage.getItem('token');
         try {
             const response = await API.delete(`/vehicles/delete/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            alert(response.data || "Vehicle deleted successfully.");
+            alert(response.data || "✅ Vehicle deleted successfully.");
             fetchData();
         } catch (error) {
-            alert(error.response?.data || "Vehicle deletion failed.");
+            alert(error.response?.data || "✅ Vehicle deletion failed.");
         }
     };
 

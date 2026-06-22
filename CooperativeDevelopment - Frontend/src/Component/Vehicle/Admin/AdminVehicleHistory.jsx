@@ -57,8 +57,8 @@ const AdminVehicleHistory = () => {
 
                 setLoading(false);
             } catch (err) {
-                console.error("Error fetching requests:", err);
-                setError("Unable to obtain vehicle application details.");
+                console.error("❌ Error fetching requests:", err);
+                setError("❌ Unable to obtain vehicle application details.");
                 setLoading(false);
             }
         };
@@ -108,7 +108,7 @@ const AdminVehicleHistory = () => {
             case 'COMPLETED': return 'status-completed';
             case 'TRIP_PROCESS_CONFIRMED': return 'status-completed';
             case 'TRIP_STARTED': return 'status-ongoing';
-            case 'REJECTED': 
+            case 'REJECTED':
             case 'REJECTED_BY_VEHICLE_ADMIN':
             case 'EMPLOYEE_CANCEL':
             case 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER':

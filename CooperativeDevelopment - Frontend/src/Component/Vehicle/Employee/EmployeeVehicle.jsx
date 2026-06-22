@@ -1,7 +1,7 @@
-import React, {
-    useState,
+import {
+    useCallback,
     useEffect,
-    useCallback
+    useState
 } from 'react';
 
 import API from '../../API/Axios';
@@ -31,6 +31,7 @@ const EmployeeVehicle = () => {
     const [loading, setLoading] = useState(false);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [cancelLoadingId, setCancelLoadingId] = useState(null); 
 
     const fetchEmployeeRequests = useCallback(async () => {
         if (!currentEmployeeEmail) return;
@@ -45,6 +46,7 @@ const EmployeeVehicle = () => {
                 setMessage({ type: 'danger', text: 'Session expired or Unauthorized. Please login again.' });
             }
         } finally {
+            document.body.style.cursor = 'default';
             setHistoryLoading(false);
         }
     }, [currentEmployeeEmail]);
@@ -114,6 +116,29 @@ const EmployeeVehicle = () => {
         }
     };
 
+    const handleCancelRequest = async (requestId) => {
+        if (!window.confirm("Are you sure you want to cancel this vehicle request?")) {
+            return;
+        }
+
+        setCancelLoadingId(requestId);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const response = await API.put(`/vehicle-requests/${requestId}/cancel`);
+            if (response.status === 200) {
+                setMessage({ type: 'success', text: ' ✅ Vehicle request cancelled successfully!' });
+                fetchEmployeeRequests(); 
+            }
+        } catch (error) {
+            console.error('❌ Error cancelling vehicle request:', error);
+            const errorMsg = error.response?.data || 'Failed to cancel the request.';
+            setMessage({ type: 'danger', text: errorMsg });
+        } finally {
+            setCancelLoadingId(null);
+        }
+    };
+
     const getStatusClass = (status) => {
         switch (status) {
             case 'APPROVED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-approved';
@@ -121,6 +146,7 @@ const EmployeeVehicle = () => {
             
             case 'REJECTED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-rejected';
             case 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER': return 'employee-vehicle-status-rejected';
+            case 'EMPLOYEE_CANCELLED': return 'employee-vehicle-status-cancelled'; 
 
             default: return 'employee-vehicle-status-pending';
         }
@@ -128,8 +154,7 @@ const EmployeeVehicle = () => {
 
     return (
         <div className="employee-vehicle-container fade-in">
-            <div className="employee-vehicle-layout-grid">
-
+            <div className="employee-vehicle-layout-vertical">
 
                 <div className="employee-vehicle-form-section">
                     <div className="employee-vehicle-header">
@@ -150,7 +175,7 @@ const EmployeeVehicle = () => {
                             <form className="employee-vehicle-form" onSubmit={handleSubmit}>
 
                                 <h5 className="employee-vehicle-section-title">1. Personnel Details</h5>
-                                <div className="employee-vehicle-form-row">
+                                <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Requester Name</label>
                                         <input type="text" className="employee-vehicle-input" name="requesterName" value={formData.requesterName} onChange={handleChange} required placeholder="Enter your name" />
@@ -159,9 +184,6 @@ const EmployeeVehicle = () => {
                                         <label className="employee-vehicle-label">Requester Position</label>
                                         <input type="text" className="employee-vehicle-input" name="requesterPosition" value={formData.requesterPosition} onChange={handleChange} required placeholder="e.g., Management Assistant" />
                                     </div>
-                                </div>
-
-                                <div className="employee-vehicle-form-row">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Traveler Name</label>
                                         <input type="text" className="employee-vehicle-input" name="travelerName" value={formData.travelerName} onChange={handleChange} required placeholder="Who is traveling?" />
@@ -172,7 +194,7 @@ const EmployeeVehicle = () => {
                                     </div>
                                 </div>
 
-                                <div className="employee-vehicle-form-row">
+                                <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Department / Division</label>
                                         <input type="text" className="employee-vehicle-input" name="department" value={formData.department} onChange={handleChange} required placeholder="e.g., Cooperative Audit" />
@@ -181,15 +203,17 @@ const EmployeeVehicle = () => {
                                         <label className="employee-vehicle-label">Phone Number</label>
                                         <input type="tel" className="employee-vehicle-input" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required placeholder="e.g., 0771234567" />
                                     </div>
+                                    <div className="employee-vehicle-form-group-empty"></div>
+                                    <div className="employee-vehicle-form-group-empty"></div>
                                 </div>
 
-                                <h5 className="employee-vehicle-section-title" style={{ marginTop: '40px' }}>2. Journey & Duty Details</h5>
-                                <div className="employee-vehicle-form-group-full">
-                                    <label className="employee-vehicle-label">Nature of Duty</label>
-                                    <input type="text" className="employee-vehicle-input" name="dutyNature" value={formData.dutyNature} onChange={handleChange} required placeholder="e.g., Official Audit Inspection" />
-                                </div>
-
-                                <div className="employee-vehicle-form-grid-three">
+                                <h5 className="employee-vehicle-section-title" style={{ marginTop: '30px' }}>2. Journey & Duty Details</h5>
+                                
+                                <div className="employee-vehicle-form-row-four">
+                                    <div className="employee-vehicle-form-group">
+                                        <label className="employee-vehicle-label">Nature of Duty</label>
+                                        <input type="text" className="employee-vehicle-input" name="dutyNature" value={formData.dutyNature} onChange={handleChange} required placeholder="e.g., Official Audit Inspection" />
+                                    </div>
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">From Location</label>
                                         <input type="text" className="employee-vehicle-input" name="fromLocation" value={formData.fromLocation} onChange={handleChange} required placeholder="Starting point" />
@@ -204,16 +228,15 @@ const EmployeeVehicle = () => {
                                     </div>
                                 </div>
 
-                                <div className="employee-vehicle-form-row">
+                                <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Travel Date & Time</label>
                                         <input type="datetime-local" className="employee-vehicle-input" name="travelDateTime" value={formData.travelDateTime} onChange={handleChange} required />
                                     </div>
-                                </div>
-
-                                <div className="employee-vehicle-form-group-full">
-                                    <label className="employee-vehicle-label">Specific Reason for Request</label>
-                                    <textarea className="employee-vehicle-textarea" name="reason" rows="3" value={formData.reason} onChange={handleChange} required placeholder="Provide detailed justification..."></textarea>
+                                    <div className="employee-vehicle-form-group-three-span">
+                                        <label className="employee-vehicle-label">Specific Reason for Request</label>
+                                        <input type="text" className="employee-vehicle-input" name="reason" value={formData.reason} onChange={handleChange} required placeholder="Provide detailed justification..." />
+                                    </div>
                                 </div>
 
                                 <div className="employee-vehicle-action-area">
@@ -232,6 +255,7 @@ const EmployeeVehicle = () => {
                 </div>
 
                 <div className="employee-vehicle-history-section">
+                    <h5 className="employee-vehicle-section-title" style={{ marginBottom: '15px' }}>Vehicle Request History</h5>
                     <div className="employee-vehicle-card-history">
                         <div className="employee-vehicle-body-history">
                             {historyLoading ? (
@@ -248,15 +272,22 @@ const EmployeeVehicle = () => {
                                     <table className="employee-vehicle-table">
                                         <thead className="employee-vehicle-thead">
                                             <tr>
+                                                <th className="employee-vehicle-th">Requester Name</th>
+                                                <th className="employee-vehicle-th">Traveler Name</th>
+                                                <th className="employee-vehicle-th">Phone Number</th>
                                                 <th className="employee-vehicle-th">Destination</th>
                                                 <th className="employee-vehicle-th">Date & Time</th>
                                                 <th className="employee-vehicle-th">Distance</th>
                                                 <th className="employee-vehicle-th">Status</th>
+                                                <th className="employee-vehicle-th" style={{ textAlign: 'center' }}>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="employee-vehicle-tbody">
                                             {requestsList.map((req) => (
                                                 <tr key={req.id || req._id} className="employee-vehicle-tr">
+                                                    <td className="employee-vehicle-td">{req.requesterName}</td>
+                                                    <td className="employee-vehicle-td">{req.travelerName}</td>
+                                                    <td className="employee-vehicle-td">{req.phoneNumber}</td>
                                                     <td className="employee-vehicle-td">
                                                         <div className="employee-vehicle-table-main-text">{req.toLocation} to {req.fromLocation}</div>
                                                     </td>
@@ -270,6 +301,17 @@ const EmployeeVehicle = () => {
                                                         <span className={`employee-vehicle-badge ${getStatusClass(req.status)}`}>
                                                             {req.status}
                                                         </span>
+                                                    </td>
+                                                    <td className="employee-vehicle-td">
+                                                        {['PENDING', 'APPROVED_BY_VEHICLE_ADMIN', 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER'].includes(req.status) ? (
+                                                            <button 
+                                                                className="employee-vehicle-btn-cancel"
+                                                                onClick={() => handleCancelRequest(req.id || req._id)} disabled={cancelLoadingId === (req.id || req._id)}>
+                                                                {cancelLoadingId === (req.id || req._id) ? 'Cancelling...' : 'Cancel'}
+                                                            </button>
+                                                        ) : (
+                                                            <span className="employee-vehicle-btn-not-allow">Not Allowed</span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}

@@ -1,0 +1,374 @@
+.driver-vehicle-update-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.driver-vehicle-update-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #ff477e;
+    margin-bottom: 8px;
+}
+
+.driver-vehicle-update-subtitle {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.driver-vehicle-update-alert-error {
+    background-color: #f9e8e9;
+    text-transform: uppercase;
+    color: #c1121f;
+    padding: 15px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 10px;
+}
+
+.driver-vehicle-update-alert-success {
+    background-color: #f4f9e8;
+    color: #2a9d8f;
+    text-transform: uppercase;
+    padding: 15px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 10px;
+}
+
+.driver-vehicle-update-loading {
+    text-align: left;
+    font-size: 12px;
+    color: #c1121f;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+
+.driver-vehicle-update-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.driver-vehicle-update-card {
+    background-color: #f8f9fa;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.driver-vehicle-update-card:hover {
+    background-color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.driver-vehicle-update-card-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.driver-vehicle-update-card-badge[data-status="AVAILABLE"] {
+    color: #2a9d8f;
+}
+
+.driver-vehicle-update-card-badge[data-status="BOOKED"] {
+    color: #c1121f;
+}
+
+.driver-vehicle-update-car-number {
+    font-size: 17px;
+    color: #023e8a;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+
+.driver-vehicle-update-car-model {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.driver-vehicle-update-km-display-box {
+    background-color: #e9ecef;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.driver-vehicle-update-km-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.driver-vehicle-update-km-label {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1d3557;
+}
+
+.driver-vehicle-update-km-value {
+    font-size: 15px;
+    text-transform: uppercase;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.driver-vehicle-update-km-value.text-warning {
+    color: #457b9d;
+}
+
+.driver-vehicle-service-remaining {
+    font-size: 11px;
+    color: #000;
+    text-transform: uppercase;
+    margin-top: 8px;
+    text-align: right;
+}
+
+.driver-vehicle-update-summary-box {
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.driver-vehicle-update-summary-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #b5838d;
+    margin-bottom: 8px;
+}
+
+.driver-vehicle-update-no-summary {
+    font-size: 10px;
+    color: #868e96;
+    text-transform: uppercase;
+    font-style: italic;
+    text-align: center;
+}
+
+.driver-vehicle-update-summary-list {
+    list-style: none;
+    height: 180px;
+    overflow-y: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.driver-vehicle-update-summary-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 0;
+}
+
+.driver-vehicle-update-summary-item:last-child {
+    border-bottom: none;
+}
+
+.driver-vehicle-update-summary-count {
+    background-color: #adb5bd;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    margin-top: 2px;
+}
+
+.driver-vehicle-update-summary-text {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #000;
+    line-height: 1.4;
+    width: 100%;
+}
+
+.driver-vehicle-update-summary-text small {
+    color: #555;
+    display: block;
+    margin-top: 5px;
+}
+
+.service-desc-text {
+    font-size: 12px;
+    color: #000;
+    background-color: #e9ecef;
+    padding: 7px 8px;
+    margin-top: 5px;
+    border-left: 4px solid #ced4da;
+}
+
+.driver-vehicle-update-action-box {
+    background-color: #e9ecef;
+    padding: 15px;
+}
+
+.driver-vehicle-update-form-group {
+    margin-bottom: 12px;
+}
+
+.driver-vehicle-update-form-group:last-of-type {
+    margin-bottom: 15px;
+}
+
+.driver-input-label {
+    display: block;
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 6px;
+}
+
+.driver-vehicle-update-input {
+    width: 100%;
+    padding: 9px;
+    text-transform: uppercase;
+    font-size: 10px;
+    outline: none;
+    border: 1px solid #fff;
+    box-sizing: border-box;
+}
+
+.driver-textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.driver-vehicle-update-btn-trigger {
+    width: 100%;
+    background-color: #335c67;
+    color: #ffffff;
+    text-transform: uppercase;
+    border: none;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: auto;
+}
+
+.driver-vehicle-update-btn-trigger:hover {
+    background-color: #000;
+}
+
+.driver-vehicle-update-action-row {
+    display: flex;
+    gap: 5px;
+}
+
+.driver-vehicle-update-btn-save {
+    flex: 2;
+    background-color: #7f5539;
+    text-transform: uppercase;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.driver-vehicle-update-btn-save:hover {
+    background-color: #000;
+    cursor: not-allowed;
+}
+
+.driver-vehicle-update-btn-cancel {
+    flex: 1;
+    background-color: #000;
+    text-transform: uppercase;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+    .driver-vehicle-update-container {
+        padding: 25px 30px;
+    }
+
+    .driver-vehicle-update-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .driver-vehicle-update-container {
+        padding: 20px;
+        height: auto;
+    }
+
+    .driver-vehicle-update-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+    }
+
+    .driver-vehicle-update-title {
+        font-size: 14px;
+    }
+
+    .driver-vehicle-update-subtitle {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .driver-vehicle-update-container {
+        padding: 15px;
+    }
+
+    .driver-vehicle-update-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .driver-vehicle-update-card {
+        padding: 15px;
+    }
+
+    .driver-vehicle-update-car-number {
+        font-size: 15px;
+        max-width: 65%;
+    }
+
+    .driver-vehicle-update-action-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .driver-vehicle-update-btn-save,
+    .driver-vehicle-update-btn-cancel {
+        width: 100%;
+        flex: none;
+        padding: 10px;
+    }
+}

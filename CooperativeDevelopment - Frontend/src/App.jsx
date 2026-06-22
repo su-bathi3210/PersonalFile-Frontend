@@ -17,7 +17,6 @@ import AdminVehicleDashboard from './Component/Dashboard/AdminVehicleDashboard';
 import ApprovalVehicleDashboard from './Component/Dashboard/ApprovalVehicleDashboard';
 import AdminPFDashboard from './Component/Dashboard/AdminPFDashboard';
 import ApprovalPFDashboard from './Component/Dashboard/ApprovalPFDashboard';
-import DriverDashboard from './Component/Dashboard/DriverDashboard';
 
 // NavBars
 import EmployeeNavBar from './Component/NavBars/EmployeeNavBar';
@@ -42,6 +41,13 @@ import AdminDriversVehicles from './Component/Vehicle/Admin/AdminDriversVehicles
 import AdminVehicleHistory from './Component/Vehicle/Admin/AdminVehicleHistory';
 import ApproveOfficerVehicle from './Component/Vehicle/ApprovalOfficer/ApproveOfficerVehicle';
 import ApproveOfficerVehicleHistory from './Component/Vehicle/ApprovalOfficer/ApproveOfficerVehicleHistory';
+import AdminOngoingVehicleRequest from './Component/Vehicle/Admin/AdminOngoingVehicleRequest';
+
+
+// Driver
+import DriverVehicleRequest from './Component/Driver/DriverVehicleRequest';
+import DriverVehicleUpdate from './Component/Driver/DriverVehicleUpdate';
+
 
 const Unauthorized = () => <div><h2>Access Denied: You do not have permission.</h2></div>;
 
@@ -105,6 +111,7 @@ function App() {
           <Route path="/AdminVehicleRequest" element={<AdminVehicleRequest />} />
           <Route path="/AdminDriversVehicles" element={<AdminDriversVehicles />} />
           <Route path="/AdminVehicleHistory" element={<AdminVehicleHistory />} />
+          <Route path="/AdminOngoingVehicleRequest" element={<AdminOngoingVehicleRequest />} />
         </Route>
 
         <Route element={
@@ -121,7 +128,8 @@ function App() {
           <ProtectedRoute allowedRoles={['ROLE_DRIVER']} Navbar={DriverNavBar}>
             <div className="employee-layout-wrapper"><Outlet /></div> </ProtectedRoute>}>
 
-          <Route path="/DriverDashboard" element={<DriverDashboard />} />
+          <Route path="/DriverVehicleRequest" element={<DriverVehicleRequest />} />
+          <Route path="/DriverVehicleUpdate" element={<DriverVehicleUpdate />} />
         </Route>
 
         <Route element={

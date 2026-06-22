@@ -37,7 +37,8 @@ const DriverNavBar = () => {
     };
 
     const menuItems = [
-        { name: 'Dashboard', path: '/DriverDashboard' },
+        { name: 'Request', path: '/DriverVehicleRequest' },
+        { name: 'Vehicle Update', path: '/DriverVehicleUpdate' },
     ];
 
     return (

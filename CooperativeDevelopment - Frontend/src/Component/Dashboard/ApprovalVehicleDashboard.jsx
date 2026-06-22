@@ -3,139 +3,90 @@ import React, {
     useEffect
 } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import api from '../API/Axios';
 
 import '../CSS/ApprovalVehicleDashboard.css';
 
 const ApprovalVehicleDashboard = () => {
-    const navigate = useNavigate();
-    const [stats, setStats] = useState({
-        totalVehicles: 0,
-        totalDrivers: 0,
-        monthApproved: 0,
-        monthRejected: 0
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [officerEmail, setOfficerEmail] = useState('');
+    const [emailLoading, setEmailLoading] = useState(false);
+    const [emailSuccessMessage, setEmailSuccessMessage] = useState('');
+    const [emailErrorMessage, setEmailErrorMessage] = useState('');
 
-    const fetchDashboardData = async () => {
+    const fetchOfficerEmail = async () => {
         try {
-            setLoading(true);
-            setError(null);
-
-            const requestsResponse = await api.get('/vehicle-requests/admin-approved-list');
-            const vehiclesResponse = await api.get('/vehicles/all');
-            const driversResponse = await api.get('/drivers/all');
-
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth();
-
-            let approvedCount = 0;
-            let rejectedCount = 0;
-
-            if (requestsResponse.data && Array.isArray(requestsResponse.data)) {
-                requestsResponse.data.forEach(req => {
-                    if (req.dateOfTravel) {
-                        const travelDate = new Date(req.dateOfTravel);
-                        if (travelDate.getFullYear() === currentYear && travelDate.getMonth() === currentMonth) {
-                            if (req.status === 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER') {
-                                approvedCount++;
-                            } else if (req.status === 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER') {
-                                rejectedCount++;
-                            }
-                        }
-                    }
-                });
+            const response = await api.get('/vehicle-requests/officer-email');
+            if (response.data) {
+                setOfficerEmail(response.data);
             }
-            setStats({
-                totalVehicles: vehiclesResponse.data?.length || 0,
-                totalDrivers: driversResponse.data?.length || 0,
-                monthApproved: approvedCount,
-                monthRejected: rejectedCount
-            });
-
         } catch (err) {
-            console.error("Error fetching dashboard data:", err);
-            setError("Unable to retrieve dashboard statistics.");
-        } finally {
-            setLoading(false);
+            console.error("Error fetching officer email:", err);
         }
     };
 
     useEffect(() => {
-        fetchDashboardData();
+        fetchOfficerEmail();
     }, []);
 
-    const totalProcessed = stats.monthApproved + stats.monthRejected;
-    const approvalRate = totalProcessed > 0 ? Math.round((stats.monthApproved / totalProcessed) * 100) : 0;
+    const handleEmailSave = async (e) => {
+        e.preventDefault();
+        setEmailLoading(true);
+        setEmailSuccessMessage('');
+        setEmailErrorMessage('');
+
+        try {
+            await api.put(`/vehicle-requests/officer-email?email=${encodeURIComponent(officerEmail)}`);
+            setEmailSuccessMessage('Notification Email updated successfully!');
+            setTimeout(() => setEmailSuccessMessage(''), 3000);
+        } catch (err) {
+            console.error("Error updating officer email:", err);
+            setEmailErrorMessage('Failed to update email. Please try again.');
+        } finally {
+            setEmailLoading(false);
+        }
+    };
 
     return (
         <div className="approval-vehicle-dashboard-container">
             <div className="approval-vehicle-dashboard-header-zone">
                 <h2 className="approval-vehicle-dashboard-title">Vehicle Request Approval Officer Board</h2>
-                <p className="approval-vehicle-dashboard-subtitle">Assistant Commissioner / Approval Officer Division</p>
+                <p className="approval-vehicle-dashboard-subtitle">Welcome to the Assistant Commissioner and Approval Officer
+                    Division control panel. Please ensure to bind your official communication email address below to receive
+                    real-time updates and direct alert logs regarding any incoming vehicle allocation requests instantly.</p>
             </div>
 
-            <div className="approval-vehicle-dashboard-stats-grid">
-                <div className="approval-vehicle-dashboard-stat-card approval-vehicle-dashboard-stat-vehicles">
-                    <div className="approval-vehicle-dashboard-stat-info">
-                        <span className="approval-vehicle-dashboard-stat-label">Total number of vehicles</span>
-                        <h3 className="approval-vehicle-dashboard-stat-value">{stats.totalVehicles}</h3>
+            <div className="approval-vehicle-dashboard-email-config-card">
+                <div className="email-config-header">
+                    <span className="email-config-icon">✉️</span>
+                    <div className="email-config-title-wrapper">
+                        <h3 className="email-config-main-title">Notification Email Settings</h3>
+                        <p className="email-config-sub-title">Configure your email address to receive real-time vehicle request alert logs</p>
                     </div>
                 </div>
-                <div className="approval-vehicle-dashboard-stat-card approval-vehicle-dashboard-stat-drivers">
-                    <div className="approval-vehicle-dashboard-stat-info">
-                        <span className="approval-vehicle-dashboard-stat-label">Total number of drivers</span>
-                        <h3 className="approval-vehicle-dashboard-stat-value">{stats.totalDrivers}</h3>
+
+                <form onSubmit={handleEmailSave} className="email-config-form">
+                    <div className="email-input-wrapper">
+                        <input
+                            type="email"
+                            className="email-config-input"
+                            placeholder="enter.your.email@coop.gov.lk"
+                            value={officerEmail}
+                            onChange={(e) => setOfficerEmail(e.target.value)}
+                            required
+                        />
+                        <button
+                            type="submit"
+                            className="email-config-submit-btn"
+                            disabled={emailLoading}
+                        >
+                            {emailLoading ? 'Saving...' : 'Save Configuration'}
+                        </button>
                     </div>
-                </div>
-                <div className="approval-vehicle-dashboard-stat-card approval-vehicle-dashboard-stat-approved">
-                    <div className="approval-vehicle-dashboard-stat-info">
-                        <span className="approval-vehicle-dashboard-stat-label">Approved this month</span>
-                        <h3 className="approval-vehicle-dashboard-stat-value">{stats.monthApproved}</h3>
-                    </div>
-                </div>
-                <div className="approval-vehicle-dashboard-stat-card approval-vehicle-dashboard-stat-rejected">
-                    <div className="approval-vehicle-dashboard-stat-info">
-                        <span className="approval-vehicle-dashboard-stat-label">Rejected this month</span>
-                        <h3 className="approval-vehicle-dashboard-stat-value">{stats.monthRejected}</h3>
-                    </div>
-                </div>
+                </form>
+
+                {emailSuccessMessage && <div className="email-config-alert-success">✓ {emailSuccessMessage}</div>}
+                {emailErrorMessage && <div className="email-config-alert-error">⚠️ {emailErrorMessage}</div>}
             </div>
-
-            {loading ? (
-                <div className="approval-vehicle-dashboard-loading">Loading data...</div>
-            ) : error ? (
-                <div className="approval-vehicle-dashboard-error">{error}</div>
-            ) : (
-                <div className="approval-vehicle-dashboard-navigation-card">
-                    <h3 className="approval-vehicle-dashboard-view-title">Quick System Navigation</h3>
-                    <p className="approval-vehicle-dashboard-navigation-desc">
-                        Select an option below to manage ongoing vehicle requests or view past approval history logs.
-                    </p>
-                    <div className="approval-vehicle-dashboard-nav-buttons-container">
-
-                        <button className="approval-vehicle-dashboard-nav-btn btn-requests" onClick={() => navigate('/ApproveOfficerVehicle')}>
-                            <span className="nav-btn-icon">📋</span>
-                            <div className="nav-btn-text-wrapper">
-                                <span className="nav-btn-main-text">Pending Vehicle Requests</span>
-                                <span className="nav-btn-sub-text">View & approve recommended requests</span>
-                            </div>
-                        </button>
-
-                        <button className="approval-vehicle-dashboard-nav-btn btn-history" onClick={() => navigate('/ApproveOfficerVehicle')}>
-                            <span className="nav-btn-icon">⏱️</span>
-                            <div className="nav-btn-text-wrapper">
-                                <span className="nav-btn-main-text">Approval Action History</span>
-                                <span className="nav-btn-sub-text">Review past approved/rejected log sheets</span>
-                            </div>
-                        </button>
-
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

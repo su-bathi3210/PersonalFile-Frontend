@@ -30,7 +30,7 @@ const AdminVehicleNavBar = () => {
 
     const getInitials = (name) => {
         if (!name || name === "User") return "??";
-        const parts = name.trim().split(/\s+/);
+        const parts = name.trim().split(/\s+/)
 
         if (parts.length >= 2) {
             return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
@@ -40,7 +40,7 @@ const AdminVehicleNavBar = () => {
     };
 
     const menuItems = [
-        { name: 'Dashboard', path: '/AdminVehicleDashboard' },
+        { name: 'Dashboard', path: '/AdminVehicleDashboard' , relatedPaths: ["/AdminOngoingVehicleRequest"] },
         { name: 'All', path: '/AdminVehicleHistory' },
         { name: 'Vehicle Request', path: '/AdminVehicleRequest' },
         { name: 'Vehicles & Drivers', path: '/AdminDriversVehicles' },

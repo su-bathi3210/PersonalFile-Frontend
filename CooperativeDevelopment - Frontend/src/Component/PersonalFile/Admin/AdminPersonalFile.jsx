@@ -71,8 +71,8 @@ const AdminPersonalFile = () => {
 
     const initialFormState = {
         name: "", email: "", password: "", username: "",
-        phoneNumber: "", designation: "", nic: "", address: "", dutyPlace: "",
-        grade: "", salaryScale: "", department: "", gender: "",
+        phoneNumber: "", emergencyContact: "", designation: "", nic: "", address: "", dutyPlace: "",
+        grade: "", salaryScale: "",  salary: "", department: "", gender: "",
         dateOfBirth: "", dateOfFirstAppointment: "", appointmentDateToPresentStatus: "",
         incrementDate: "", dateOfReceiptGradeI: "", dateOfReceiptGradeII: "",
         dateOfReceiptGradeIII: "", dateOfCompulsoryRetirement: "", dateOfReceiptOfRelevantGrade: "",
@@ -283,9 +283,9 @@ const AdminPersonalFile = () => {
         });
 
         const headerRow1 = [
-            "No", "Name Of The Employee", "Email", "National ID", "Phone Number",
+            "No", "Name Of The Employee", "Email", "National ID", "Phone Number", "Emergency Contact",
             "Address", "Date Of Birth", "Gender", "Service Number", "WNOP Number",
-            "Designation", "Department", "Duty Place", "Salary Scale",
+            "Designation", "Department", "Duty Place", "Salary Scale", "Salary",
             "Date Of First Appointment", "Date Of Language Proficiency",
             "Appointment Date To Present Status", "Increment Date",
             "Date Of Compulsory Retirement", "Present Status Date", "Grade",
@@ -306,10 +306,10 @@ const AdminPersonalFile = () => {
 
         const excelRows = dataToExport.map((emp, index) => {
             const standardData = [
-                index + 1, emp.name || emp.username || "-", emp.email || "-", emp.nic || "-", emp.phoneNumber || "-",
+                index + 1, emp.name || emp.username || "-", emp.email || "-", emp.nic || "-", emp.phoneNumber || "-", emp.emergencyContact || "-",
                 emp.address || "-", emp.dateOfBirth ? formatDate(emp.dateOfBirth) : "-", emp.gender || "-",
                 emp.serviceNumber || "-", emp.wnopNumber || "-", emp.designation || "-", emp.department || "-",
-                emp.dutyPlace || "-", emp.salaryScale || "-", emp.dateOfFirstAppointment ? formatDate(emp.dateOfFirstAppointment) : "-",
+                emp.dutyPlace || "-", emp.salaryScale || "-", emp.salary || "-", emp.dateOfFirstAppointment ? formatDate(emp.dateOfFirstAppointment) : "-",
                 emp.dateOfLanguageProficiency || "-", emp.appointmentDateToPresentStatus ? formatDate(emp.appointmentDateToPresentStatus) : "-",
                 emp.incrementDate ? formatDayMonth(emp.incrementDate) : "-", emp.dateOfCompulsoryRetirement ? formatDate(emp.dateOfCompulsoryRetirement) : "-",
                 emp.presentStatusDate ? formatDate(emp.presentStatusDate) : "-", emp.grade || "-",
@@ -422,6 +422,7 @@ const AdminPersonalFile = () => {
             email: file.email || file["Email"] || "",
             nic: file.nic || file["National ID"] || "",
             phoneNumber: file.phoneNumber || file["Phone Number"] || "",
+            emergencyContact: file.emergencyContact || file["Emergency Contact"] || "",
             address: file.address || file["Address"] || "",
             gender: file.gender || file["Gender"] || "",
             serviceNumber: file.serviceNumber || file["Service Number"] || "",
@@ -430,6 +431,7 @@ const AdminPersonalFile = () => {
             department: file.department || file["Department"] || "",
             dutyPlace: file.dutyPlace || file["Duty Place"] || "",
             salaryScale: file.salaryScale || file["Salary Scale"] || "",
+            salary: file.salary || file["Salary"] || "",
             grade: file.grade || file["Grade"] || "",
             dateOfLanguageProficiency: file.dateOfLanguageProficiency || file["Date Of Language Proficiency"] || "",
 
@@ -976,6 +978,7 @@ const AdminPersonalFile = () => {
                                         <th rowSpan="2">Email</th>
                                         <th rowSpan="2">National ID</th>
                                         <th rowSpan="2">Phone Number</th>
+                                        <th rowSpan="2">Emergency Contact</th>
                                         <th rowSpan="2">Address</th>
                                         <th rowSpan="2">Date Of Birth</th>
                                         <th rowSpan="2">Gender</th>
@@ -985,6 +988,7 @@ const AdminPersonalFile = () => {
                                         <th rowSpan="2">Department</th>
                                         <th rowSpan="2">Duty Place</th>
                                         <th rowSpan="2">Salary Scale</th>
+                                        <th rowSpan="2">Salary</th>
                                         <th rowSpan="2">Date of First Appointment</th>
                                         <th rowSpan="2">Date Of Language Proficiency</th>
                                         <th rowSpan="2">Appointment Date To Present Status</th>
@@ -1020,6 +1024,7 @@ const AdminPersonalFile = () => {
                                                 <td style={isDuplicateNIC ? { fontWeight: 'bold', color: '#0056b3' } : {}}>{row["National ID"]}</td>
 
                                                 <td>{row["Phone Number"]}</td>
+                                                <td>{row["Emergency Contact"]}</td>
                                                 <td>{row["Address"]}</td>
                                                 <td>{formatDate(row["Date Of Birth"])}</td>
                                                 <td>{row["Gender"]}</td>
@@ -1029,6 +1034,7 @@ const AdminPersonalFile = () => {
                                                 <td>{row["Department"]}</td>
                                                 <td>{row["Duty Place"]}</td>
                                                 <td>{row["Salary Scale"]}</td>
+                                                <td>{row["Salary"]}</td>
                                                 <td>{row["Date Of First Appointment"] instanceof Date ? row["Date Of First Appointment"].toLocaleDateString() : row["Date Of First Appointment"]}</td>
                                                 <td>{row["Date Of Language Proficiency"] instanceof Date ? row["Date Of Language Proficiency"].toLocaleDateString() : row["Date Of Language Proficiency"]}</td>
                                                 <td>{row["Appointment Date To Present Status"] instanceof Date ? row["Appointment Date To Present Status"].toLocaleDateString() : row["Appointment Date To Present Status"]}</td>
@@ -1264,6 +1270,11 @@ const AdminPersonalFile = () => {
                             </div>
 
                             <div className="admin-personal-form-row">
+                                <label className="admin-personal-form-label">Emergency Contact</label>
+                                <input type="text" name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} className="admin-personal-form-input-field" required={false} />
+                            </div>
+
+                            <div className="admin-personal-form-row">
                                 <label className="admin-personal-form-label">Designation</label>
                                 <input type="text" name="designation" value={formData.designation} onChange={handleInputChange} className="admin-personal-form-input-field" />
                             </div>
@@ -1319,6 +1330,11 @@ const AdminPersonalFile = () => {
                             <div className="admin-personal-form-row">
                                 <label className="admin-personal-form-label">Salary Scale</label>
                                 <input type="text" name="salaryScale" value={formData.salaryScale} onChange={handleInputChange} className="admin-personal-form-input-field" required={false} />
+                            </div>
+
+                            <div className="admin-personal-form-row">
+                                <label className="admin-personal-form-label">Salary</label>
+                                <input type="text" name="salary" value={formData.salary} onChange={handleInputChange} className="admin-personal-form-input-field" required={false} />
                             </div>
 
                             <div className="admin-personal-form-row">

@@ -129,7 +129,7 @@ const LoginRegister = () => {
 
                 setMessage('Login Successful!');
                 setTimeout(() => {
-                    if (roles.includes('ROLE_DRIVER')) navigate('/DriverDashboard');
+                    if (roles.includes('ROLE_DRIVER')) navigate('/DriverVehicleRequest');
                     else if (roles.includes('ROLE_EMPLOYEE')) navigate('/EmployeeDashboard');
                     else if (roles.includes('ROLE_VEHICLE_ADMIN')) navigate('/AdminVehicleDashboard');
                     else if (roles.includes('ROLE_VEHICLE_APPROVAL')) navigate('/ApprovalVehicleDashboard');

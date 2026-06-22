@@ -1,0 +1,394 @@
+.admin-vehicle-dashboard-container {
+    padding: 30px 40px;
+    background-color: #fff;
+    height: 85vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.dashboard-header-banner h1 {
+    text-transform: uppercase;
+    font-size: 20px;
+    color: #ff477e;
+    margin-bottom: 8px;
+}
+
+.dashboard-header-banner p {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.admin-vehicle-dashboard-grid-zone {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.admin-vehicle-dashboard-count-card {
+    background-color: #ffffff;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.admin-vehicle-dashboard-count-card:hover {
+    transform: translateY(-4px);
+}
+
+.admin-vehicle-dashboard-count-icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.admin-vehicle-dashboard-count-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.admin-vehicle-dashboard-count-label {
+    font-size: 13px;
+    color: #000;
+}
+
+.admin-vehicle-dashboard-count-value {
+    margin: 5px 0 0 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.admin-vehicle-dashboard-count-arrow {
+    font-size: 15px;
+    transform: translateX(-10px);
+    transition: all 0.25s ease;
+    color: #000;
+}
+
+.admin-vehicle-dashboard-count-card:hover .admin-vehicle-dashboard-count-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.pending-card {
+    border-left: 4px solid #e76f51;
+}
+
+.pending-value {
+    color: #e76f51;
+}
+
+.approved-card {
+    border-left: 4px solid #2a9d8f;
+}
+
+.approved-value {
+    color: #2a9d8f;
+}
+
+.ongoing-card {
+    border-left: 4px solid #219ebc;
+}
+
+.ongoing-value {
+    color: #219ebc;
+}
+
+.vehicle-total-card {
+    border-left: 4px solid #8338ec;
+}
+
+.vehicle-total-value {
+    color: #8338ec;
+}
+
+.driver-total-card {
+    border-left: 4px solid #ff4d6d;
+}
+
+.driver-total-value {
+    color: #ff4d6d;
+}
+
+.dashboard-content-layout-flex {
+    display: flex;
+    margin-top: 40px;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.logs-card {
+    flex: 2;
+    min-width: 65%;
+}
+
+.settings-card {
+    flex: 1;
+    min-width: 30%;
+}
+
+.admin-vehicle-dashboard-card {
+    background-color: #f0efeb;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.view-all-logs-btn {
+    margin-left: 10px;
+    color: #9a031e;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.view-all-logs-btn:hover {
+    color: #000;
+}
+
+.logs-card h2 {
+    color: #5f0f40;
+}
+
+.settings-card h2 {
+    color: #9a031e;
+}
+
+.admin-vehicle-dashboard-title {
+    font-size: 17px;
+    color: #000;
+    margin: 0 0 7px 0;
+    font-weight: 600;
+}
+
+.admin-vehicle-dashboard-description {
+    font-size: 14px;
+    color: #000;
+    margin: 0 0 15px 0;
+    line-height: 1.7;
+}
+
+.dashboard-table-wrapper {
+    height: 24vh;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 11px;
+}
+
+.dashboard-logs-table th {
+    background-color: #f1f5f9;
+    color: #000;
+    text-transform: uppercase;
+    padding: 14px 16px;
+    font-weight: 600;
+}
+
+.dashboard-logs-table td {
+    padding: 14px 16px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e2e8f0;
+    color: #000;
+    vertical-align: middle;
+}
+
+.dashboard-logs-table tr:hover td {
+    background-color: #f8fafc;
+}
+
+.date-text-dim {
+    color: #000;
+    font-size: 13px;
+}
+
+.description-cell {
+    display: inline-block;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+}
+
+.no-data {
+    text-align: center;
+    color: #000;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 30px !important;
+}
+
+.dashboard-logs-loading {
+    text-align: center;
+    color: #000;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 30px !important;
+}
+
+.admin-vehicle-dashboard-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-vehicle-dashboard-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-vehicle-dashboard-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #000;
+}
+
+.admin-vehicle-dashboard-input {
+    padding: 12px 14px;
+    border: 1px solid #fff;
+    font-size: 12px;
+    transition: border-color 0.2s ease;
+    outline: none;
+}
+
+.admin-vehicle-dashboard-submit-btn {
+    background-color: #9a031e;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.admin-vehicle-dashboard-submit-btn:hover {
+    background-color: #000;
+}
+
+.admin-vehicle-dashboard-message {
+    padding: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.admin-vehicle-dashboard-message-success {
+    background-color: #d1fae5;
+    color: #2a9d8f;
+}
+
+.admin-vehicle-dashboard-message-error {
+    background-color: #fee2e2;
+    color: #c1121f;
+}
+
+@media (max-width: 1024px) {
+    .admin-vehicle-dashboard-container {
+        padding: 20px 25px;
+        height: auto;
+    }
+
+    .logs-card,
+    .settings-card {
+        flex: 100%;
+        min-width: 100%;
+    }
+
+    .admin-vehicle-dashboard-grid-zone {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-vehicle-dashboard-container {
+        padding: 15px 20px;
+    }
+
+    .dashboard-header-banner h1 {
+        font-size: 18px;
+    }
+
+    .dashboard-header-banner p {
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+    .admin-vehicle-dashboard-grid-zone {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .dashboard-content-layout-flex {
+        margin-top: 25px;
+    }
+
+    .dashboard-table-wrapper {
+        overflow-x: auto;
+        height: auto;
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-vehicle-dashboard-container {
+        padding: 12px 15px;
+    }
+
+    .dashboard-header-banner h1 {
+        font-size: 16px;
+    }
+
+    .dashboard-header-banner p {
+        font-size: 12px;
+    }
+
+    .admin-vehicle-dashboard-grid-zone {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .admin-vehicle-dashboard-count-card {
+        padding: 12px;
+    }
+
+    .admin-vehicle-dashboard-count-value {
+        font-size: 18px;
+    }
+
+    .logs-card-header-flex {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .view-all-logs-btn {
+        margin-left: 0;
+        font-size: 12px;
+    }
+
+    .admin-vehicle-dashboard-card {
+        padding: 15px;
+    }
+}

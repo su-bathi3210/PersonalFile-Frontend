@@ -227,10 +227,6 @@ const EmployeePersonalFile = () => {
         }
     };
 
-    if (loading) return (
-        <div className="personalFile-container"><div className="personalFile-glass-layout"><h2 className="loading">Loading Profile...</h2></div></div>
-    );
-
     const DataItem = ({ label, value, icon: Icon }) => (
         <div className="info-item-box">
             {Icon && <Icon size={16} className="item-icon" />}

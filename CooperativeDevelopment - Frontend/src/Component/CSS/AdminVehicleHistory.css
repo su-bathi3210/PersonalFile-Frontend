@@ -1,7 +1,7 @@
 .admin-vehicle-history-container {
     padding: 30px 40px;
     background-color: #fff;
-    
+
     height: 85vh;
     overflow-y: auto;
     scrollbar-width: none;
@@ -175,19 +175,24 @@
 }
 
 .status-pending {
+    background-color: none !important;
     color: #e76f51;
 }
 
 .status-admin-approved {
-    color: #1e6091;
+    color: #2a9d8f;
 }
 
 .status-officer-approved {
-    color: #1e6091;
+    color: #2a9d8f;
 }
 
 .status-completed {
-    color: #2a9d8f;
+    color: #5e548e;
+}
+
+.status-ongoing {
+    color: #219ebc;
 }
 
 .status-rejected {

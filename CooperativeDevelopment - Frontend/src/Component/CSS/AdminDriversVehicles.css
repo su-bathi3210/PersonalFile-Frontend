@@ -1,4 +1,4 @@
-.admin-vehicledrivers-container {
+.admin-driver-vehicle-wrapper {
     padding: 30px 40px;
     background-color: #fff;
     height: 85vh;
@@ -8,89 +8,183 @@
     -ms-overflow-style: none;
 }
 
-.admin-vehicledrivers-forms-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-}
-
-.admin-vehicledrivers-card {
-    background: #f8f9fa;
-    padding: 20px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+.admin-driver-vehicle-intro-card {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
 }
 
-.admin-vehicledrivers-card-title {
+.admin-driver-vehicle-main-title {
     text-transform: uppercase;
     font-size: 15px;
-    margin-bottom: 1rem;
     color: #ff477e;
+    margin-bottom: 9px;
 }
 
-.admin-vehicledrivers-message {
+.admin-driver-vehicle-sub-title {
+    color: #000;
     text-transform: uppercase;
-    margin-bottom: 15px;
     font-size: 12px;
-    font-weight: 500;
 }
 
-.admin-vehicledrivers-msg-success {
-    color: #2a9d8f;
-}
-
-.admin-vehicledrivers-msg-error {
-    color: #c1121f;
-}
-
-.admin-vehicledrivers-form {
+.admin-driver-vehicle-intro-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
-.admin-vehicledrivers-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
-}
-
-.admin-vehicledrivers-form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-vehicledrivers-label {
-    display: block;
-    font-size: 11px;
+.admin-driver-vehicle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
     text-transform: uppercase;
     font-weight: 600;
-    color: #000;
-    margin-bottom: 8px;
-}
-
-.admin-vehicledrivers-input,
-.admin-vehicledrivers-select,
-.admin-vehicledrivers-textarea {
-    width: 100%;
-    padding: 10px;
-    font-size: 11px;
-    text-transform: uppercase;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
     border: none;
-    background: #e9ecef;
-    box-sizing: border-box;
+}
+
+.admin-driver-vehicle-btn-primary {
+    background-color: #457b9d;
+    color: #ffffff;
+}
+
+.admin-driver-vehicle-btn-primary:hover {
+    background-color: #000;
+}
+
+.admin-driver-vehicle-btn-secondary {
+    background-color: #fff;
+    border: 1px solid #000;
     color: #000;
 }
 
-.admin-vehicledrivers-input:focus,
-.admin-vehicledrivers-select:focus,
-.admin-vehicledrivers-textarea:focus {
-    outline: none;
+.admin-driver-vehicle-btn-secondary:hover {
+    background-color: #000;
+    color: #fff;
 }
 
-.admin-vehicledrivers-select {
+.admin-driver-vehicle-btn-cancel {
+    background-color: #ffffff;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+.admin-driver-vehicle-btn-cancel:hover {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #000;
+}
+
+.admin-driver-vehicle-btn-save-add {
+    background-color: #2a9d8f;
+    color: #ffffff;
+}
+
+.admin-driver-vehicle-btn-save-add:hover {
+    background-color: #000;
+}
+
+.admin-driver-vehicle-btn-save-driver {
+    background-color: #2a9d8f;
+    color: #ffffff;
+}
+
+.admin-driver-vehicle-btn-save-driver:hover {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #000;
+}
+
+.admin-driver-vehicle-btn-save-edit {
+    background-color: #ea580c;
+    color: #ffffff;
+}
+
+.admin-driver-vehicle-btn-save-edit:hover {
+    background-color: #000;
+}
+
+.admin-driver-vehicle-form-card {
+    margin-top: 20px;
+    background-color: #f0efeb;
+    padding: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+}
+
+.admin-driver-vehicle-form-header {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #eae4e9;
+}
+
+.admin-driver-vehicle-form-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #4d194d;
+}
+
+.admin-driver-vehicle-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-driver-vehicle-form-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.admin-driver-vehicle-form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.admin-driver-vehicle-form-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.admin-driver-vehicle-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 5px;
+}
+
+.admin-driver-vehicle-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.admin-driver-vehicle-input,
+.admin-driver-vehicle-select,
+.admin-driver-vehicle-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #fff;
+    background: #fff;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+    font-size: 12px;
+    outline: none;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.admin-driver-vehicle-select {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -101,237 +195,396 @@
     background-size: 9px;
 }
 
-.admin-vehicledrivers-textarea {
-    resize: vertical;
+.admin-driver-vehicle-textarea {
+    padding: 12px 16px;
+    resize: none;
 }
 
-.admin-vehicledrivers-status-static {
-    width: 100%;
-    padding: 10px;
-    font-size: 11px;
-    text-transform: uppercase;
-    border: none;
-    background-color: #e9ecef;
-    color: #000;
-    font-weight: 700;
+.admin-driver-vehicle-status-static-preview {
     display: flex;
     align-items: center;
-    box-sizing: border-box;
+    padding: 12px 16px;
+    border: 1px solid #fff;
+    background: #fff;
+    color: #000;
 }
 
-.admin-vehicledrivers-pulse-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: #000;
-    margin-right: 0.5rem;
-    animation: admin-vehicledrivers-pulse 2s infinite;
-}
-
-@keyframes admin-vehicledrivers-pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.2);
-        opacity: .5;
-    }
-}
-
-.admin-vehicledrivers-form-footer {
+.admin-driver-vehicle-form-actions {
     display: flex;
+    flex-direction: row;
     justify-content: flex-end;
+    gap: 16px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
 }
 
-.admin-vehicledrivers-helper-text {
+.admin-driver-vehicle-message-box {
+    padding: 11px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
     font-size: 10px;
-    color: #c1121f;
-    text-align: center;
+    font-weight: bold;
     text-transform: uppercase;
-    margin-top: 10px;
-    font-weight: 600;
-    margin-left: 10px;
 }
 
-.admin-vehicledrivers-link {
-    color: #0077b6;
-    text-decoration: underline;
-    cursor: pointer;
-    font-weight: 600;
-    transition: color 0.2s ease;
-}
-
-.admin-vehicledrivers-link:hover {
-    color: #000;
-}
-
-.admin-vehicledrivers-btn {
-    width: auto;
-    padding: 10px;
-    color: #ffffff;
-    font-size: 12px;
-    text-transform: uppercase;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.admin-vehicledrivers-btn-driver {
-    background-color: #6d597a;
-}
-
-.admin-vehicledrivers-btn-driver:hover:not(.disabled) {
-    background-color: #000;
-}
-
-.admin-vehicledrivers-btn-vehicle {
-    background-color: #355070;
-}
-
-.admin-vehicledrivers-btn-vehicle:hover:not(.disabled) {
-    background-color: #000;
-}
-
-.admin-vehicledrivers-tables-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.admin-vehicledrivers-table-card {
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-}
-
-.admin-vehicledrivers-table-header {
-    background-color: #f8edeb;
-    padding: 15px;
-}
-
-.admin-vehicledrivers-table-title {
-    font-weight: 700;
-    color: #000;
-    text-transform: uppercase;
-    font-size: 12px;
-}
-
-.admin-vehicledrivers-table-scroll {
-    overflow-x: auto;
-    max-height: 350px;
-}
-
-.admin-vehicledrivers-table-empty {
-    padding: 15px;
-    text-align: center;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: #000;
-}
-
-.admin-vehicledrivers-table {
-    width: 100%;
-    text-align: left;
-    border-collapse: collapse;
-}
-
-.admin-vehicledrivers-th {
-    padding: 12px;
-    font-size: 11px;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
-    border-right: 1px solid #fff;
-    background-color: #ece4db;
-    color: #000;
-    position: sticky;
-    top: 0;
-    z-index: 10
-}
-
-.admin-vehicledrivers-td {
-    padding: 12px;
-    font-size: 12px;
-    border: 1px solid #e9ecef;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.admin-vehicledrivers-tr:hover {
-    background-color: #f9fafb;
-}
-
-.admin-vehicledrivers-badge {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.admin-vehicledrivers-badge-available {
+.admin-driver-vehicle-msg-success {
+    background-color: #ecfdf5;
     color: #2a9d8f;
 }
 
-.admin-vehicledrivers-badge-booked {
+.admin-driver-vehicle-msg-error {
+    background-color: #fff1f2;
     color: #c1121f;
 }
 
-.admin-vehicledrivers-badge-ontrip {
-    color: #118ab2;
+.admin-driver-vehicle-table-card {
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
-.admin-vehicledrivers-badge-repair {
-    color: #991b1b;
+.admin-driver-vehicle-table-title-area {
+    display: flex;
+    align-items: center;
 }
 
-.admin-vehicledrivers-badge-default {
-    color: #1f2937;
+.admin-driver-vehicle-table-responsive {
+    overflow-x: auto;
+    width: 100%;
 }
 
+.admin-driver-vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
 
-@media (max-width: 1024px) {
-    .admin-vehicledrivers-container {
-        padding: 20px;
+.admin-driver-vehicle-th {
+    background-color: #edede9;
+    color: #000;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 13px;
+}
+
+.admin-driver-vehicle-tr:hover {
+    background-color: #f8fafc;
+}
+
+.admin-driver-vehicle-tr-active {
+    background-color: #f8fafc;
+}
+
+.admin-driver-vehicle-td {
+    padding: 13px;
+    border-bottom: 1px solid #edede9;
+    color: #000;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.admin-driver-vehicle-flex-td {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-driver-vehicle-expand-btn {
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: none;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-driver-vehicle-expand-btn:hover {
+    background-color: #e2e8f0;
+}
+
+.admin-driver-vehicle-expand-btn.active {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+.admin-driver-vehicle-info-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-driver-vehicle-actions-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.admin-driver-vehicle-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.2s;
+}
+
+.admin-driver-vehicle-btn-edit {
+    color: #c2410c;
+}
+
+.admin-driver-vehicle-btn-delete {
+    color: #be123c;
+}
+
+.admin-driver-vehicle-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.admin-driver-vehicle-status-dot-container {
+    position: relative;
+    display: flex;
+    height: 6px;
+    width: 6px;
+}
+
+.admin-driver-vehicle-status-dot {
+    position: relative;
+    display: inline-flex;
+    border-radius: 50%;
+    height: 6px;
+    width: 6px;
+}
+
+.admin-driver-vehicle-status-ping {
+    position: absolute;
+    display: inline-flex;
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    animation: admin-dv-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes admin-dv-ping {
+
+    75%,
+    100% {
+        transform: scale(2);
+        opacity: 0;
     }
 }
 
-@media (max-width: 768px) {
+.admin-driver-vehicle-status-available {
+    color: #2a9d8f;
+}
 
-    .admin-vehicledrivers-forms-grid,
-    .admin-vehicledrivers-tables-grid {
+.admin-driver-vehicle-status-available .admin-driver-vehicle-status-dot,
+.admin-driver-vehicle-status-available .admin-driver-vehicle-status-ping {
+    background-color: #2a9d8f;
+}
+
+.admin-driver-vehicle-status-booked {
+    color: #e76f51;
+}
+
+.admin-driver-vehicle-status-booked .admin-driver-vehicle-status-dot,
+.admin-driver-vehicle-status-booked .admin-driver-vehicle-status-ping {
+    background-color: #e76f51;
+}
+
+.admin-driver-vehicle-status-ontrip {
+    color: #457b9d;
+}
+
+.admin-driver-vehicle-status-ontrip .admin-driver-vehicle-status-dot,
+.admin-driver-vehicle-status-ontrip .admin-driver-vehicle-status-ping {
+    background-color: #457b9d;
+}
+
+.admin-driver-vehicle-expanded-td {
+    padding: 20px;
+    background-color: #f0efeb;
+}
+
+.admin-driver-vehicle-expanded-card {
+    background-color: #ffffff;
+    padding: 20px;
+}
+
+.admin-driver-vehicle-expanded-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.admin-driver-vehicle-expanded-title h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #577590;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-driver-vehicle-records-badge {
+    color: #000;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+.admin-driver-vehicle-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    color: #000;
+}
+
+.admin-driver-vehicle-history-empty h5 {
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #000;
+}
+
+.admin-driver-vehicle-history-empty p {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.admin-driver-vehicle-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 80px 0;
+    color: #000;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.admin-driver-vehicle-spinner {
+    animation: spin 1s linear infinite;
+    color: #000;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.admin-driver-vehicle-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 80px 0;
+    background-color: #f8fafc;
+    border-radius: 16px;
+    border: 2px dashed #e2e8f0;
+    color: #475569;
+    text-align: center;
+}
+
+@media screen and (max-width: 1024px) {
+    .admin-driver-vehicle-wrapper {
+        padding: 25px 20px;
+    }
+
+    .admin-driver-vehicle-form-grid-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .admin-driver-vehicle-intro-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-driver-vehicle-intro-buttons {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 10px;
+    }
+
+    .admin-driver-vehicle-form-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-driver-vehicle-form-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-driver-vehicle-form-actions {
+        justify-content: space-between;
+    }
+
+    .admin-driver-vehicle-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .admin-driver-vehicle-wrapper {
+        padding: 15px 15px;
+    }
+
+    .admin-driver-vehicle-intro-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .admin-driver-vehicle-form-grid-4,
+    .admin-driver-vehicle-form-grid-3,
+    .admin-driver-vehicle-form-grid-2 {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-}
 
-@media (max-width: 480px) {
-    .admin-vehicledrivers-container {
-        padding: 15px 10px;
-    }
-
-    .admin-vehicledrivers-form-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .admin-vehicledrivers-card {
+    .admin-driver-vehicle-form-card {
         padding: 15px;
     }
 
-    .admin-vehicledrivers-form-footer {
-        justify-content: center;
+    .admin-driver-vehicle-form-actions {
+        flex-direction: column;
+        gap: 10px;
     }
 
-    .admin-vehicledrivers-btn {
-        width: 100%;
+    .admin-driver-vehicle-form-header {
+        padding: 10px;
     }
 
-    .admin-vehicledrivers-helper-text {
-        margin-left: 0;
+    .admin-driver-vehicle-expanded-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

@@ -2,30 +2,33 @@
     padding: 30px 40px;
     background-color: #fff;
     height: 85vh;
-
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-.employee-vehicle-layout-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 25px;
-    align-items: start;
+.employee-vehicle-layout-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 50px; 
+}
+
+.employee-vehicle-form-section,
+.employee-vehicle-history-section {
+    width: 100%;
 }
 
 .employee-vehicle-card,
 .employee-vehicle-card-history {
     background: #ffffff;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
 
 .employee-vehicle-title {
     text-transform: uppercase;
     font-size: 15px;
-    color: #0077b6;
+    color: #ef476f;
     margin-bottom: 8px;
 }
 
@@ -38,29 +41,28 @@
 }
 
 .employee-vehicle-body {
-    background-color: #f8f9fa;
+    background-color: #e9ecef;
     padding: 20px;
 }
 
 .employee-vehicle-section-title {
     font-size: 12px;
-    color: #e76f51;
+    color: #457b9d;
     text-transform: uppercase;
     margin-bottom: 20px;
 }
 
-.employee-vehicle-form-row {
+.employee-vehicle-form-row-four {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
-.employee-vehicle-form-grid-three {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+.employee-vehicle-form-group-three-span {
+    display: flex;
+    flex-direction: column;
+    grid-column: span 3;
 }
 
 .employee-vehicle-form-group {
@@ -68,44 +70,33 @@
     flex-direction: column;
 }
 
-.employee-vehicle-form-group-full {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-
 .employee-vehicle-label {
     font-size: 11px;
     text-transform: uppercase;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: #000;
 }
 
-.employee-vehicle-input,
-.employee-vehicle-textarea {
+.employee-vehicle-input {
     width: 100%;
     text-transform: uppercase;
-    padding: 11px 14px;
+    padding: 12px 14px;
     border: none;
-    font-size: 10px;
+    font-size: 11px;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
-    background-color: #e9ecef;
+    background-color: #fff;
 }
 
-.employee-vehicle-input:focus,
-.employee-vehicle-textarea:focus {
+.employee-vehicle-input:focus {
     outline: none;
-}
-
-.employee-vehicle-textarea {
-    resize: vertical;
 }
 
 .employee-vehicle-action-area {
     text-align: center;
     width: 100%;
+    margin-top: 10px;
 }
 
 .employee-vehicle-btn-submit {
@@ -133,7 +124,7 @@
 .employee-vehicle-alert {
     text-transform: uppercase;
     margin-bottom: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
 }
 
@@ -148,7 +139,7 @@
 .employee-vehicle-table-container {
     width: 100%;
     overflow-x: auto;
-    max-height: 600px;
+    max-height: 400px;
 }
 
 .employee-vehicle-table {
@@ -158,17 +149,17 @@
 }
 
 .employee-vehicle-th {
-    padding: 15px;
+    padding: 13px;
     font-size: 12px;
     text-transform: uppercase;
     text-align: center;
     border-right: 1px solid #fff;
-    background-color: #e9ecef;
-    color: #333;
+    background-color: #e0d8e2;
+    color: #000;
 }
 
 .employee-vehicle-td {
-    padding: 10px;
+    padding: 11px;
     font-size: 12px;
     border: 1px solid #e9ecef;
     text-transform: uppercase;
@@ -182,7 +173,7 @@
 
 .employee-vehicle-badge {
     display: inline-block;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     text-align: center;
 }
@@ -196,13 +187,17 @@
 }
 
 .employee-vehicle-status-pending {
-    color: #f4a261;
+    color: #e76f51;
+}
+
+.employee-vehicle-status-cancelled {
+    color: #c1121f;
 }
 
 .employee-vehicle-loading-wrapper,
 .employee-vehicle-empty-wrapper {
     text-align: center;
-    padding: 60px 20px;
+    padding: 40px 20px;
 }
 
 .employee-vehicle-loading-text,
@@ -210,7 +205,7 @@
     margin-top: 10px;
     color: #c1121f;
     text-transform: uppercase;
-    font-size: 12px
+    font-size: 11px
 }
 
 .employee-vehicle-spinner-container {
@@ -239,8 +234,124 @@
     animation: ev-spin 1s linear infinite;
 }
 
+.employee-vehicle-btn-cancel {
+    background-color: #c1121f; 
+    text-transform: uppercase;
+    color: #fff;
+    border: none;
+    padding: 7px 9px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap; 
+}
+
+.employee-vehicle-btn-cancel:hover {
+    background-color: #000;
+}
+
+.employee-vehicle-btn-not-allow {
+    font-size: 10px;
+    font-weight: 700;
+}
+
 @keyframes ev-spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .employee-vehicle-container {
+        padding: 20px 25px;
+        height: auto; 
+    }
+
+    .employee-vehicle-form-row-four {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .employee-vehicle-container {
+        padding: 15px 20px;
+    }
+
+    .employee-vehicle-layout-vertical {
+        gap: 35px;
+    }
+
+    .employee-vehicle-form-row-four {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .employee-vehicle-form-group-three-span {
+        grid-column: span 2;
+    }
+
+    .employee-vehicle-table-container {
+        max-height: 350px;
+    }
+
+    .employee-vehicle-th, 
+    .employee-vehicle-td {
+        padding: 10px;
+        font-size: 11px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .employee-vehicle-container {
+        padding: 10px 15px;
+    }
+
+    .employee-vehicle-title {
+        font-size: 14px;
+    }
+
+    .employee-vehicle-header-description {
+        font-size: 11px;
+        line-height: 1.8;
+    }
+
+    .employee-vehicle-body {
+        padding: 15px;
+    }
+
+    .employee-vehicle-form-row-four {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .employee-vehicle-form-group-three-span {
+        grid-column: span 1;
+    }
+
+    .employee-vehicle-form-group-empty {
+        display: none;
+    }
+
+    .employee-vehicle-label {
+        font-size: 10px;
+        margin-bottom: 5px;
+    }
+
+    .employee-vehicle-input {
+        padding: 10px 12px;
+        font-size: 11px; 
+    }
+
+    .employee-vehicle-btn-submit {
+        padding: 12px 20px;
+        font-size: 11px;
+    }
+
+    .employee-vehicle-th, 
+    .employee-vehicle-td {
+        padding: 8px;
+        font-size: 10px;
     }
 }

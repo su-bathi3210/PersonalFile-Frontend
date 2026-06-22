@@ -106,8 +106,11 @@ const ApproveOfficerVehicleHistory = () => {
             case 'APPROVED_BY_VEHICLE_ADMIN': return 'status-admin-approved';
             case 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER': return 'status-officer-approved';
             case 'COMPLETED': return 'status-completed';
-            case 'REJECTED':
+            case 'TRIP_PROCESS_CONFIRMED': return 'status-completed';
+            case 'TRIP_STARTED': return 'status-ongoing';
+            case 'REJECTED': 
             case 'REJECTED_BY_VEHICLE_ADMIN':
+            case 'EMPLOYEE_CANCEL':
             case 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER':
                 return 'status-rejected';
             default: return 'status-default';
@@ -153,6 +156,7 @@ const ApproveOfficerVehicleHistory = () => {
                     <select className="admin-vehicle-history-filter-select" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
                         <option value="ALL">All Status</option>
                         <option value="PENDING">Pending</option>
+                        <option value="EMPLOYEE_CANCEL">Employee Cancel</option>
                         <option value="APPROVED_BY_VEHICLE_ADMIN">Admin Approved</option>
                         <option value="APPROVED_BY_VEHICLE_APPROVAL_OFFICER">Officer Approved</option>
                         <option value="COMPLETED">Completed</option>

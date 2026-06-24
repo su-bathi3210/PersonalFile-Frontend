@@ -351,7 +351,21 @@ const EmployeePersonalFile = () => {
                                 <DataItem label="Grade III" value={formData.dateOfReceiptGradeIII} />
 
                                 {dynamicFieldConfigs
-                                    .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && field.isAdminOnly === true)
+                                    .filter(field => {
+                                        if (field.isAdminOnly !== true) return false;
+
+                                        if (field.isGlobal || field.scope === "GLOBAL") return true;
+
+                                        if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                                            return true;
+                                        }
+
+                                        if ((field.scope === "SPECIFIC" || !field.isGlobal) && userEmail && field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) {
+                                            return true;
+                                        }
+
+                                        return false;
+                                    })
                                     .map((field) => (
                                         <DataItem
                                             key={field.id}
@@ -391,7 +405,21 @@ const EmployeePersonalFile = () => {
                         <DataItem label="Gender" value={formData.gender} icon={Transgender} />
 
                         {dynamicFieldConfigs
-                            .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && (field.isAdminOnly === false || field.isAdminOnly === undefined))
+                            .filter(field => {
+                                if (field.isAdminOnly === true) return false;
+
+                                if (field.isGlobal || field.scope === "GLOBAL") return true;
+
+                                if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                                    return true;
+                                }
+
+                                if ((field.scope === "SPECIFIC" || !field.isGlobal) && userEmail && field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) {
+                                    return true;
+                                }
+
+                                return false;
+                            })
                             .map((field) => (
                                 <DataItem
                                     key={field.id}
@@ -457,7 +485,21 @@ const EmployeePersonalFile = () => {
                             <div className="personalFile-form-group"><label>Home Address</label><textarea name="address" value={formData.address} onChange={handleChange} rows="3" /></div>
 
                             {dynamicFieldConfigs
-                                .filter(field => (field.isGlobal || field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) && (field.isAdminOnly === false || field.isAdminOnly === undefined))
+                                .filter(field => {
+                                    if (field.isAdminOnly === true) return false;
+
+                                    if (field.isGlobal || field.scope === "GLOBAL") return true;
+
+                                    if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                                        return true;
+                                    }
+
+                                    if ((field.scope === "SPECIFIC" || !field.isGlobal) && userEmail && field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) {
+                                        return true;
+                                    }
+
+                                    return false;
+                                })
                                 .map((field) => {
                                     const rawType = field.fieldType || field.fieldtype || "text";
                                     return (

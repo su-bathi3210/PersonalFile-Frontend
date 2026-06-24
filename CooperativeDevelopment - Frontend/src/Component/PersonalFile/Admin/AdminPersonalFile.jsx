@@ -57,12 +57,17 @@ const AdminPersonalFile = () => {
     const [selectedDay, setSelectedDay] = useState("");
     const [isDateFocused, setIsDateFocused] = useState(false);
 
+    const [designationsSummary, setDesignationsSummary] = useState([]);
+    const [designationEmployees, setDesignationEmployees] = useState([]);
+    const [loadingDesignationData, setLoadingDesignationData] = useState(false);
+
     const [newFieldData, setNewFieldData] = useState({
         fieldKey: "",
         displayName: "",
         fieldType: "text",
         required: false,
-        isGlobal: true,
+        scope: "GLOBAL",
+        targetDesignation: "",
         employeeEmail: "",
         isAdminOnly: false
     });
@@ -72,7 +77,7 @@ const AdminPersonalFile = () => {
     const initialFormState = {
         name: "", email: "", password: "", username: "",
         phoneNumber: "", emergencyContact: "", designation: "", nic: "", address: "", dutyPlace: "",
-        grade: "", salaryScale: "",  salary: "", department: "", gender: "",
+        grade: "", salaryScale: "", salary: "", department: "", gender: "",
         dateOfBirth: "", dateOfFirstAppointment: "", appointmentDateToPresentStatus: "",
         incrementDate: "", dateOfReceiptGradeI: "", dateOfReceiptGradeII: "",
         dateOfReceiptGradeIII: "", dateOfCompulsoryRetirement: "", dateOfReceiptOfRelevantGrade: "",
@@ -82,6 +87,57 @@ const AdminPersonalFile = () => {
 
     const [formData, setFormData] = useState(initialFormState);
 
+    const fetchDesignationsSummary = async () => {
+        try {
+            const response = await API.get("/dynamic-fields/designations-summary");
+            setDesignationsSummary(response.data);
+        } catch (error) {
+            console.error("Error fetching designations summary:", error);
+        }
+    };
+
+    const fetchEmployeesByDesignation = async (designationName) => {
+        if (!designationName) {
+            setDesignationEmployees([]);
+            return;
+        }
+        setLoadingDesignationData(true);
+        try {
+            const response = await API.get(`/dynamic-fields/employees-by-designation?designation=${encodeURIComponent(designationName)}`);
+            setDesignationEmployees(response.data);
+        } catch (error) {
+            console.error("Error fetching employees by designation:", error);
+        } finally {
+            setLoadingDesignationData(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isFieldModalOpen) {
+            fetchDesignationsSummary();
+        }
+    }, [isFieldModalOpen]);
+
+
+    const handleNewFieldInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        const val = type === "checkbox" ? checked : value;
+
+        setNewFieldData(prev => {
+            const updated = { ...prev, [name]: val };
+
+            if (name === "targetDesignation") {
+                fetchEmployeesByDesignation(value);
+            }
+
+            if (name === "scope" && value !== "DESIGNATION") {
+                updated.targetDesignation = "";
+                setDesignationEmployees([]);
+            }
+
+            return updated;
+        });
+    };
     const formatDate = (date) => {
         if (!date) return "-";
         if (typeof date === 'string') {
@@ -504,10 +560,11 @@ const AdminPersonalFile = () => {
 
     const handleFieldConfigSubmit = async (e) => {
         e.preventDefault();
-        const isGlobalBoolean = newFieldData.isGlobal === true || String(newFieldData.isGlobal).toLowerCase() === "true";
-        const isAdminOnlyBoolean = newFieldData.isAdminOnly === true || String(newFieldData.isAdminOnly).toLowerCase() === "true";
 
-        if (!isGlobalBoolean && !newFieldData.employeeEmail) {
+        const isGlobalBoolean = newFieldData.scope === "GLOBAL";
+        const isAdminOnlyBoolean = newFieldData.isAdminOnly === true;
+
+        if (newFieldData.scope === "SPECIFIC" && !newFieldData.employeeEmail) {
             alert("❌ Please select an employee for specific field type!");
             return;
         }
@@ -516,10 +573,12 @@ const AdminPersonalFile = () => {
             fieldKey: newFieldData.fieldKey,
             displayName: newFieldData.displayName,
             fieldType: newFieldData.fieldType,
-            required: newFieldData.required === true || String(newFieldData.required).toLowerCase() === "true",
+            required: newFieldData.required === true,
             isGlobal: isGlobalBoolean,
             employeeEmail: isGlobalBoolean ? "" : newFieldData.employeeEmail || "",
-            isAdminOnly: isAdminOnlyBoolean
+            isAdminOnly: isAdminOnlyBoolean,
+            scope: newFieldData.scope ? newFieldData.scope.toUpperCase() : (newFieldData.isGlobal ? "GLOBAL" : "SPECIFIC"),
+            targetDesignation: newFieldData.scope === "DESIGNATION" ? newFieldData.targetDesignation : ""
         };
 
         try {
@@ -532,10 +591,17 @@ const AdminPersonalFile = () => {
             }
 
             setNewFieldData({
-                fieldKey: "", displayName: "", fieldType: "text", required: false,
-                isGlobal: true, employeeEmail: "", isAdminOnly: false
+                fieldKey: "",
+                displayName: "",
+                fieldType: "text",
+                required: false,
+                scope: "GLOBAL",
+                employeeEmail: "",
+                targetDesignation: "",
+                isAdminOnly: false
             });
             setEditingFieldId(null);
+            setIsFieldModalOpen(false);
             fetchDynamicFields();
             fetchFiles();
         } catch (err) {
@@ -549,10 +615,21 @@ const AdminPersonalFile = () => {
         const isDbGlobal = field.isGlobal === true || field.isGlobal !== false || String(field.isGlobal).toLowerCase() === "true";
 
         setNewFieldData({
-            fieldKey: field.fieldKey, displayName: field.displayName, fieldType: field.fieldType,
+            fieldKey: field.fieldKey,
+            displayName: field.displayName,
+            fieldType: field.fieldType,
             required: field.required === true || String(field.required).toLowerCase() === "true",
-            isGlobal: isDbGlobal, employeeEmail: field.employeeEmail || "", isAdminOnly: isDbAdmin
+            isGlobal: isDbGlobal,
+            employeeEmail: field.employeeEmail || "",
+            isAdminOnly: isDbAdmin,
+            scope: field.scope ? field.scope.toUpperCase() : "GLOBAL",
+            targetDesignation: field.targetDesignation || ""
         });
+
+        if (field.scope === "DESIGNATION" && field.targetDesignation) {
+            fetchEmployeesByDesignation(field.targetDesignation);
+        }
+
         setEditingFieldId(field.id);
     };
 
@@ -1066,10 +1143,13 @@ const AdminPersonalFile = () => {
                         <div className="admin-personal-field-open-header-section">
                             <h2 className="admin-personal-field-open-model-title">Manage System Dynamic Fields</h2>
                             <button className="admin-personal-field-open-close" onClick={() => {
-                                setIsFieldModalOpen(false); setEditingFieldId(null); setNewFieldData({
+                                setIsFieldModalOpen(false);
+                                setEditingFieldId(null);
+                                setNewFieldData({
                                     fieldKey: "", displayName: "", fieldType: "text", required: false,
-                                    isGlobal: true, employeeEmail: "", isAdminOnly: false
+                                    scope: "GLOBAL", targetDesignation: "", employeeEmail: "", isAdminOnly: false
                                 });
+                                setDesignationEmployees([]);
                             }}><X size={17} /></button>
                         </div>
 
@@ -1084,23 +1164,80 @@ const AdminPersonalFile = () => {
 
                             <div className="admin-personal-field-open-form-row">
                                 <label className="admin-personal-field-open-form-label">Field Scope</label>
-                                <select value={newFieldData.isGlobal ? "global" : "specific"} onChange={(e) => {
-                                    const isGlbl = e.target.value === "global";
-                                    setNewFieldData({ ...newFieldData, isGlobal: isGlbl, employeeEmail: isGlbl ? "" : newFieldData.employeeEmail });
-                                }} className="admin-personal-field-open-form-input">
-                                    <option value="global">Global</option>
+                                <select
+                                    value={newFieldData.scope ? newFieldData.scope.toLowerCase() : (newFieldData.isGlobal ? "global" : "specific")}
+                                    onChange={(e) => {
+                                        const selectedScope = e.target.value;
+                                        setNewFieldData({
+                                            ...newFieldData,
+                                            scope: selectedScope.toUpperCase(),
+                                            isGlobal: selectedScope === "global",
+                                            employeeEmail: "",
+                                            targetDesignation: ""
+                                        });
+                                        setDesignationEmployees([]);
+                                    }}
+                                    className="admin-personal-field-open-form-input"
+                                >
+                                    <option value="global">Global (All Employees)</option>
                                     <option value="specific">Specific Employee Only</option>
+                                    <option value="designation">By Designation</option>
                                 </select>
                             </div>
 
-                            {!newFieldData.isGlobal && (
+                            {newFieldData.scope === "SPECIFIC" && (
                                 <div className="admin-personal-field-open-form-row admin-personal-field-open-fade-in">
                                     <label className="admin-personal-field-open-form-label">Select Employee</label>
                                     <select value={newFieldData.employeeEmail} onChange={(e) => setNewFieldData({ ...newFieldData, employeeEmail: e.target.value })} className="admin-personal-field-open-form-input" required>
                                         <option value="">Choose Employee</option>
                                         {files.map((emp) => (
-                                            <option key={emp.id} value={emp.email}>{emp.name || emp.username} ({emp.email})</option>))}
+                                            <option key={emp.id} value={emp.email}>{emp.name || emp.username} ({emp.email})</option>
+                                        ))}
                                     </select>
+                                </div>
+                            )}
+
+                            {newFieldData.scope === "DESIGNATION" && (
+                                <div className="admin-personal-field-open-form-row admin-personal-field-open-fade-in">
+                                    <label className="admin-personal-field-open-form-label">Select Designation</label>
+                                    <select
+                                        value={newFieldData.targetDesignation}
+                                        onChange={(e) => {
+                                            const selectedDes = e.target.value;
+                                            setNewFieldData({ ...newFieldData, targetDesignation: selectedDes });
+                                            fetchEmployeesByDesignation(selectedDes);
+                                        }}
+                                        className="admin-personal-field-open-form-input"
+                                        required
+                                    >
+                                        <option value="">Choose Designation</option>
+                                        {designationsSummary.map((item, index) => (
+                                            <option key={index} value={item.designation}>
+                                                {item.designation} ({item.employeeCount} Employees)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            {newFieldData.scope === "DESIGNATION" && newFieldData.targetDesignation && (
+                                <div className="admin-personal-field-open-form-row admin-personal-field-open-fade-in" style={{ paddingLeft: '5px' }}>
+                                    <div>
+                                        <span>👥 Employees with this Designation ({designationEmployees.length})</span>
+                                        {loadingDesignationData ? (
+                                            <p>Loading employees...</p>
+                                        ) : designationEmployees.length === 0 ? (
+                                            <p>No employees found for this designation.</p>
+                                        ) : (
+                                            <ul>
+                                                {designationEmployees.map((emp) => (
+                                                    <li key={emp.id}>
+                                                        {emp.username || emp.name} ({emp.email})
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
@@ -1154,7 +1291,15 @@ const AdminPersonalFile = () => {
                                             {dynamicFieldConfigs.map((field) => (
                                                 <tr key={field.id}>
                                                     <td>
-                                                        {(field.isGlobal === true || String(field.isGlobal).toLowerCase() === "true") ? (
+                                                        {field.scope === "DESIGNATION" ? (
+                                                            <div>
+                                                                <span className="badge-designation" style={{ color: '#4e73df', fontWeight: 'bold' }}>Designation</span>
+                                                                <br />
+                                                                <small className="admin-personal-field-open-table-small" style={{ color: '#5a5c69', fontStyle: 'italic' }}>
+                                                                    {field.targetDesignation || "All Designations"}
+                                                                </small>
+                                                            </div>
+                                                        ) : (field.isGlobal === true || String(field.isGlobal).toLowerCase() === "true" || field.scope === "GLOBAL") ? (
                                                             <span className="badge-global" style={{ color: 'green', fontWeight: 'bold' }}>Global</span>
                                                         ) : (
                                                             <div>
@@ -1363,7 +1508,19 @@ const AdminPersonalFile = () => {
                             </div>
 
                             {dynamicFieldConfigs
-                                .filter(field => field.isGlobal || (formData.email && field.employeeEmail === formData.email))
+                                .filter(field => {
+                                    if (field.isGlobal || field.scope === "GLOBAL") return true;
+
+                                    if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                                        return true;
+                                    }
+
+                                    if ((field.scope === "SPECIFIC" || !field.isGlobal) && formData.email && field.employeeEmail === formData.email) {
+                                        return true;
+                                    }
+
+                                    return false;
+                                })
                                 .map((field) => (
                                     <div className="admin-personal-form-row" key={field.id}>
                                         <label className="admin-personal-form-label">
@@ -1375,7 +1532,7 @@ const AdminPersonalFile = () => {
                                             value={formData.dynamicFields?.[field.fieldKey] || ""}
                                             onChange={handleDynamicInputChange}
                                             className="admin-personal-form-input-field"
-                                            required={false}
+                                            required={field.required === true || String(field.required).toLowerCase() === "true"} // 👈 මේකත් field.required අනුව true/false වෙන්න හැදුවා (කලින් hardcode කරලා false තිබ්බේ)
                                         />
                                     </div>
                                 ))}

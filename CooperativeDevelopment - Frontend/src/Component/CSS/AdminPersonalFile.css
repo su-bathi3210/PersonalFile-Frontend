@@ -759,6 +759,57 @@
     background-size: 9px;
 }
 
+.admin-personal-field-open-form-row span {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #457b9d;
+    margin-bottom: 8px;
+}
+
+.admin-personal-field-open-form-row p {
+    font-size: 10px;
+    color: #8d99ae;
+    text-transform: uppercase;
+    margin: 8px 0 0 0;
+}
+
+.admin-personal-field-open-form-row ul {
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: #fff;
+}
+
+.admin-personal-field-open-form-row li {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #000;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+}
+
+.admin-personal-field-open-form-row li:last-child {
+    border-bottom: none;
+}
+
+.admin-personal-field-open-form-row li:hover {
+    background-color: #d8e2dc;
+    color: #000;
+}
+
+.admin-personal-field-open-form-row ul::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-personal-field-open-form-row ul::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .admin-personal-field-open-checkbox-row {
     flex-direction: row;
     align-items: center;

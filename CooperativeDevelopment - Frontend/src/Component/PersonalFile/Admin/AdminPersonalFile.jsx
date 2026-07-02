@@ -292,13 +292,18 @@ const AdminPersonalFile = () => {
     };
 
     const toggleSelectAll = () => {
-        const filtered = files.filter(f =>
-            (f.name || f.username)?.toLowerCase().includes(searchTerm.toLowerCase()) || f.employeeId?.includes(searchTerm)
-        );
-        if (selectedIds.length === filtered.length) {
-            setSelectedIds([]);
+        const isAllFilteredSelected = filteredFiles.length > 0 &&
+            filteredFiles.every(f => selectedIds.includes(f.id));
+
+        if (isAllFilteredSelected) {
+            const filteredIds = filteredFiles.map(f => f.id);
+            setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)));
         } else {
-            setSelectedIds(filtered.map(f => f.id));
+            const filteredIds = filteredFiles.map(f => f.id);
+            setSelectedIds(prev => {
+                const uniqueIds = new Set([...prev, ...filteredIds]);
+                return Array.from(uniqueIds);
+            });
         }
     };
 

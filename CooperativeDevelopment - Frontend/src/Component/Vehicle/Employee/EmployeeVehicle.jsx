@@ -33,32 +33,77 @@ const EmployeeVehicle = () => {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [cancelLoadingId, setCancelLoadingId] = useState(null);
 
+    // 🌟 New States for Traveler Cascade Dropdowns
+    const [designations, setDesignations] = useState({}); // Stores { "DRIVER": 2, "MSO": 15 }
+    const [selectedDesignation, setSelectedDesignation] = useState('');
+    const [travelersList, setTravelersList] = useState([]); // Array of employee objects for the chosen designation
+
+    // Fetch Logged-in Requester Profile
+    const fetchUserProfile = useCallback(async () => {
+        if (!currentEmployeeEmail) return;
+        try {
+            const response = await API.get(`/vehicle-requests/profile/${currentEmployeeEmail}`);
+            if (response.data) {
+                setFormData(prev => ({
+                    ...prev,
+                    requesterName: response.data.username || response.data.fullName || '',
+                    requesterPosition: response.data.designation || response.data.position || ''
+                }));
+            }
+        } catch (error) {
+            console.error('❌ Error fetching user profile:', error);
+            const storedUsername = localStorage.getItem('username') || '';
+            setFormData(prev => ({ ...prev, requesterName: storedUsername }));
+        }
+    }, [currentEmployeeEmail]);
+
+    // 🌟 New: Fetch All Designations with Counts for Dropdown 1
+    const fetchDesignationsSummary = useCallback(async () => {
+        try {
+            const response = await API.get('/vehicle-requests/designations-summary'); // Adjust mapping if placed in UserController
+            setDesignations(response.data);
+        } catch (error) {
+            console.error('❌ Error fetching designations summary:', error);
+        }
+    }, []);
+
+    // 🌟 New: Fetch Employees when a specific Designation is selected
+    useEffect(() => {
+        const fetchEmployeesByDesignation = async () => {
+            if (!selectedDesignation) {
+                setTravelersList([]);
+                return;
+            }
+            try {
+                const response = await API.get(`/vehicle-requests/by-designation?designation=${selectedDesignation}`);
+                setTravelersList(response.data);
+            } catch (error) {
+                console.error('❌ Error fetching employees by designation:', error);
+            }
+        };
+        fetchEmployeesByDesignation();
+    }, [selectedDesignation]);
+
     const fetchEmployeeRequests = useCallback(async () => {
         if (!currentEmployeeEmail) return;
-
         setHistoryLoading(true);
         try {
             const response = await API.get(`/vehicle-requests/employee/${currentEmployeeEmail}`);
             setRequestsList(response.data);
         } catch (error) {
-            console.error('❌ Error fetching employee requests:', error);
-            if (error.response && error.response.status === 403) {
-                setMessage({ type: 'danger', text: 'Session expired or Unauthorized. Please login again.' });
-            }
+            console.error('❌ Error fetching requests:', error);
         } finally {
-            document.body.style.cursor = 'default';
             setHistoryLoading(false);
         }
     }, [currentEmployeeEmail]);
 
     useEffect(() => {
         if (currentEmployeeEmail) {
-            setFormData(prev => ({
-                ...prev,
-                requesterEmail: currentEmployeeEmail
-            }));
+            setFormData(prev => ({ ...prev, requesterEmail: currentEmployeeEmail }));
+            fetchUserProfile();
+            fetchDesignationsSummary(); // Initial load of designations list
         }
-    }, [currentEmployeeEmail]);
+    }, [currentEmployeeEmail, fetchUserProfile, fetchDesignationsSummary]);
 
     useEffect(() => {
         if (currentEmployeeEmail) {
@@ -68,10 +113,33 @@ const EmployeeVehicle = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
+        setFormData({ ...formData, [name]: value });
+    };
+
+    // 🌟 New: Handle Selection of Traveler and Auto-fill fields
+    const handleTravelerSelect = (e) => {
+        const selectedId = e.target.value;
+        if (!selectedId) {
+            setFormData(prev => ({
+                ...prev,
+                travelerName: '',
+                travelerPosition: '',
+                department: '',
+                phoneNumber: ''
+            }));
+            return;
+        }
+
+        const traveler = travelersList.find(t => (t.id || t._id) === selectedId);
+        if (traveler) {
+            setFormData(prev => ({
+                ...prev,
+                travelerName: traveler.username || traveler.fullName || '',
+                travelerPosition: traveler.designation || '',
+                department: traveler.department || '',
+                phoneNumber: traveler.phoneNumber || ''
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -85,15 +153,18 @@ const EmployeeVehicle = () => {
         };
 
         try {
-            const response = await API.post('/vehicle-requests', finalSubmissionData);
+            const response = await API.post('/vehicle-requests', {
+                ...formData,
+                requesterEmail: currentEmployeeEmail
+            });
 
             if (response.status === 201 || response.status === 200) {
                 setMessage({ type: 'success', text: ' ✅ Vehicle request submitted successfully!' });
 
-                setFormData({
+                setFormData(prev => ({
                     requesterEmail: currentEmployeeEmail,
-                    requesterName: '',
-                    requesterPosition: '',
+                    requesterName: prev.requesterName,
+                    requesterPosition: prev.requesterPosition,
                     travelerName: '',
                     travelerPosition: '',
                     department: '',
@@ -104,12 +175,11 @@ const EmployeeVehicle = () => {
                     distanceKm: '',
                     travelDateTime: '',
                     reason: ''
-                });
-
+                }));
+                setSelectedDesignation('');
                 fetchEmployeeRequests();
             }
         } catch (error) {
-            console.error('❌ Error submitting vehicle request:', error);
             setMessage({ type: 'danger', text: 'Failed to submit request.' });
         } finally {
             setLoading(false);
@@ -117,13 +187,8 @@ const EmployeeVehicle = () => {
     };
 
     const handleCancelRequest = async (requestId) => {
-        if (!window.confirm("⚠️ Are you sure you want to cancel this vehicle request?")) {
-            return;
-        }
-
+        if (!window.confirm("⚠️ Are you sure you want to cancel this vehicle request?")) return;
         setCancelLoadingId(requestId);
-        setMessage({ type: '', text: '' });
-
         try {
             const response = await API.put(`/vehicle-requests/${requestId}/cancel`);
             if (response.status === 200) {
@@ -131,9 +196,7 @@ const EmployeeVehicle = () => {
                 fetchEmployeeRequests();
             }
         } catch (error) {
-            console.error('❌ Error cancelling vehicle request:', error);
-            const errorMsg = error.response?.data || 'Failed to cancel the request.';
-            setMessage({ type: 'danger', text: errorMsg });
+            setMessage({ type: 'danger', text: 'Failed to cancel the request.' });
         } finally {
             setCancelLoadingId(null);
         }
@@ -143,11 +206,9 @@ const EmployeeVehicle = () => {
         switch (status) {
             case 'APPROVED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-approved';
             case 'APPROVED_BY_VEHICLE_APPROVAL_OFFICER': return 'employee-vehicle-status-approved';
-
             case 'REJECTED_BY_VEHICLE_ADMIN': return 'employee-vehicle-status-rejected';
             case 'REJECTED_BY_VEHICLE_APPROVAL_OFFICER': return 'employee-vehicle-status-rejected';
             case 'EMPLOYEE_CANCELLED': return 'employee-vehicle-status-cancelled';
-
             default: return 'employee-vehicle-status-pending';
         }
     };
@@ -178,32 +239,53 @@ const EmployeeVehicle = () => {
                                 <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Requester Name</label>
-                                        <input type="text" className="employee-vehicle-input" name="requesterName" value={formData.requesterName} onChange={handleChange} required placeholder="Enter your name" />
+                                        <input type="text" className="employee-vehicle-input" name="requesterName" value={formData.requesterName} onChange={handleChange} required placeholder="Enter your name" style={{ color: '#7209b7' }} />
                                     </div>
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Requester Position</label>
-                                        <input type="text" className="employee-vehicle-input" name="requesterPosition" value={formData.requesterPosition} onChange={handleChange} required placeholder="e.g., Management Assistant" />
+                                        <input type="text" className="employee-vehicle-input" name="requesterPosition" value={formData.requesterPosition} onChange={handleChange} required placeholder="e.g., Management Assistant" style={{ color: '#7209b7' }} />
                                     </div>
+
+                                    <div className="employee-vehicle-form-group">
+                                        <label className="employee-vehicle-label">Select Traveler Position (Designation)</label>
+                                        <select className="employee-vehicle-input" value={selectedDesignation}
+                                            onChange={(e) => setSelectedDesignation(e.target.value)} style={{ color: '#40916c' }} required>
+                                            <option value="">-- Choose Designation --</option>
+                                            {Object.entries(designations).map(([designationName, count]) => (
+                                                <option key={designationName} value={designationName}>
+                                                    {designationName} - {count}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Traveler Name</label>
-                                        <input type="text" className="employee-vehicle-input" name="travelerName" value={formData.travelerName} onChange={handleChange} required placeholder="Who is traveling?" />
-                                    </div>
-                                    <div className="employee-vehicle-form-group">
-                                        <label className="employee-vehicle-label">Traveler Position</label>
-                                        <input type="text" className="employee-vehicle-input" name="travelerPosition" value={formData.travelerPosition} onChange={handleChange} required placeholder="e.g., Director / Officer" />
+                                        <select className="employee-vehicle-input" onChange={handleTravelerSelect} style={{ color: '#40916c' }} required
+                                            disabled={!selectedDesignation}>
+                                            <option value="">-- Choose Employee --</option>
+                                            {travelersList.map((t) => (
+                                                <option key={t.id || t._id} value={t.id || t._id}>
+                                                    {t.username || t.fullName}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div className="employee-vehicle-form-row-four">
                                     <div className="employee-vehicle-form-group">
+                                        <label className="employee-vehicle-label">Traveler Position</label>
+                                        <input type="text" className="employee-vehicle-input" name="travelerPosition" value={formData.travelerPosition} onChange={handleChange} style={{ color: '#40916c' }} required readOnly placeholder="Auto-filled position" />
+                                    </div>
+                                    <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Department / Division</label>
-                                        <input type="text" className="employee-vehicle-input" name="department" value={formData.department} onChange={handleChange} required placeholder="e.g., Cooperative Audit" />
+                                        <input type="text" className="employee-vehicle-input" name="department" value={formData.department} onChange={handleChange} style={{ color: '#40916c' }} readOnly placeholder="Auto-filled department" />
                                     </div>
                                     <div className="employee-vehicle-form-group">
                                         <label className="employee-vehicle-label">Phone Number</label>
-                                        <input type="tel" className="employee-vehicle-input" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required placeholder="e.g., 0771234567" />
+                                        <input type="tel" className="employee-vehicle-input" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} style={{ color: '#40916c' }} required readOnly placeholder="Auto-filled phone" />
                                     </div>
-                                    <div className="employee-vehicle-form-group-empty"></div>
                                     <div className="employee-vehicle-form-group-empty"></div>
                                 </div>
 
@@ -254,6 +336,7 @@ const EmployeeVehicle = () => {
                     </div>
                 </div>
 
+                {/* History section layout goes here... (remains unchanged) */}
                 <div className="employee-vehicle-history-section">
                     <h5 className="employee-vehicle-section-title" style={{ marginBottom: '15px' }}>Vehicle Request History</h5>
                     <div className="employee-vehicle-card-history">
@@ -293,7 +376,10 @@ const EmployeeVehicle = () => {
                                                     </td>
                                                     <td className="employee-vehicle-td">
                                                         <span className="employee-vehicle-table-sub-text">
-                                                            {req.travelDateTime ? new Date(req.travelDateTime).toLocaleString() : 'N/A'}
+                                                            {req.travelDateTime
+                                                                ? req.travelDateTime.replace('T', ' ').split('.')[0]
+                                                                : 'N/A'
+                                                            }
                                                         </span>
                                                     </td>
                                                     <td className="employee-vehicle-td fw-semibold">{req.distanceKm} Km</td>

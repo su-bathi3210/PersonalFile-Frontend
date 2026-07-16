@@ -10,7 +10,7 @@
 .employee-vehicle-layout-vertical {
     display: flex;
     flex-direction: column;
-    gap: 50px; 
+    gap: 50px;
 }
 
 .employee-vehicle-form-section,
@@ -91,6 +91,17 @@
 
 .employee-vehicle-input:focus {
     outline: none;
+}
+
+.employee-vehicle-form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 9px;
 }
 
 .employee-vehicle-action-area {
@@ -235,7 +246,7 @@
 }
 
 .employee-vehicle-btn-cancel {
-    background-color: #c1121f; 
+    background-color: #c1121f;
     text-transform: uppercase;
     color: #fff;
     border: none;
@@ -243,7 +254,7 @@
     font-size: 10px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    white-space: nowrap; 
+    white-space: nowrap;
 }
 
 .employee-vehicle-btn-cancel:hover {
@@ -264,7 +275,7 @@
 @media screen and (max-width: 1024px) {
     .employee-vehicle-container {
         padding: 20px 25px;
-        height: auto; 
+        height: auto;
     }
 
     .employee-vehicle-form-row-four {
@@ -295,7 +306,7 @@
         max-height: 350px;
     }
 
-    .employee-vehicle-th, 
+    .employee-vehicle-th,
     .employee-vehicle-td {
         padding: 10px;
         font-size: 11px;
@@ -341,7 +352,7 @@
 
     .employee-vehicle-input {
         padding: 10px 12px;
-        font-size: 11px; 
+        font-size: 11px;
     }
 
     .employee-vehicle-btn-submit {
@@ -349,7 +360,7 @@
         font-size: 11px;
     }
 
-    .employee-vehicle-th, 
+    .employee-vehicle-th,
     .employee-vehicle-td {
         padding: 8px;
         font-size: 10px;

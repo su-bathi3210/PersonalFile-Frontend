@@ -20,7 +20,8 @@ import {
     Siren,
     Transgender,
     User as UserIcon,
-    UserRoundCog
+    UserRoundCog,
+    BadgeInfo
 } from 'lucide-react';
 
 import { LuTrash2 } from "react-icons/lu";
@@ -228,6 +229,25 @@ const EmployeePersonalFile = () => {
         }
     };
 
+    const formatIncrementDate = (dateString) => {
+        if (!dateString) return "—";
+
+        const parts = dateString.split("-");
+        if (parts.length < 3) return dateString;
+
+        const day = parts[2].substring(0, 2);
+        const monthIndex = parseInt(parts[1], 10) - 1;
+
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const monthName = monthNames[monthIndex] || parts[1];
+
+        return `${day} - ${monthName}`;
+    };
+
     const DataItem = ({ label, value, icon: Icon }) => (
         <div className="info-item-box">
             {Icon && <Icon size={16} className="item-icon" />}
@@ -333,7 +353,6 @@ const EmployeePersonalFile = () => {
                             <div className="personalFile-card-title"><UserRoundCog size={20} /> Service History</div>
                             <div className="personalFile-card-grid">
                                 <DataItem label="Service Number" value={formData.serviceNumber} />
-                                <DataItem label="WNOP Number" value={formData.wnopNumber} />
                                 <DataItem label="Designation" value={formData.designation} />
                                 <DataItem label="Department" value={formData.department} />
                                 <DataItem label="Duty Place" value={formData.dutyPlace} />
@@ -343,7 +362,7 @@ const EmployeePersonalFile = () => {
                                 <DataItem label="Date Of First Appointment" value={formData.dateOfFirstAppointment} />
                                 <DataItem label="Appointment Date To Present Status" value={formData.appointmentDateToPresentStatus} />
                                 <DataItem label="Date Of Language Proficiency" value={formData.dateOfLanguageProficiency} />
-                                <DataItem label="Increment Date" value={formData.incrementDate} />
+                                <DataItem label="Increment Date" value={formatIncrementDate(formData.incrementDate)} />
                                 <DataItem label="Date Of Compulsory Retirement" value={formData.dateOfCompulsoryRetirement} />
                                 <DataItem label="Present Status Date" value={formData.presentStatusDate} />
                                 <DataItem label="Grade I" value={formData.dateOfReceiptGradeI} />
@@ -397,6 +416,7 @@ const EmployeePersonalFile = () => {
                     </div>
 
                     <div className="personalFile-sidebar-info-list">
+                        <DataItem label="WNOP Number" value={formData.wnopNumber} icon={BadgeInfo} />
                         <DataItem label="NIC" value={formData.nic} icon={UserIcon} />
                         <DataItem label="Phone" value={formData.phoneNumber} icon={Phone} />
                         <DataItem label="Emergency Contact" value={formData.emergencyContact} icon={Siren} />
@@ -467,6 +487,7 @@ const EmployeePersonalFile = () => {
                             </div>
 
                             <div className="personalFile-form-row">
+                                <div className="personalFile-form-group"><label>WNOP Number</label><input name="wnopNumber" value={formData.wnopNumber} onChange={handleChange} /></div>
                                 <div className="personalFile-form-group"><label>Full Name</label><input name="username" value={formData.username} onChange={handleChange} required /></div>
                                 <div className="personalFile-form-group"><label>Email</label><input name="email" value={formData.email} onChange={handleChange} required /></div>
                                 <div className="personalFile-form-group"><label>NIC Number</label><input name="nic" value={formData.nic} onChange={handleChange} required /></div>
@@ -475,14 +496,14 @@ const EmployeePersonalFile = () => {
                                 <div className="personalFile-form-group">
                                     <label>Gender</label>
                                     <select name="gender" value={formData.gender} onChange={handleChange}>
+                                        <option value="Options">--Options--</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
                                 </div>
                                 <div className="personalFile-form-group"><label>Date Of Birth</label><input name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} /></div>
+                                <div className="personalFile-form-group"><label>Home Address</label><input name="address" value={formData.address} onChange={handleChange} /></div>
                             </div>
-
-                            <div className="personalFile-form-group"><label>Home Address</label><textarea name="address" value={formData.address} onChange={handleChange} rows="3" /></div>
 
                             {dynamicFieldConfigs
                                 .filter(field => {

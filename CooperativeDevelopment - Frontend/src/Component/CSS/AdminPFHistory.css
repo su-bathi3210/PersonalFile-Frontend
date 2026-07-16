@@ -132,29 +132,51 @@
     border-left: 3px solid #013a63;
 }
 
-.pf-history-view-btn {
-    background-color: transparent !important;
-    color: #000;
-    border: none;
+.pf-history-name-cell {
+    text-align: left !important;
     cursor: pointer;
-    font-size: 12px;
-    width: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.pf-history-view-btn:hover {
+.pf-history-expand-icon {
+    display: inline-block;
+    font-size: 9px;
+    color: #000;
+    transition: transform 0.2s ease-in-out;
+}
+
+.pf-history-expand-icon.expanded {
+    transform: rotate(90deg);
     color: #c1121f;
+}
+
+.pf-history-expanded-detail-row {
+    background-color: #edede9 !important;
+}
+
+.pf-history-inline-details {
+    border: none;
+    border-top: none;
+    text-align: left;
+}
+
+.pf-history-table-wrapper-inner {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
 }
 
 .pf-history-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 .pf-history-title {
     text-transform: uppercase;
-    font-size: 15px;
+    font-size: 12px;
 }
 
 .pf-history-title span {
@@ -233,6 +255,7 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    text-align: center;
 }
 
 .pf-history-table th {
@@ -244,7 +267,7 @@
 }
 
 .pf-history-table td {
-    padding: 12px;
+    padding: 15px;
     text-transform: uppercase;
     border-bottom: 1px solid #fff;
     font-size: 12px;
@@ -297,6 +320,10 @@
     text-align: center;
     font-size: 12px;
     color: #000;
+}
+
+.pf-history-no-match {
+    padding: 12px;
 }
 
 .pf-history-highlighted-row {
@@ -366,7 +393,7 @@
 
     .pf-history-main-title,
     .pf-history-title {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .pf-history-sub-title-desc,

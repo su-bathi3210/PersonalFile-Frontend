@@ -98,8 +98,8 @@ const DriverVehicleUpdate = () => {
     return (
         <div className="driver-vehicle-update-container">
             <div className="driver-vehicle-update-header-section">
-                <h2 className="driver-vehicle-update-title">Vehicle Maintenance & Service Logs</h2>
-                <p className="driver-vehicle-update-subtitle">Submit new service updates, current mileage, and track upcoming maintenance schedules.</p>
+                <h2 className="driver-vehicle-update-title">වාහන නඩත්තු සහ සේවා ලොග්</h2>
+                <p className="driver-vehicle-update-subtitle">නව සේවා යාවත්කාලීන කිරීම්, වත්මන් සැතපුම් ගණන ඉදිරිපත් කරන්න, සහ ඉදිරි නඩත්තු කාලසටහන් නිරීක්ෂණය කරන්න.</p>
             </div>
 
             {error && <div className="driver-vehicle-update-alert-error">{error}</div>}
@@ -127,20 +127,18 @@ const DriverVehicleUpdate = () => {
 
                                 <div className="driver-vehicle-update-km-display-box">
                                     <div className="driver-vehicle-update-km-row service-due-row">
-                                        <span className="driver-vehicle-update-km-label">The next service</span>
+                                        <span className="driver-vehicle-update-km-label">ඊළඟ සේවාව</span>
                                         <span className="driver-vehicle-update-km-value text-warning">
                                             {nextService > 0 ? `${nextService} KM` : ''}
                                         </span>
                                     </div>
                                     {nextService > 0 && (
-                                        <div className="driver-vehicle-service-remaining">
-                                            More <strong>{remainingKm} KM</strong> Can be run
-                                        </div>
+                                        <div className="driver-vehicle-service-remaining">More <strong>{remainingKm} KM</strong> Can be run</div>
                                     )}
                                 </div>
 
                                 <div className="driver-vehicle-update-summary-box service-summary-box">
-                                    <h4 className="driver-vehicle-update-summary-title">Summary of past service records</h4>
+                                    <h4 className="driver-vehicle-update-summary-title">අතීත සේවා වාර්තාවල සාරාංශය</h4>
                                     {vehicle.serviceHistorySummary && vehicle.serviceHistorySummary.length > 0 ? (
                                         <ul className="driver-vehicle-update-summary-list">
                                             {vehicle.serviceHistorySummary.map((service, index) => {
@@ -158,7 +156,7 @@ const DriverVehicleUpdate = () => {
                                             })}
                                         </ul>
                                     ) : (
-                                        <p className="driver-vehicle-update-no-summary">Service records have not been entered yet.</p>
+                                        <p className="driver-vehicle-update-no-summary">සේවා වාර්තා තවමත් ඇතුළත් කර නොමැත.</p>
                                     )}
                                 </div>
 

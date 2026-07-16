@@ -51,7 +51,7 @@ const EmployeeNavBar = () => {
     const menuItems = [
         { name: 'Dashboard', path: '/EmployeeDashboard' },
         { name: 'Vehicle', path: '/EmployeeVehicle' },
-        { name: 'Personal File', path: '/EmployeePersonalFile' }
+        { name: 'Personal File', path: '/UnderMaintains' }
     ];
 
     return (

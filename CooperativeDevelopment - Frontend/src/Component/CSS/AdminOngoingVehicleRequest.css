@@ -185,6 +185,40 @@
     color: #c1121f;
 }
 
+.admin-ongoing-vehicle-request-badge-default {
+    color: #c1121f;
+}
+
+.admin-ongoing-btn-start,
+.admin-ongoing-btn-end {
+    padding: 8px 10px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-transform: uppercase;
+}
+
+.admin-ongoing-btn-start {
+    background-color: #2a9d8f;
+}
+
+.admin-ongoing-btn-start:hover {
+    background-color: #000;
+}
+
+.admin-ongoing-btn-end {
+    background-color: #c1121f;
+}
+
+.admin-ongoing-btn-end:hover {
+    background-color: #000;
+}
+
 @media screen and (max-width: 1024px) {
     .admin-ongoing-vehicle-request-container {
         padding: 20px 25px;

@@ -13,6 +13,7 @@ const AdminOngoingVehicleRequest = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [actionLoadingId, setActionLoadingId] = useState(null);
     const navigate = useNavigate();
 
     const fetchTodayRequests = async () => {
@@ -33,10 +34,48 @@ const AdminOngoingVehicleRequest = () => {
         fetchTodayRequests();
     }, []);
 
+    const handleStartTripByAdmin = async (requestId) => {
+        if (!window.confirm("Are you sure you want to START this trip officially?")) return;
+
+        setActionLoadingId(requestId);
+        try {
+            const response = await API.post(`/vehicle-requests/start-trip/${requestId}`);
+            if (response.status === 200) {
+                alert("🚀 Trip started successfully!");
+                fetchTodayRequests();
+            }
+        } catch (err) {
+            console.error("❌ Error starting trip:", err);
+            alert(err.response?.data?.message || "Failed to start the trip.");
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    const handleEndTripByAdmin = async (requestId) => {
+        if (!window.confirm("Are you sure you want to END this trip officially?")) return;
+
+        setActionLoadingId(requestId);
+        try {
+            const response = await API.post(`/vehicle-requests/end-trip/${requestId}`);
+            if (response.status === 200) {
+                alert("🏁 Trip ended successfully! Vehicle & Driver are now AVAILABLE.");
+                fetchTodayRequests();
+            }
+        } catch (err) {
+            console.error("❌ Error ending trip:", err);
+            alert("Failed to end the trip.");
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
     const getStatusBadge = (status) => {
         switch (status) {
             case 'TRIP_PROCESS_CONFIRMED':
                 return <span className="admin-ongoing-vehicle-request-badge admin-ongoing-vehicle-request-badge-confirmed">Trip Process Confirmed</span>;
+            case 'TRIP_STARTED':
+                return <span className="admin-ongoing-vehicle-request-badge admin-ongoing-vehicle-request-badge-admin-approved">Trip Started</span>;
             case 'PENDING':
                 return <span className="admin-ongoing-vehicle-request-badge admin-ongoing-vehicle-request-badge-pending">Pending</span>;
             case 'APPROVED_BY_VEHICLE_ADMIN':
@@ -90,19 +129,18 @@ const AdminOngoingVehicleRequest = () => {
                                 <tr className="admin-ongoing-vehicle-request-th-row">
                                     <th className="admin-ongoing-vehicle-request-th text-center">REQUESTER NAME</th>
                                     <th className="admin-ongoing-vehicle-request-th text-center">EMAIL</th>
-                                    <th className="admin-ongoing-vehicle-request-th text-center">Department</th>
                                     <th className="admin-ongoing-vehicle-request-th text-center">JOURNEY (FROM - TO)</th>
                                     <th className="admin-ongoing-vehicle-request-th text-center">Duty Nature</th>
                                     <th className="admin-ongoing-vehicle-request-th text-center">ASSIGNED VEHICLE AND DRIVERS</th>
                                     <th className="admin-ongoing-vehicle-request-th text-center">STATUS</th>
+                                    <th className="admin-ongoing-vehicle-request-th text-center">ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody className="admin-ongoing-vehicle-request-tbody">
                                 {requests.map((req) => (
-                                    <tr key={req.id} className="admin-ongoing-vehicle-request-tr">
+                                    <tr key={req.id || req._id} className="admin-ongoing-vehicle-request-tr">
                                         <td className="admin-ongoing-vehicle-request-td text-center">{req.requesterName}</td>
                                         <td className="admin-ongoing-vehicle-request-td text-center">{req.requesterEmail}</td>
-                                        <td className="admin-ongoing-vehicle-request-td text-center">{req.department}</td>
                                         <td className="admin-ongoing-vehicle-request-td text-center">
                                             <div>{req.fromLocation} ➡️ {req.toLocation}</div>
                                             <div className="admin-ongoing-vehicle-request-distance">DISTANCE: {req.distanceKm || req.distance || 'N/A'}</div>
@@ -126,8 +164,33 @@ const AdminOngoingVehicleRequest = () => {
                                                 <span className="admin-ongoing-vehicle-request-not-assigned-text">NOT ASSIGNED</span>
                                             )}
                                         </td>
+                                        <td className="admin-ongoing-vehicle-request-td text-center">{getStatusBadge(req.status)} </td>
+
+
                                         <td className="admin-ongoing-vehicle-request-td text-center">
-                                            {getStatusBadge(req.status)}
+                                            <div>
+                                                {req.status === 'TRIP_PROCESS_CONFIRMED' && (
+                                                    <button
+                                                        onClick={() => handleStartTripByAdmin(req.id || req._id)}
+                                                        disabled={actionLoadingId === (req.id || req._id)}
+                                                        className="admin-ongoing-btn-start">
+                                                        {actionLoadingId === (req.id || req._id) ? 'Starting...' : 'Start Trip'}
+                                                    </button>
+                                                )}
+
+                                                {req.status === 'TRIP_STARTED' && (
+                                                    <button
+                                                        onClick={() => handleEndTripByAdmin(req.id || req._id)}
+                                                        disabled={actionLoadingId === (req.id || req._id)}
+                                                        className="admin-ongoing-btn-end">
+                                                        {actionLoadingId === (req.id || req._id) ? 'Ending...' : 'End Trip'}
+                                                    </button>
+                                                )}
+
+                                                {req.status !== 'TRIP_PROCESS_CONFIRMED' && req.status !== 'TRIP_STARTED' && (
+                                                    <span>No Actions Available</span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

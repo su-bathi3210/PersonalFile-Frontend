@@ -151,7 +151,10 @@ const AdminPFDashboard = () => {
             {profileUpdatesCount > 0 ? (
               <div
                 className="pf-admin-dashboard-reminder-item pf-admin-dashboard-reminder-profile-count-card"
-                onClick={() => navigate('/AdminPFHistory', { state: { highlightUserEmail: profileNotifications[0]?.email } })}
+                onClick={() => {
+                  const allUpdatedEmails = profileNotifications.map(notif => notif.email).filter(Boolean);
+                  navigate('/AdminPFHistory', { state: { highlightUserEmails: allUpdatedEmails } });
+                }}
                 title="සියලුම සංශෝධන ඉතිහාසය පරීක්ෂා කරන්න">
 
                 <div className="pf-admin-dashboard-count-badge-orange">{profileUpdatesCount}</div>

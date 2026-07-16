@@ -13,6 +13,8 @@ import 'jspdf-autotable';
 
 import * as XLSX from 'xlsx';
 
+import { GoArrowSwitch } from "react-icons/go";
+
 import {
     CheckSquare,
     Download,
@@ -49,6 +51,8 @@ const AdminPersonalFile = () => {
     const [selectedColumnFilter, setSelectedColumnFilter] = useState("");
     const [selectedValueFilter, setSelectedValueFilter] = useState("");
 
+    const [activeFilters, setActiveFilters] = useState({});
+
     const [dynamicFieldConfigs, setDynamicFieldConfigs] = useState([]);
     const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
 
@@ -60,6 +64,8 @@ const AdminPersonalFile = () => {
     const [designationsSummary, setDesignationsSummary] = useState([]);
     const [designationEmployees, setDesignationEmployees] = useState([]);
     const [loadingDesignationData, setLoadingDesignationData] = useState(false);
+
+    const [showDeactive, setShowDeactive] = useState(false);
 
     const [newFieldData, setNewFieldData] = useState({
         fieldKey: "",
@@ -82,10 +88,30 @@ const AdminPersonalFile = () => {
         incrementDate: "", dateOfReceiptGradeI: "", dateOfReceiptGradeII: "",
         dateOfReceiptGradeIII: "", dateOfCompulsoryRetirement: "", dateOfReceiptOfRelevantGrade: "",
         firstAppointmentDate: "", presentStatusDate: "", wnopNumber: "",
-        profileImage: null, serviceNumber: "", dateOfLanguageProficiency: "", dynamicFields: {}
+        profileImage: null, serviceNumber: "", dateOfLanguageProficiency: "", dynamicFields: {}, status: "Active"
     };
 
     const [formData, setFormData] = useState(initialFormState);
+
+    const handleFilterChange = (columnKey, value) => {
+        setActiveFilters(prev => {
+            const updated = { ...prev };
+            if (value === "") {
+                delete updated[columnKey];
+            } else {
+                updated[columnKey] = value;
+            }
+            return updated;
+        });
+    };
+
+    const removeFilter = (columnKey) => {
+        setActiveFilters(prev => {
+            const updated = { ...prev };
+            delete updated[columnKey];
+            return updated;
+        });
+    };
 
     const fetchDesignationsSummary = async () => {
         try {
@@ -138,6 +164,7 @@ const AdminPersonalFile = () => {
             return updated;
         });
     };
+    
     const formatDate = (date) => {
         if (!date) return "-";
         if (typeof date === 'string') {
@@ -263,6 +290,26 @@ const AdminPersonalFile = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const loadEmployees = async () => {
+            setLoading(true);
+            try {
+                let res;
+                if (showDeactive) {
+                    res = await API.get('/personalfile/employees/deactivated');
+                } else {
+                    res = await API.get('/personalfile/all-employees');
+                }
+                setFiles(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadEmployees();
+    }, [showDeactive]);
 
     const fetchDepartments = async () => {
         try {
@@ -506,6 +553,7 @@ const AdminPersonalFile = () => {
             dateOfReceiptGradeIII: formatForInput(mappedIII),
             incrementDate: mappedIncrement,
 
+            status: file.status || "Active",
             password: "",
             dynamicFields: file.dynamicFields || {}
         });
@@ -560,6 +608,37 @@ const AdminPersonalFile = () => {
         } catch (err) {
             console.error("Update Error:", err);
             alert("❌ Error: " + (err.response?.data || err.message));
+        }
+    };
+
+    const handleDeactivateEmployee = async (id) => {
+        if (window.confirm("Are you sure you want to deactivate this employee?")) {
+            try {
+                await API.put(`/personalfile/employees/${id}/deactivate`);
+                alert("✅ Employee deactivated successfully!");
+                setIsModalOpen(false);
+                fetchFiles();
+            } catch (err) {
+                console.log("❌ Full Error Object:", err);
+                console.log("📝 Backend Server Message:", err.response?.data);
+                alert("❌ Failed to deactivate: " + (err.response?.data?.message || err.message));
+            }
+        }
+    };
+
+    const handleActivateEmployee = async (userId) => {
+        if (window.confirm("Are you sure you want to reactivate this employee?")) {
+            try {
+                await API.put(`/personalfile/${userId}/activate`);
+                alert("✅ Employee reactivated successfully!");
+
+                setIsModalOpen(false);
+                if (typeof fetchEmployees === "function") fetchEmployees();
+                else window.location.reload();
+            } catch (error) {
+                console.error("❌ Error activating employee:", error);
+                alert(error.response?.data || "❌ Failed to activate employee.");
+            }
         }
     };
 
@@ -738,10 +817,15 @@ const AdminPersonalFile = () => {
     const currentSelectedColumn = filterableColumns.find(c => c.key === selectedColumnFilter);
     const isCurrentColumnDate = currentSelectedColumn?.isDate;
 
+    const activeEmployeesOnly = files.filter(f => f.active === true || f.active === undefined);
+    const deactiveEmployeesOnly = files.filter(f => f.active === false);
+
     const getUniqueValuesForColumn = () => {
         if (!selectedColumnFilter) return [];
 
-        const allVals = files.map(emp => {
+        const targetList = showDeactive ? deactiveEmployeesOnly : activeEmployeesOnly;
+
+        const allVals = targetList.map(emp => {
             if (currentSelectedColumn?.isDynamic) {
                 return emp.dynamicFields?.[selectedColumnFilter];
             }
@@ -757,7 +841,9 @@ const AdminPersonalFile = () => {
     const getUniqueDateParts = (partType) => {
         if (!selectedColumnFilter || !isCurrentColumnDate) return [];
 
-        const partsList = files.map(emp => {
+        const targetList = showDeactive ? deactiveEmployeesOnly : activeEmployeesOnly;
+
+        const partsList = targetList.map(emp => {
             let dateVal = currentSelectedColumn?.isDynamic ? emp.dynamicFields?.[selectedColumnFilter] : emp[selectedColumnFilter];
             if (!dateVal) return null;
 
@@ -788,20 +874,22 @@ const AdminPersonalFile = () => {
 
     const getValueCountForColumn = (value) => {
         if (!selectedColumnFilter) return 0;
-        return files.filter(user => {
+        const targetList = showDeactive ? deactiveEmployeesOnly : activeEmployeesOnly;
+
+        return targetList.filter(user => {
             let userVal = "";
 
-            if (selectedColumnFilter === "designation") userVal = user.designation;
-            else if (selectedColumnFilter === "department") userVal = user.department;
-            else if (selectedColumnFilter === "grade") userVal = user.grade;
-            else if (selectedColumnFilter === "dutyPlace") userVal = user.dutyPlace;
-            else if (selectedColumnFilter === "gender") userVal = user.gender;
-            else if (user.dynamicFields && user.dynamicFields[selectedColumnFilter]) {
-                userVal = user.dynamicFields[selectedColumnFilter];
+            if (currentSelectedColumn?.isDynamic) {
+                userVal = user.dynamicFields?.[selectedColumnFilter];
+            } else {
+                userVal = user[selectedColumnFilter];
+                if (currentSelectedColumn?.isDayMonth && userVal) {
+                    userVal = formatDayMonth(userVal);
+                }
             }
 
-            const normalizedUserVal = userVal ? String(userVal).trim() : "Not Specified";
-            const normalizedTargetVal = value ? String(value).trim() : "Not Specified";
+            const normalizedUserVal = userVal ? String(userVal).trim().toLowerCase() : "not specified";
+            const normalizedTargetVal = value ? String(value).trim().toLowerCase() : "not specified";
 
             return normalizedUserVal === normalizedTargetVal;
         }).length;
@@ -809,7 +897,9 @@ const AdminPersonalFile = () => {
 
     const getDatePartCount = (type, partValue) => {
         if (!selectedColumnFilter) return 0;
-        return files.filter(user => {
+        const targetList = showDeactive ? deactiveEmployeesOnly : activeEmployeesOnly;
+
+        return targetList.filter(user => {
             const dateStr = user[selectedColumnFilter];
             if (!dateStr) return false;
 
@@ -832,9 +922,49 @@ const AdminPersonalFile = () => {
     };
 
     const filteredFiles = files.filter(f => {
-        const matchesSearch = (f.name || f.username || "").toLowerCase().includes(searchTerm.toLowerCase()) || (f.employeeId || "").includes(searchTerm);
+        if (showDeactive) {
+            if (f.status !== "Deactivated" && f.active !== false) return false;
+        } else {
+            if (f.status === "Deactivated" || f.active === false) return false;
+        }
 
-        if (!selectedColumnFilter) return matchesSearch;
+        const searchLower = searchTerm.toLowerCase().trim();
+        let matchesSearch = true;
+
+        if (searchLower) {
+            const standardFieldsMatch = Object.entries(f).some(([key, value]) => {
+                if (key === 'profileImage' || !value) return false;
+                return String(value).toLowerCase().includes(searchLower);
+            });
+
+            const dynamicFieldsMatch = f.dynamicFields ?
+                Object.values(f.dynamicFields).some(value =>
+                    value && String(value).toLowerCase().includes(searchLower)
+                ) : false;
+
+            matchesSearch = standardFieldsMatch || dynamicFieldsMatch;
+        }
+
+        if (!matchesSearch) return false;
+
+        const matchesAllFilters = Object.entries(activeFilters).every(([columnKey, filterValue]) => {
+            const columnConfig = filterableColumns.find(c => c.key === columnKey);
+
+            let employeeValue = "";
+            if (columnConfig?.isDynamic) {
+                employeeValue = f.dynamicFields?.[columnKey];
+            } else {
+                employeeValue = f[columnKey];
+                if (columnConfig?.isDayMonth && employeeValue) {
+                    employeeValue = formatDayMonth(employeeValue);
+                }
+            }
+
+            const normalizedEmpVal = employeeValue ? String(employeeValue).trim().toLowerCase() : "not specified";
+            const normalizedFilterVal = filterValue ? String(filterValue).trim().toLowerCase() : "";
+
+            return normalizedEmpVal === normalizedFilterVal;
+        });
 
         if (isCurrentColumnDate) {
             let dateVal = currentSelectedColumn?.isDynamic ? f.dynamicFields?.[selectedColumnFilter] : f[selectedColumnFilter];
@@ -843,14 +973,9 @@ const AdminPersonalFile = () => {
             const dateStr = String(dateVal).split('T')[0];
             const parts = dateStr.split('-');
 
-            let empYear = "";
-            let empMonth = "";
-            let empDay = "";
-
+            let empYear = "", empMonth = "", empDay = "";
             if (parts.length === 3) {
-                empYear = parts[0];
-                empMonth = parts[1];
-                empDay = parts[2];
+                empYear = parts[0]; empMonth = parts[1]; empDay = parts[2];
             } else {
                 const d = new Date(dateVal);
                 if (isNaN(d.getTime())) return false;
@@ -863,26 +988,15 @@ const AdminPersonalFile = () => {
             const matchesMonth = selectedMonth ? empMonth === selectedMonth : true;
             const matchesDay = selectedDay ? empDay === selectedDay : true;
 
-            return matchesSearch && matchesYear && matchesMonth && matchesDay;
+            return matchesYear && matchesMonth && matchesDay && matchesAllFilters;
         }
 
-        if (!selectedValueFilter) return matchesSearch;
-
-        let actualValue = "";
-        if (currentSelectedColumn?.isDynamic) {
-            actualValue = f.dynamicFields?.[selectedColumnFilter];
-        } else {
-            actualValue = f[selectedColumnFilter];
-            if (currentSelectedColumn?.isDayMonth && actualValue) actualValue = formatDayMonth(actualValue);
-        }
-
-        const matchesDynamicFilter = String(actualValue || "").toLowerCase() === String(selectedValueFilter).toLowerCase();
-        return matchesSearch && matchesDynamicFilter;
+        return matchesAllFilters;
     });
 
     const resetFilters = () => {
+        setActiveFilters({});
         setSelectedColumnFilter("");
-        setSelectedValueFilter("");
         setSelectedYear("");
         setSelectedMonth("");
         setSelectedDay("");
@@ -949,100 +1063,149 @@ const AdminPersonalFile = () => {
                 </button>
             </div>
 
-            <div className="filter-controls-toolbar">
-                <div className="filter-controls-left">
-                    <div className="bulk-action-toolbar-inner">
-                        <span className="selected-count-badge" data-count={selectedIds.length}>{selectedIds.length} Selected</span>
-                        <button onClick={generatePDF} className="admin-personal-pdf" disabled={selectedIds.length === 0}><FileText size={13} /> PDF Report</button>
-                        <button onClick={generateExcel} className="admin-personal-excel" disabled={selectedIds.length === 0}><Download size={13} /> Excel Export</button>
-                        <button onClick={handleBulkDelete} className="admin-personal-bulk" disabled={selectedIds.length === 0}><Trash2 size={13} /> Delete</button>
-                        <button onClick={() => setSelectedIds([])} className="admin-personal-details-bulk" disabled={selectedIds.length === 0}>Cancel</button>
+            <div className="filter-controls-toolbar-container">
+                <div className="filter-controls-toolbar">
+                    <div className="filter-controls-left">
+                        <div className="bulk-action-toolbar-inner">
+                            <span className="selected-count-badge" data-count={selectedIds.length}>{selectedIds.length} Selected</span>
+                            <button onClick={generatePDF} className="admin-personal-pdf" disabled={selectedIds.length === 0}><FileText size={13} /> PDF Report</button>
+                            <button onClick={generateExcel} className="admin-personal-excel" disabled={selectedIds.length === 0}><Download size={13} /> Excel Export</button>
+                            <button onClick={handleBulkDelete} className="admin-personal-bulk" disabled={selectedIds.length === 0}><Trash2 size={13} /> Delete</button>
+                            <button onClick={() => setSelectedIds([])} className="admin-personal-details-bulk" disabled={selectedIds.length === 0}>Cancel</button>
+                        </div>
+                    </div>
+
+                    <div className="filter-controls-right">
+                        <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <select value={selectedColumnFilter}
+                                onChange={(e) => {
+                                    setSelectedColumnFilter(e.target.value);
+                                    setSelectedValueFilter("");
+                                }}
+                                className="admin-filter-dropdown"
+                            >
+                                <option value="">Select Filter Column</option>
+                                {filterableColumns.map((col) => (
+                                    <option key={col.key} value={col.key}>{col.label}</option>
+                                ))}
+                            </select>
+
+                            {selectedColumnFilter && isCurrentColumnDate ? (
+                                <>
+                                    <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}
+                                        className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
+                                        <option value="">Year</option>
+                                        {getUniqueDateParts('year').map((yr, idx) => (
+                                            <option key={idx} value={yr}>{yr} - {getDatePartCount('year', yr)}</option>
+                                        ))}
+                                    </select>
+
+                                    <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}
+                                        className="admin-filter-dropdown date-sub-filter" style={{ width: '130px' }}>
+                                        <option value="">Month</option>
+                                        {getUniqueDateParts('month').map((mn, idx) => (
+                                            <option key={idx} value={mn}>{getMonthName(mn)} - {getDatePartCount('month', mn)}</option>
+                                        ))}
+                                    </select>
+
+                                    <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}
+                                        className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
+                                        <option value="">Date</option>
+                                        {getUniqueDateParts('day').map((dy, idx) => (
+                                            <option key={idx} value={dy}>{dy} - {getDatePartCount('day', dy)}</option>
+                                        ))}
+                                    </select>
+                                </>
+                            ) : (
+                                <select
+                                    value={activeFilters[selectedColumnFilter] || ""}
+                                    disabled={!selectedColumnFilter}
+                                    onChange={(e) => handleFilterChange(selectedColumnFilter, e.target.value)}
+                                    className="admin-filter-dropdown"
+                                >
+                                    <option value="">
+                                        {selectedColumnFilter ? "Choose Value" : "Select Column First"}
+                                    </option>
+                                    {getUniqueValuesForColumn().map((val, idx) => (
+                                        <option key={idx} value={val}>
+                                            {val || "Not Specified"} -  {getValueCountForColumn(val)}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+
+                            {(selectedColumnFilter || Object.keys(activeFilters).length > 0 || selectedYear || selectedMonth || selectedDay) && (
+                                <button onClick={resetFilters} className="btn-filter-reset" title="Clear Filters"><RotateCcw size={14} /></button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="filter-controls-right">
-                    <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-
-                        <select value={selectedColumnFilter} onChange={(e) => {
-                            setSelectedColumnFilter(e.target.value);
-                            setSelectedValueFilter("");
-                            setSelectedYear("");
-                            setSelectedMonth("");
-                            setSelectedDay("");
-                        }} className="admin-filter-dropdown">
-                            <option value="">Select Filter Column</option>
-                            {filterableColumns.map((col) => (
-                                <option key={col.key} value={col.key}>{col.label}</option>
-                            ))}
-                        </select>
-
-                        {selectedColumnFilter && isCurrentColumnDate ? (
-                            <>
-                                <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}
-                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
-                                    <option value="">Year</option>
-                                    {getUniqueDateParts('year').map((yr, idx) => (
-                                        <option key={idx} value={yr}>{yr} - {getDatePartCount('year', yr)}</option>
-                                    ))}
-                                </select>
-
-                                <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}
-                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '130px' }}>
-                                    <option value="">Month</option>
-                                    {getUniqueDateParts('month').map((mn, idx) => (
-                                        <option key={idx} value={mn}>{getMonthName(mn)} - {getDatePartCount('month', mn)}</option>
-                                    ))}
-                                </select>
-
-                                <select value={selectedDay} onChange={(e) => setSelectedDay(e.target.value)}
-                                    className="admin-filter-dropdown date-sub-filter" style={{ width: '110px' }}>
-                                    <option value="">Date</option>
-                                    {getUniqueDateParts('day').map((dy, idx) => (
-                                        <option key={idx} value={dy}>{dy} - {getDatePartCount('day', dy)}</option>
-                                    ))}
-                                </select>
-                            </>
-                        ) : (
-                            <select value={selectedValueFilter} disabled={!selectedColumnFilter}
-                                onChange={(e) => setSelectedValueFilter(e.target.value)} className="admin-filter-dropdown">
-                                <option value="">
-                                    {selectedColumnFilter ? "Choose Value" : "Select Column First"}
-                                </option>
-                                {getUniqueValuesForColumn().map((val, idx) => (
-                                    <option key={idx} value={val}>
-                                        {val || "Not Specified"} -  {getValueCountForColumn(val)}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-
-                        {(selectedColumnFilter || selectedValueFilter || selectedYear || selectedMonth || selectedDay) && (
-                            <button onClick={resetFilters} className="btn-filter-reset" title="Clear Filters"><RotateCcw size={14} /></button>
-                        )}
+                <div className="custom-switch-row-section">
+                    <div className="custom-animated-switch-wrapper" onClick={() => {
+                        setShowDeactive(!showDeactive);
+                        setSelectedIds([]);
+                    }}>
+                        <div className={`custom-switch-btn-icon ${showDeactive ? 'is-deactive' : 'is-active'}`}>
+                            <GoArrowSwitch size={15} />
+                        </div>
+                        <span className="custom-switch-text-label">
+                            {showDeactive
+                                ? `Deactivated Employees: ${deactiveEmployeesOnly.length}`
+                                : `Currently Active Employees: ${activeEmployeesOnly.length}`
+                            }
+                        </span>
                     </div>
                 </div>
             </div>
 
+            <div className="active-filter-tags">
+                {Object.entries(activeFilters).map(([key, value]) => {
+                    const label = filterableColumns.find(c => c.key === key)?.label || key;
+                    return (
+                        <div key={key} className="active-filter-tag-item">
+                            <span className="active-filter-tag-label">{label}:</span>
+                            <span className="active-filter-tag-value">{value}</span>
+                            <span className="active-filter-tag-close" title="Remove Filter">
+                                <X size={14} onClick={() => removeFilter(key)} />
+                            </span>
+                        </div>
+                    );
+                })}
+            </div>
+
             <div className="admin-personal-grid fade-in">
-                {filteredFiles.map((file) => (
-                    <div key={file.id} className={`user-card ${selectedIds.includes(file.id) ? 'selected' : ''}`} onClick={() => openEditModal(file)}>
-                        <div className="admin-personal-checkbox" onClick={(e) => toggleSelect(file.id, e)}>
-                            {selectedIds.includes(file.id) ? <CheckSquare size={13} /> : <Square size={13} />}
-                        </div>
-                        <div className="user-avatar">
-                            {file.profileImage ? (
-                                <img src={file.profileImage} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                            ) : (
-                                getInitials(file.name || file.username)
-                            )}
-                        </div>
-                        <div className="user-info">
-                            <h3 className="user-name">{file.name || file.username}</h3>
-                            <p className="user-email">{file.email}</p>
-                            <span className="user-designation-badge">{file.designation || 'Employee'}</span>
-                        </div>
+                {filteredFiles.length === 0 ? (
+                    <div className="no-records-found">
+                        <p>⚠️ No Employees Found Matching Your Search Criterion.</p>
                     </div>
-                ))}
+                ) : (
+                    filteredFiles.map((file) => (
+                        <div key={file.id} className={`user-card ${selectedIds.includes(file.id) ? 'selected' : ''}`} onClick={() => openEditModal(file)}>
+                            <div className="admin-personal-checkbox" onClick={(e) => toggleSelect(file.id, e)}>
+                                {selectedIds.includes(file.id) ? <CheckSquare size={13} /> : <Square size={13} />}
+                            </div>
+                            <div className="user-avatar">
+                                {file.profileImage ? (
+                                    <img src={file.profileImage} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                ) : (
+                                    getInitials(file.name || file.username)
+                                )}
+                            </div>
+                            <div className="user-info">
+                                <h3 className="user-name">{file.name || file.username}</h3>
+                                <p className="user-email">{file.email}</p>
+                                <span className="user-designation-badge">{file.designation || 'Employee'}</span>
+
+                                {file.status === "Deactivated" && (
+                                    <span className="status-badge deactivated" style={{ backgroundColor: '#ffccd5', color: '#c1121f', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '5px', fontWeight: 'bold' }}>
+                                        Deactivated
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {isPreviewOpen && (
@@ -1537,14 +1700,39 @@ const AdminPersonalFile = () => {
                                             value={formData.dynamicFields?.[field.fieldKey] || ""}
                                             onChange={handleDynamicInputChange}
                                             className="admin-personal-form-input-field"
-                                            required={field.required === true || String(field.required).toLowerCase() === "true"} // 👈 මේකත් field.required අනුව true/false වෙන්න හැදුවා (කලින් hardcode කරලා false තිබ්බේ)
+                                            required={field.required === true || String(field.required).toLowerCase() === "true"}
                                         />
                                     </div>
                                 ))}
 
                             <div className="admin-personal-modal-footer">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-modal-cancel">Cancel</button>
-                                <button type="submit" className="btn-modal-update">{isAddMode ? "Create User" : "Update Profile"}</button>
+
+                                {!isAddMode && formData.active === true && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeactivateEmployee(formData.id)}
+                                        className="btn-modal-delete"
+                                        style={{ backgroundColor: '#c1121f', color: '#fff' }}
+                                    >
+                                        Deactivate Employee
+                                    </button>
+                                )}
+
+                                {!isAddMode && formData.active === false && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleActivateEmployee(formData.id)}
+                                        className="btn-modal-update"
+                                        style={{ backgroundColor: '#2a9d8f', color: '#fff' }}
+                                    >
+                                        Activate Employee
+                                    </button>
+                                )}
+
+                                <button type="submit" className="btn-modal-update">
+                                    {isAddMode ? "Create User" : "Update Profile"}
+                                </button>
                             </div>
                         </form>
                     </div>

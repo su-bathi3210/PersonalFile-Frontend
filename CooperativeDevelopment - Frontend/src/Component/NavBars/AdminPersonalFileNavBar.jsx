@@ -86,10 +86,10 @@ const AdminPersonalFileNavBar = () => {
     };
 
     const menuItems = [
-        { name: 'Dashboard', path: '/AdminPFDashboard' },
-        { name: 'Personal File', path: '/AdminPersonalFile', relatedPaths: ["/AdminPFHistory"] },
+        { name: 'Dashboard', path: '/AdminPFDashboard', relatedPaths: ["/AdminPFHistory"] },
+        { name: 'Personal File', path: '/AdminPersonalFile' },
         { name: 'In:Date', path: '/IncrementDateHandling' },
-        { name: 'In:Forms', path: '/IncrementFormsHandling', hasBadge: true }, 
+        { name: 'In:Forms', path: '/IncrementFormsHandling', hasBadge: true },
     ];
 
     return (

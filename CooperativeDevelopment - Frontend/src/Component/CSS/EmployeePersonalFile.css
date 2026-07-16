@@ -325,12 +325,11 @@
     text-transform: uppercase;
     font-size: 15px;
     color: #008000;
-    margin-bottom: 3px;
+    margin-bottom: 5px;
 }
 
 .personalFile-user-badge {
-    font-size: 12.5px;
-    text-transform: uppercase;
+    font-size: 15px;
 }
 
 .personalFile-sidebar-info-list {
@@ -386,7 +385,7 @@
 .personalFile-modal,
 .pfChangingPassword-modal {
     background: #ffffff;
-    width: 600px;
+    width: 1000px;
     padding: 20px;
 
     max-height: 80vh;
@@ -465,8 +464,8 @@
 
 .personalFile-form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px 15px;
 }
 
 .personalFile-form-group label,

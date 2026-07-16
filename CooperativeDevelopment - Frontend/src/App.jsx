@@ -10,7 +10,7 @@ import {
 
 // Logins
 import LoginRegister from './Component/Logins/LoginRegister';
-import UnderMaintenance from './Component/Logins/UnderMaintains';
+import UnderMaintains from './Component/Logins/UnderMaintains';
 
 // Dashboards
 import EmployeeDashboard from './Component/Dashboard/EmployeeDashboard';
@@ -91,7 +91,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<UnderMaintenance />} />
+        <Route path="/" element={<LoginRegister />} />
         <Route path="/Unauthorized" element={<Unauthorized />} />
 
         <Route element={
@@ -101,6 +101,7 @@ function App() {
           <Route path="/EmployeeDashboard" element={<EmployeeDashboard />} />
           <Route path="/EmployeePersonalFile" element={<EmployeePersonalFile />} />
           <Route path="/EmployeeVehicle" element={<EmployeeVehicle />} />
+          <Route path="/UnderMaintains" element={<UnderMaintains />} />
         </Route>
 
 
@@ -137,10 +138,10 @@ function App() {
           <ProtectedRoute allowedRoles={['ROLE_PERSONALFILE_ADMIN']} Navbar={AdminPersonalFileNavBar}>
             <div className="employee-layout-wrapper"><Outlet /></div> </ProtectedRoute>}>
 
-          <Route path="/AdminPFDashboard" element={<AdminPFDashboard />} />
-          <Route path="/AdminPersonalFile" element={<AdminPersonalFile />} />
-          <Route path="/IncrementDateHandling" element={<IncrementDateHandling />} />
-          <Route path="/IncrementFormsHandling" element={<IncrementFormsHandling />} />
+          <Route path="/AdminPFDashboard" element={<UnderMaintains />} />
+          <Route path="/AdminPersonalFile" element={<UnderMaintains />} />
+          <Route path="/IncrementDateHandling" element={<UnderMaintains />} />
+          <Route path="/IncrementFormsHandling" element={<UnderMaintains />} />
           <Route path="/AdminPFHistory" element={<AdminPFHistory />} />
         </Route>
 

@@ -9,7 +9,7 @@ import API from '../../API/Axios';
 
 import { jsPDF } from 'jspdf';
 
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable'
 
 import * as XLSX from 'xlsx';
 
@@ -24,7 +24,9 @@ import {
     Search,
     Square,
     Trash2,
-    X
+    X,
+    Columns,
+    Printer
 } from 'lucide-react';
 
 import '../../CSS/AdminPersonalFile.css';
@@ -67,13 +69,24 @@ const AdminPersonalFile = () => {
 
     const [showDeactive, setShowDeactive] = useState(false);
 
+    const [reasonModalOpen, setReasonModalOpen] = useState(false);
+    const [reasonModalType, setReasonModalType] = useState("");
+    const [reasonsList, setReasonsList] = useState([]);
+    const [selectedReason, setSelectedReason] = useState("");
+    const [newReasonText, setNewReasonText] = useState("");
+    const [targetEmployeeId, setTargetEmployeeId] = useState(null);
+    const [selectedReasonFilter, setSelectedReasonFilter] = useState("");
+
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [selectedColumns, setSelectedColumns] = useState([]);
+
     const [newFieldData, setNewFieldData] = useState({
         fieldKey: "",
         displayName: "",
         fieldType: "text",
         required: false,
         scope: "GLOBAL",
-        targetDesignation: "",
+        targetDesignations: [],
         employeeEmail: "",
         isAdminOnly: false
     });
@@ -164,7 +177,7 @@ const AdminPersonalFile = () => {
             return updated;
         });
     };
-    
+
     const formatDate = (date) => {
         if (!date) return "-";
         if (typeof date === 'string') {
@@ -354,95 +367,235 @@ const AdminPersonalFile = () => {
         }
     };
 
+    const allAvailableColumns = [
+        { key: "username", label: "Name Of The Employee" },
+        { key: "email", label: "Email" },
+        { key: "nic", label: "National ID" },
+        { key: "phoneNumber", label: "Phone Number" },
+        { key: "emergencyContact", label: "Emergency Contact" },
+        { key: "address", label: "Address" },
+        { key: "dateOfBirth", label: "Date Of Birth" },
+        { key: "gender", label: "Gender" },
+        { key: "serviceNumber", label: "Service Number" },
+        { key: "wnopNumber", label: "WNOP Number" },
+        { key: "designation", label: "Designation" },
+        { key: "department", label: "Department" },
+        { key: "dutyPlace", label: "Duty Place" },
+        { key: "salaryScale", label: "Salary Scale" },
+        { key: "salary", label: "Salary" },
+        { key: "dateOfFirstAppointment", label: "Date Of First Appointment" },
+        { key: "dateOfLanguageProficiency", label: "Date Of Language Proficiency" },
+        { key: "appointmentDateToPresentStatus", label: "Appointment Date To Present Status" },
+        { key: "incrementDate", label: "Increment Date" },
+        { key: "dateOfCompulsoryRetirement", label: "Date Of Compulsory Retirement" },
+        { key: "presentStatusDate", label: "Present Status Date" },
+        { key: "grade", label: "Grade" },
+        { key: "dateOfReceiptGradeIII", label: "Grade III Receipt Date" },
+        { key: "dateOfReceiptGradeII", label: "Grade II Receipt Date" },
+        { key: "dateOfReceiptGradeI", label: "Grade I Receipt Date" },
+        ...dynamicFieldConfigs.map(f => ({ key: `dynamic_${f.fieldKey}`, label: f.displayName, isDynamic: true, fieldKey: f.fieldKey }))
+    ];
+
+    const handleOpenReportModal = () => {
+        if (selectedIds.length === 0) return alert("Select employees first!");
+        setSelectedColumns(["username"]);
+        setIsReportModalOpen(true);
+    };
+
+    const toggleColumnSelection = (key) => {
+        if (key === "username") return;
+        setSelectedColumns(prev =>
+            prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+        );
+    };
+
     const generatePDF = () => {
-        const doc = new jsPDF();
-        const dataToExport = files.filter(f => selectedIds.includes(f.id));
+        const dataToExport = filteredFiles.filter(f => selectedIds.includes(f.id));
         if (dataToExport.length === 0) return alert("Select employees first!");
+
+        const activeCols = allAvailableColumns.filter(c => selectedColumns.includes(c.key));
+
+        const orientation = activeCols.length > 5 ? 'landscape' : 'portrait';
+
+        const doc = new jsPDF({
+            orientation: orientation,
+            format: 'a4'
+        });
 
         doc.setFontSize(16);
         doc.text("Department of Cooperative Development - Staff Report", 14, 15);
         doc.setFontSize(10);
         doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
 
-        const tableColumn = ["Emp ID", "Name", "Designation", "Department", "NIC"];
-        const tableRows = dataToExport.map(emp => [
-            emp.employeeId || 'N/A', emp.name || emp.username, emp.designation, emp.department, emp.nic
-        ]);
+        const tableColumn = activeCols.map(c => c.label);
 
-        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 30 });
+        const tableRows = dataToExport.map(emp => {
+            return activeCols.map(col => {
+                if (col.isDynamic) {
+                    return emp.dynamicFields?.[col.fieldKey] || "-";
+                }
+                if (['dateOfBirth', 'dateOfFirstAppointment', 'appointmentDateToPresentStatus', 'dateOfCompulsoryRetirement', 'presentStatusDate', 'dateOfReceiptGradeI', 'dateOfReceiptGradeII', 'dateOfReceiptGradeIII'].includes(col.key)) {
+                    return formatDate(emp[col.key]);
+                }
+                if (col.key === 'incrementDate') {
+                    return formatDayMonth(emp[col.key]);
+                }
+                return emp[col.key] || "-";
+            });
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 30,
+            styles: { fontSize: activeCols.length > 5 ? 8 : 10 }
+        });
+
         doc.save("Employee_Report.pdf");
     };
 
-    const generateExcel = () => {
-        const dataToExport = files.filter(f => selectedIds.includes(f.id));
+    const handlePrint = () => {
+        const dataToExport = filteredFiles.filter(f => selectedIds.includes(f.id));
         if (dataToExport.length === 0) return alert("Select employees first!");
-        const activeDynamicFieldKeys = [];
-        dynamicFieldConfigs.forEach(field => {
-            const isGlobal = field.isGlobal === true || String(field.isGlobal).toLowerCase() === "true";
-            const isApplicableToAnySelected = dataToExport.some(emp =>
-                isGlobal || (emp.email && field.employeeEmail?.toLowerCase() === emp.email.toLowerCase())
-            );
-            if (isApplicableToAnySelected) {
-                activeDynamicFieldKeys.push({
-                    key: field.fieldKey,
-                    label: field.displayName || field.fieldKey
-                });
-            }
+
+        const activeCols = allAvailableColumns.filter(c => selectedColumns.includes(c.key));
+
+        let tableHtml = `<table border="1" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 12px;">`;
+        tableHtml += `<tr style="background-color: #f2f2f2;"><th>No</th>`;
+        activeCols.forEach(col => {
+            tableHtml += `<th style="padding: 8px;">${col.label}</th>`;
         });
+        tableHtml += `</tr>`;
 
-        const headerRow1 = [
-            "No", "Name Of The Employee", "Email", "National ID", "Phone Number", "Emergency Contact",
-            "Address", "Date Of Birth", "Gender", "Service Number", "WNOP Number",
-            "Designation", "Department", "Duty Place", "Salary Scale", "Salary",
-            "Date Of First Appointment", "Date Of Language Proficiency",
-            "Appointment Date To Present Status", "Increment Date",
-            "Date Of Compulsory Retirement", "Present Status Date", "Grade",
-            "Date Of Receipt Of Relevant Grade", "", ""
-        ];
-
-        const headerRow2 = [
-            "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-            "III", "II", "I"
-        ];
-
-        activeDynamicFieldKeys.forEach(field => {
-            headerRow1.push(field.label);
-            headerRow2.push("");
-        });
-
-        const excelHeaders = [headerRow1, headerRow2];
-
-        const excelRows = dataToExport.map((emp, index) => {
-            const standardData = [
-                index + 1, emp.name || emp.username || "-", emp.email || "-", emp.nic || "-", emp.phoneNumber || "-", emp.emergencyContact || "-",
-                emp.address || "-", emp.dateOfBirth ? formatDate(emp.dateOfBirth) : "-", emp.gender || "-",
-                emp.serviceNumber || "-", emp.wnopNumber || "-", emp.designation || "-", emp.department || "-",
-                emp.dutyPlace || "-", emp.salaryScale || "-", emp.salary || "-", emp.dateOfFirstAppointment ? formatDate(emp.dateOfFirstAppointment) : "-",
-                emp.dateOfLanguageProficiency || "-", emp.appointmentDateToPresentStatus ? formatDate(emp.appointmentDateToPresentStatus) : "-",
-                emp.incrementDate ? formatDayMonth(emp.incrementDate) : "-", emp.dateOfCompulsoryRetirement ? formatDate(emp.dateOfCompulsoryRetirement) : "-",
-                emp.presentStatusDate ? formatDate(emp.presentStatusDate) : "-", emp.grade || "-",
-                emp.dateOfReceiptGradeIII ? formatDate(emp.dateOfReceiptGradeIII) : "-",
-                emp.dateOfReceiptGradeII ? formatDate(emp.dateOfReceiptGradeII) : "-",
-                emp.dateOfReceiptGradeI ? formatDate(emp.dateOfReceiptGradeI) : "-"
-            ];
-
-            const dynamicData = activeDynamicFieldKeys.map(field => {
-                if (emp.dynamicFields && emp.dynamicFields[field.key] !== undefined && emp.dynamicFields[field.key] !== null && emp.dynamicFields[field.key] !== "") {
-                    return emp.dynamicFields[field.key];
+        dataToExport.forEach((emp, index) => {
+            tableHtml += `<tr><td style="padding: 8px; text-align: center;">${index + 1}</td>`;
+            activeCols.forEach(col => {
+                let cellValue = "-";
+                if (col.isDynamic) {
+                    cellValue = emp.dynamicFields?.[col.fieldKey] || "-";
+                } else if (['dateOfBirth', 'dateOfFirstAppointment', 'appointmentDateToPresentStatus', 'dateOfCompulsoryRetirement', 'presentStatusDate', 'dateOfReceiptGradeI', 'dateOfReceiptGradeII', 'dateOfReceiptGradeIII'].includes(col.key)) {
+                    cellValue = formatDate(emp[col.key]);
+                } else if (col.key === 'incrementDate') {
+                    cellValue = formatDayMonth(emp[col.key]);
+                } else {
+                    cellValue = emp[col.key] || "-";
                 }
-                return "-";
+                tableHtml += `<td style="padding: 8px;">${cellValue}</td>`;
             });
+            tableHtml += `</tr>`;
+        });
+        tableHtml += `</table>`;
 
-            return [...standardData, ...dynamicData];
+        const printWindow = window.open('', '_blank', 'height=600,width=800');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Employee Report</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    h2 { margin-bottom: 5px; }
+                    p { color: #555; font-size: 13px; margin-top: 0; margin-bottom: 20px; }
+                    @page { size: auto; margin: 20mm; }
+                </style>
+            </head>
+            <body>
+                <h2>Department of Cooperative Development - Staff Report</h2>
+                <p>Generated on: ${new Date().toLocaleString()}</p>
+                ${tableHtml}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
+    const generateWord = () => {
+        const dataToExport = filteredFiles.filter(f => selectedIds.includes(f.id));
+        if (dataToExport.length === 0) return alert("Select employees first!");
+
+        const activeCols = allAvailableColumns.filter(c => selectedColumns.includes(c.key));
+
+        let tableHtml = `<table border="1" style="border-collapse: collapse; width: 100%;">`;
+
+        tableHtml += `<tr style="background-color: #f2f2f2;"><th>No</th>`;
+        activeCols.forEach(col => {
+            tableHtml += `<th>${col.label}</th>`;
+        });
+        tableHtml += `</tr>`;
+
+        dataToExport.forEach((emp, index) => {
+            tableHtml += `<tr><td>${index + 1}</td>`;
+            activeCols.forEach(col => {
+                let cellValue = "-";
+                if (col.isDynamic) {
+                    cellValue = emp.dynamicFields?.[col.fieldKey] || "-";
+                } else if (['dateOfBirth', 'dateOfFirstAppointment', 'appointmentDateToPresentStatus', 'dateOfCompulsoryRetirement', 'presentStatusDate', 'dateOfReceiptGradeI', 'dateOfReceiptGradeII', 'dateOfReceiptGradeIII'].includes(col.key)) {
+                    cellValue = formatDate(emp[col.key]);
+                } else if (col.key === 'incrementDate') {
+                    cellValue = formatDayMonth(emp[col.key]);
+                } else {
+                    cellValue = emp[col.key] || "-";
+                }
+                tableHtml += `<td>${cellValue}</td>`;
+            });
+            tableHtml += `</tr>`;
+        });
+        tableHtml += `</table>`;
+
+        const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>Employee Report</title><style>body { font-family: Arial; }</style></head>
+        <body>
+            <h2>Department of Cooperative Development - Staff Report</h2>
+            <p>Generated on: ${new Date().toLocaleString()}</p>
+            ${tableHtml}
+        </body>
+        </html>
+        `;
+
+        const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Employee_Report_${new Date().toISOString().split('T')[0]}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const generateExcel = () => {
+        const dataToExport = filteredFiles.filter(f => selectedIds.includes(f.id));
+        if (dataToExport.length === 0) return alert("Select employees first!");
+
+        const activeCols = allAvailableColumns.filter(c => selectedColumns.includes(c.key));
+
+        const headerRow = ["No", ...activeCols.map(c => c.label)];
+        const excelRows = dataToExport.map((emp, index) => {
+            const rowData = [index + 1];
+            activeCols.forEach(col => {
+                if (col.isDynamic) {
+                    rowData.push(emp.dynamicFields?.[col.fieldKey] || "-");
+                } else if (col.key === 'dateOfBirth' || col.key === 'dateOfFirstAppointment' || col.key === 'appointmentDateToPresentStatus' || col.key === 'dateOfCompulsoryRetirement' || col.key === 'presentStatusDate' || col.key === 'dateOfReceiptGradeI' || col.key === 'dateOfReceiptGradeII' || col.key === 'dateOfReceiptGradeIII') {
+                    rowData.push(formatDate(emp[col.key]));
+                } else if (col.key === 'incrementDate') {
+                    rowData.push(formatDayMonth(emp[col.key]));
+                } else {
+                    rowData.push(emp[col.key] || "-");
+                }
+            });
+            return rowData;
         });
 
-        const ws = XLSX.utils.aoa_to_sheet([...excelHeaders, ...excelRows]);
-        if (!ws['!merges']) ws['!merges'] = [];
-        ws['!merges'].push({ s: { r: 0, c: 21 }, e: { r: 0, c: 23 } });
-
+        const ws = XLSX.utils.aoa_to_sheet([headerRow, ...excelRows]);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Employee Data");
-        XLSX.writeFile(wb, `Employee_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Filtered Employee Data");
+        XLSX.writeFile(wb, `Employee_Custom_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const handleBulkDelete = async () => {
@@ -565,26 +718,83 @@ const AdminPersonalFile = () => {
         e.preventDefault();
         let preparedFormData = { ...formData };
 
+        if (preparedFormData.email) {
+            const emailStr = String(preparedFormData.email).trim();
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            const isPureNumbers = /^\d+$/.test(emailStr);
+
+            if (isPureNumbers) {
+                alert("❌ Email field cannot contain numbers only! Please enter a valid email address.");
+                return;
+            }
+            if (!emailStr.includes("@") || !emailRegex.test(emailStr)) {
+                alert("❌ Invalid Email! Email must contain '@' and follow a valid email format (e.g., user@example.com).");
+                return;
+            }
+        }
+
+        if (preparedFormData.phoneNumber) {
+            const phoneStr = String(preparedFormData.phoneNumber).trim();
+            if (!phoneStr.startsWith("0")) {
+                alert("❌ Invalid Phone Number! The phone number must start with '0'.");
+                return;
+            }
+        }
+        if (preparedFormData.emergencyContact) {
+            const emergencyStr = String(preparedFormData.emergencyContact).trim();
+            if (!emergencyStr.startsWith("0")) {
+                alert("❌ Invalid Emergency Contact! The emergency contact number must start with '0'.");
+                return;
+            }
+        }
+
+        if (preparedFormData.salary) {
+            const salaryStr = String(preparedFormData.salary).trim();
+            if (!salaryStr.includes(",")) {
+                alert("❌ Invalid Salary Format! Salary must include a comma ',' separator (e.g., 45,000 or 120,000.00).");
+                return;
+            }
+        }
+
         if (preparedFormData.incrementDate) {
             let dateStr = preparedFormData.incrementDate.trim();
-            const currentYear = new Date().getFullYear();
 
-            if (dateStr.includes('-')) {
-                const parts = dateStr.split('-');
-                if (parts.length === 2) {
-                    if (isNaN(parts[0]) && !isNaN(parts[1])) {
-                        preparedFormData.incrementDate = `${currentYear}-${parts[0]}-${parts[1]}`;
-                    } else if (!isNaN(parts[0]) && isNaN(parts[1])) {
-                        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                        const mIdx = monthNames.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
-                        if (mIdx !== -1) {
-                            const formattedMonth = String(mIdx + 1).padStart(2, '0');
-                            const formattedDay = String(parts[0]).padStart(2, '0');
-                            preparedFormData.incrementDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
-                        }
-                    } else if (!isNaN(parts[0]) && !isNaN(parts[1])) {
-                        preparedFormData.incrementDate = `${currentYear}-${parts[0]}-${parts[2] || parts[1]}`;
-                    }
+            const incrementRegex = /^\d{1,2}-[a-zA-Z]{3}$/;
+
+            if (!incrementRegex.test(dateStr)) {
+                alert("❌ Invalid Increment Date Format! It must follow the format 'd-mmm' (e.g., 20-Apr or 5-Jan).");
+                return;
+            }
+
+            const currentYear = new Date().getFullYear();
+            const parts = dateStr.split('-');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const mIdx = monthNames.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
+
+            if (mIdx !== -1) {
+                const formattedMonth = String(mIdx + 1).padStart(2, '0');
+                const formattedDay = String(parts[0]).padStart(2, '0');
+                preparedFormData.incrementDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
+            } else {
+                alert("❌ Invalid Month Name in Increment Date! Use standard 3-letter months (e.g., Jan, Apr, Dec).");
+                return;
+            }
+        }
+
+        const dateFieldsToCheck = [
+            "dateOfBirth", "dateOfFirstAppointment", "appointmentDateToPresentStatus",
+            "dateOfCompulsoryRetirement", "presentStatusDate",
+            "dateOfReceiptGradeI", "dateOfReceiptGradeII", "dateOfReceiptGradeIII"
+        ];
+
+        for (const fieldName of dateFieldsToCheck) {
+            if (preparedFormData[fieldName]) {
+                const dateObj = new Date(preparedFormData[fieldName]);
+                if (isNaN(dateObj.getTime())) {
+                    alert(`❌ Invalid Date format in field! Please re-check selected dates.`);
+                    return;
                 }
             }
         }
@@ -598,10 +808,10 @@ const AdminPersonalFile = () => {
         try {
             if (isAddMode) {
                 await API.post('/personalfile/add-employee', preparedFormData);
-                alert("✅ New User Added!");
+                alert("✅ New User Added Successfully after Validation!");
             } else {
                 await API.put(`/personalfile/update-profile?id=${formData.id}`, preparedFormData);
-                alert("✅ Profile Updated Successfully!");
+                alert("✅ Profile Updated Successfully after Validation!");
             }
             setIsModalOpen(false);
             fetchFiles();
@@ -611,34 +821,83 @@ const AdminPersonalFile = () => {
         }
     };
 
-    const handleDeactivateEmployee = async (id) => {
-        if (window.confirm("Are you sure you want to deactivate this employee?")) {
-            try {
-                await API.put(`/personalfile/employees/${id}/deactivate`);
-                alert("✅ Employee deactivated successfully!");
-                setIsModalOpen(false);
-                fetchFiles();
-            } catch (err) {
-                console.log("❌ Full Error Object:", err);
-                console.log("📝 Backend Server Message:", err.response?.data);
-                alert("❌ Failed to deactivate: " + (err.response?.data?.message || err.message));
-            }
+    const fetchReasons = async (type) => {
+        try {
+            const res = await API.get(`/deactivation-reasons/type/${type}`);
+            setReasonsList(res.data);
+        } catch (err) {
+            console.error("Error fetching reasons", err);
         }
     };
 
-    const handleActivateEmployee = async (userId) => {
-        if (window.confirm("Are you sure you want to reactivate this employee?")) {
-            try {
-                await API.put(`/personalfile/${userId}/activate`);
-                alert("✅ Employee reactivated successfully!");
+    const handleAddCustomReason = async () => {
+        if (!newReasonText.trim()) return alert("Please enter a reason.");
+        try {
+            await API.post('/deactivation-reasons/add', {
+                reasonText: newReasonText,
+                type: reasonModalType
+            });
+            setNewReasonText("");
+            fetchReasons(reasonModalType);
+            alert("✅ New reason added successfully!");
+        } catch (err) {
+            alert("❌ Failed to add reason");
+        }
+    };
 
-                setIsModalOpen(false);
-                if (typeof fetchEmployees === "function") fetchEmployees();
-                else window.location.reload();
-            } catch (error) {
-                console.error("❌ Error activating employee:", error);
-                alert(error.response?.data || "❌ Failed to activate employee.");
-            }
+    const handleDeleteCustomReason = async (id) => {
+        if (!window.confirm("Delete this reason?")) return;
+        try {
+            await API.delete(`/deactivation-reasons/delete/${id}`);
+            fetchReasons(reasonModalType);
+        } catch (err) {
+            alert("❌ Failed to delete reason");
+        }
+    };
+
+    const handleDeactivateEmployee = (id) => {
+        setTargetEmployeeId(id);
+        setReasonModalType("DEACTIVATE");
+        setSelectedReason("");
+        fetchReasons("DEACTIVATE");
+        setReasonModalOpen(true);
+    };
+
+    const handleActivateEmployee = (userId) => {
+        setTargetEmployeeId(userId);
+        setReasonModalType("ACTIVATE");
+        setSelectedReason("");
+        fetchReasons("ACTIVATE");
+        setReasonModalOpen(true);
+    };
+
+    const getUniqueReasonsForStatus = () => {
+        const deactivatedList = files.filter(f => f.status === "Deactivated" || f.active === false);
+        const allReasons = deactivatedList.map(emp => emp.reason).filter(Boolean);
+        return [...new Set(allReasons)].sort();
+    };
+
+    const getEmployeeCountByReason = (reasonText) => {
+        const deactivatedList = files.filter(f => f.status === "Deactivated" || f.active === false);
+        return deactivatedList.filter(emp => emp.reason === reasonText).length;
+    };
+
+    const handleStatusConfirmSubmit = async () => {
+        if (!selectedReason) {
+            alert("❌ Please select a reason before submitting!");
+            return;
+        }
+
+        try {
+            const endpoint = reasonModalType === "DEACTIVATE" ? "deactivate" : "activate";
+            await API.put(`/personalfile/${targetEmployeeId}/${endpoint}?reason=${encodeURIComponent(selectedReason)}`);
+
+            alert(`✅ Employee status updated to ${reasonModalType.toLowerCase()}d!`);
+            setReasonModalOpen(false);
+            setIsModalOpen(false);
+            fetchFiles();
+        } catch (err) {
+            alert("❌ Action failed: " + (err.response?.data?.message || err.message));
         }
     };
 
@@ -662,7 +921,7 @@ const AdminPersonalFile = () => {
             employeeEmail: isGlobalBoolean ? "" : newFieldData.employeeEmail || "",
             isAdminOnly: isAdminOnlyBoolean,
             scope: newFieldData.scope ? newFieldData.scope.toUpperCase() : (newFieldData.isGlobal ? "GLOBAL" : "SPECIFIC"),
-            targetDesignation: newFieldData.scope === "DESIGNATION" ? newFieldData.targetDesignation : ""
+            targetDesignations: newFieldData.scope === "DESIGNATION" ? newFieldData.targetDesignations : []
         };
 
         try {
@@ -681,7 +940,7 @@ const AdminPersonalFile = () => {
                 required: false,
                 scope: "GLOBAL",
                 employeeEmail: "",
-                targetDesignation: "",
+                targetDesignations: [],
                 isAdminOnly: false
             });
             setEditingFieldId(null);
@@ -707,7 +966,7 @@ const AdminPersonalFile = () => {
             employeeEmail: field.employeeEmail || "",
             isAdminOnly: isDbAdmin,
             scope: field.scope ? field.scope.toUpperCase() : "GLOBAL",
-            targetDesignation: field.targetDesignation || ""
+            targetDesignations: field.targetDesignations || []
         });
 
         if (field.scope === "DESIGNATION" && field.targetDesignation) {
@@ -924,6 +1183,10 @@ const AdminPersonalFile = () => {
     const filteredFiles = files.filter(f => {
         if (showDeactive) {
             if (f.status !== "Deactivated" && f.active !== false) return false;
+
+            if (selectedReasonFilter && f.reason !== selectedReasonFilter) {
+                return false;
+            }
         } else {
             if (f.status === "Deactivated" || f.active === false) return false;
         }
@@ -1000,6 +1263,7 @@ const AdminPersonalFile = () => {
         setSelectedYear("");
         setSelectedMonth("");
         setSelectedDay("");
+        setSelectedReasonFilter("");
     };
 
     return (
@@ -1068,8 +1332,11 @@ const AdminPersonalFile = () => {
                     <div className="filter-controls-left">
                         <div className="bulk-action-toolbar-inner">
                             <span className="selected-count-badge" data-count={selectedIds.length}>{selectedIds.length} Selected</span>
-                            <button onClick={generatePDF} className="admin-personal-pdf" disabled={selectedIds.length === 0}><FileText size={13} /> PDF Report</button>
-                            <button onClick={generateExcel} className="admin-personal-excel" disabled={selectedIds.length === 0}><Download size={13} /> Excel Export</button>
+
+                            <button onClick={handleOpenReportModal} className="admin-personal-generate-report" disabled={selectedIds.length === 0}>
+                                <Columns size={13} /> Generate Reports
+                            </button>
+
                             <button onClick={handleBulkDelete} className="admin-personal-bulk" disabled={selectedIds.length === 0}><Trash2 size={13} /> Delete</button>
                             <button onClick={() => setSelectedIds([])} className="admin-personal-details-bulk" disabled={selectedIds.length === 0}>Cancel</button>
                         </div>
@@ -1145,6 +1412,7 @@ const AdminPersonalFile = () => {
                     <div className="custom-animated-switch-wrapper" onClick={() => {
                         setShowDeactive(!showDeactive);
                         setSelectedIds([]);
+                        setSelectedReasonFilter("");
                     }}>
                         <div className={`custom-switch-btn-icon ${showDeactive ? 'is-deactive' : 'is-active'}`}>
                             <GoArrowSwitch size={15} />
@@ -1157,6 +1425,34 @@ const AdminPersonalFile = () => {
                         </span>
                     </div>
                 </div>
+
+                {showDeactive && (
+                    <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
+                        <select
+                            value={selectedReasonFilter}
+                            onChange={(e) => setSelectedReasonFilter(e.target.value)}
+                            className="admin-filter-dropdown"
+                            style={{ minWidth: '220px' }}
+                        >
+                            <option value="">All Deactivation Reasons</option>
+                            {getUniqueReasonsForStatus().map((reason, idx) => (
+                                <option key={idx} value={reason}>
+                                    {reason} ({getEmployeeCountByReason(reason)})
+                                </option>
+                            ))}
+                        </select>
+
+                        {selectedReasonFilter && (
+                            <button
+                                onClick={() => setSelectedReasonFilter("")}
+                                className="btn-filter-reset"
+                                title="Clear Reason Filter"
+                            >
+                                <RotateCcw size={14} />
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="active-filter-tags">
@@ -1207,6 +1503,113 @@ const AdminPersonalFile = () => {
                     ))
                 )}
             </div>
+
+            {isReportModalOpen && (
+                <div className="admin-personal-modal-overlay" style={{ zIndex: 2500 }}>
+                    <div className="admin-personal-modal-content" style={{ maxWidth: '1200px', width: '90%' }}>
+                        <div className="admin-personal-admin-header-section">
+                            <h2 className="admin-personal-model-title">Generate Custom Report</h2>
+                            <button className="close-x" onClick={() => setIsReportModalOpen(false)}><X size={15} /></button>
+                        </div>
+
+                        <div className="report-config-container">
+                            <div className="report-step-section">
+                                <p className="report-step-title">Step 1: Select Columns to Include in the Report</p>
+                                <div className="checkbox-grid">
+                                    {allAvailableColumns.map(col => (
+                                        <label key={col.key} className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedColumns.includes(col.key)}
+                                                onChange={() => toggleColumnSelection(col.key)}
+                                                className="checkbox-input"
+                                            />
+                                            <span className="checkbox-text">{col.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="report-step-section">
+                                <p className="report-step-title">Step 2: Preview Selected Employees & Columns</p>
+
+                                <div className="report-total-count">
+                                    Total Selected: <span>{filteredFiles.filter(f => selectedIds.includes(f.id)).length} Employee</span>
+                                </div>
+
+                                {filteredFiles.filter(f => selectedIds.includes(f.id)).length === 0 ? (
+                                    <p className="report-no-records-preview">
+                                        ⚠️ No employees selected for preview. Please select employees from the main dashboard.
+                                    </p>
+                                ) : selectedColumns.length === 0 ? (
+                                    <p className="report-no-records-preview">
+                                        ⚠️ Please select at least one column from Step 1 to preview the data table.
+                                    </p>
+                                ) : (
+                                    <div className="report-excel-preview-table-container">
+                                        <table className="report-preview-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th>
+                                                    {allAvailableColumns
+                                                        .filter(col => selectedColumns.includes(col.key))
+                                                        .map(col => (
+                                                            <th key={col.key}>{col.label}</th>
+                                                        ))
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredFiles
+                                                    .filter(f => selectedIds.includes(f.id))
+                                                    .map((emp, index) => {
+                                                        const activeCols = allAvailableColumns.filter(c => selectedColumns.includes(c.key));
+
+                                                        return (
+                                                            <tr key={emp.id || index}>
+                                                                <td>{index + 1}</td>
+                                                                {activeCols.map(col => {
+                                                                    let cellValue = "-";
+
+                                                                    if (col.isDynamic) {
+                                                                        cellValue = emp.dynamicFields?.[col.fieldKey] || "-";
+                                                                    }
+                                                                    else if ([
+                                                                        'dateOfBirth', 'dateOfFirstAppointment', 'appointmentDateToPresentStatus',
+                                                                        'dateOfCompulsoryRetirement', 'presentStatusDate',
+                                                                        'dateOfReceiptGradeI', 'dateOfReceiptGradeII', 'dateOfReceiptGradeIII'
+                                                                    ].includes(col.key)) {
+                                                                        cellValue = formatDate(emp[col.key]);
+                                                                    }
+                                                                    else if (col.key === 'incrementDate') {
+                                                                        cellValue = formatDayMonth(emp[col.key]);
+                                                                    }
+                                                                    else {
+                                                                        cellValue = emp[col.key] || "-";
+                                                                    }
+
+                                                                    return <td key={col.key}>{cellValue}</td>;
+                                                                })}
+                                                            </tr>
+                                                        );
+                                                    })
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="admin-personal-modal-footer">
+                                <button type="button" onClick={generateExcel} className="admin-personal-excel"><Download size={14} /> Export Excel</button>
+                                <button type="button" onClick={generateWord} className="admin-personal-word"><FileText size={14} /> Export Word</button>
+                                <button type="button" onClick={generatePDF} className="admin-personal-pdf"><FileText size={14} /> Export PDF</button>
+                                <button type="button" onClick={handlePrint} className="admin-personal-print"><Printer size={14} /> Print Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {isPreviewOpen && (
                 <div className="admin-excel-data-preview-personal-overlay">
@@ -1367,24 +1770,31 @@ const AdminPersonalFile = () => {
 
                             {newFieldData.scope === "DESIGNATION" && (
                                 <div className="admin-personal-field-open-form-row admin-personal-field-open-fade-in">
-                                    <label className="admin-personal-field-open-form-label">Select Designation</label>
-                                    <select
-                                        value={newFieldData.targetDesignation}
-                                        onChange={(e) => {
-                                            const selectedDes = e.target.value;
-                                            setNewFieldData({ ...newFieldData, targetDesignation: selectedDes });
-                                            fetchEmployeesByDesignation(selectedDes);
-                                        }}
-                                        className="admin-personal-field-open-form-input"
-                                        required
-                                    >
-                                        <option value="">Choose Designation</option>
-                                        {designationsSummary.map((item, index) => (
-                                            <option key={index} value={item.designation}>
-                                                {item.designation} ({item.employeeCount} Employees)
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <label className="admin-personal-field-open-form-label">Select Target Designations</label>
+                                    <div className="designations-checkbox-list">
+                                        {designationsSummary.map((item, index) => {
+                                            const isChecked = newFieldData.targetDesignations.includes(item.designation);
+                                            return (
+                                                <label>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={(e) => {
+                                                            const checkedList = [...newFieldData.targetDesignations];
+                                                            if (e.target.checked) {
+                                                                checkedList.push(item.designation);
+                                                            } else {
+                                                                const idx = checkedList.indexOf(item.designation);
+                                                                if (idx > -1) checkedList.splice(idx, 1);
+                                                            }
+                                                            setNewFieldData({ ...newFieldData, targetDesignations: checkedList });
+                                                        }}
+                                                    />
+                                                    <span>{item.designation} ({item.employeeCount})</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
 
@@ -1464,7 +1874,9 @@ const AdminPersonalFile = () => {
                                                                 <span className="badge-designation" style={{ color: '#4e73df', fontWeight: 'bold' }}>Designation</span>
                                                                 <br />
                                                                 <small className="admin-personal-field-open-table-small" style={{ color: '#5a5c69', fontStyle: 'italic' }}>
-                                                                    {field.targetDesignation || "All Designations"}
+                                                                    {field.targetDesignations && field.targetDesignations.length > 0
+                                                                        ? field.targetDesignations.join(", ")
+                                                                        : "No Designation Target"}
                                                                 </small>
                                                             </div>
                                                         ) : (field.isGlobal === true || String(field.isGlobal).toLowerCase() === "true" || field.scope === "GLOBAL") ? (
@@ -1501,6 +1913,78 @@ const AdminPersonalFile = () => {
                                     </table>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {reasonModalOpen && (
+                <div className="admin-personal-modal-overlay" style={{ zIndex: 2000 }}>
+                    <div className="admin-personal-modal-content" style={{ maxWidth: '500px' }}>
+                        <div className="admin-personal-admin-header-section">
+                            <h2 className="admin-personal-model-title">
+                                Reason to {reasonModalType === "DEACTIVATE" ? "Deactivate" : "Activate"} Employee
+                            </h2>
+                            <button className="close-x" onClick={() => setReasonModalOpen(false)}><X size={15} /></button>
+                        </div>
+
+                        <div style={{ padding: '15px 0' }}>
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '15px', textTransform: 'uppercase' }}>
+                                <input
+                                    type="text"
+                                    placeholder={`Add new ${reasonModalType.toLowerCase()} reason...`}
+                                    value={newReasonText}
+                                    onChange={(e) => setNewReasonText(e.target.value)}
+                                    className="admin-personal-form-input-field"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddCustomReason}
+                                    className="admin-personal-details-add-department"
+                                >Add</button>
+                            </div>
+
+                            <label className="admin-personal-form-label">Select Predefined Reason </label>
+                            <select
+                                value={selectedReason}
+                                onChange={(e) => setSelectedReason(e.target.value)}
+                                className="admin-personal-form-input"
+                                required
+                            >
+                                <option value="">Choose a Reason</option>
+                                {reasonsList.map((r) => (
+                                    <option key={r.id} value={r.reasonText}>{r.reasonText}</option>
+                                ))}
+                            </select>
+
+                            <div className="reasons-container">
+                                <small className="reasons-title">Saved Reasons List (Click 🗑️ to remove)</small>
+
+                                <div className="reasons-list">
+                                    {reasonsList.map(r => (
+                                        <div key={r.id} className="reason-item">
+                                            <span className="reason-text">• {r.reasonText}</span>
+                                            <Trash2
+                                                className="delete-icon"
+                                                onClick={() => handleDeleteCustomReason(r.id)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="admin-personal-modal-footer">
+                            <button type="button" onClick={() => setReasonModalOpen(false)} className="btn-modal-cancel">Cancel</button>
+                            <button
+                                type="button"
+                                onClick={handleStatusConfirmSubmit}
+                                className="btn-modal-update"
+                                style={{ backgroundColor: reasonModalType === "DEACTIVATE" ? '#c1121f' : '#2a9d8f', color: '#fff' }}
+                            >
+                                Confirm Action
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1679,7 +2163,8 @@ const AdminPersonalFile = () => {
                                 .filter(field => {
                                     if (field.isGlobal || field.scope === "GLOBAL") return true;
 
-                                    if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                                    if (field.scope === "DESIGNATION" && formData.designation &&
+                                        field.targetDesignations?.includes(formData.designation)) {
                                         return true;
                                     }
 
@@ -1691,16 +2176,13 @@ const AdminPersonalFile = () => {
                                 })
                                 .map((field) => (
                                     <div className="admin-personal-form-row" key={field.id}>
-                                        <label className="admin-personal-form-label">
-                                            {field.displayName} {field.required && <span style={{ color: 'red' }}>*</span>}
-                                        </label>
+                                        <label className="admin-personal-form-label">{field.displayName}</label>
                                         <input
                                             type={field.fieldType}
                                             name={field.fieldKey}
                                             value={formData.dynamicFields?.[field.fieldKey] || ""}
                                             onChange={handleDynamicInputChange}
                                             className="admin-personal-form-input-field"
-                                            required={field.required === true || String(field.required).toLowerCase() === "true"}
                                         />
                                     </div>
                                 ))}

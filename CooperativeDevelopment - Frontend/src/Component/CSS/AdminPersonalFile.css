@@ -27,7 +27,6 @@
     color: #e76f51;
     cursor: pointer;
     margin-left: 5px;
-
 }
 
 .history-link:hover {
@@ -37,7 +36,7 @@
 
 .admin-personal-controls {
     display: flex;
-    gap: 8px;
+    gap: 5px;
     align-items: center;
 }
 
@@ -169,7 +168,7 @@
 }
 
 .admin-personal-details-add-user {
-    background: #023e8a;
+    background: #c38e70;
 }
 
 .admin-personal-details-add-department {
@@ -253,7 +252,7 @@
     align-items: center;
     text-transform: uppercase;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     color: white;
     padding: 11px 12px;
     font-size: 12px;
@@ -262,12 +261,28 @@
     border: none;
 }
 
+.admin-personal-generate-report {
+    background: #457b9d;
+}
+
 .admin-personal-pdf {
     background: #e76f51;
+    gap: 5px;
 }
 
 .admin-personal-excel {
     background: #2a9d8f;
+    gap: 5px;
+}
+
+.admin-personal-word {
+    background: #0077b6;
+    gap: 5px;
+}
+
+.admin-personal-print {
+    background: #780000;
+    gap: 5px;
 }
 
 .admin-personal-bulk {
@@ -670,7 +685,7 @@
 }
 
 .admin-personal-model-title {
-    font-size: 15px;
+    font-size: 14px;
     color: brown;
     font-weight: bold;
     text-transform: uppercase;
@@ -681,6 +696,149 @@
     cursor: pointer;
     font-weight: bold;
     padding: 3px !important;
+}
+
+.close-x:hover {
+    background: #000 !important;
+}
+
+.report-step-section {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.report-step-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #e76f51;
+    margin-bottom: 12px;
+}
+
+.checkbox-grid {
+    display: grid;
+    background-color: #e9ecef;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 12px 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #4f4f4f;
+    user-select: none;
+}
+
+.checkbox-input {
+    margin-right: 8px;
+    width: 10px;
+    height: 10px;
+    cursor: pointer;
+}
+
+.checkbox-text {
+    line-height: 1.3;
+}
+
+
+.report-total-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.report-total-count span {
+    font-weight: 700;
+    color: #9b2226;
+    margin-left: 4px;
+}
+
+.report-excel-preview-table-container {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-x: auto;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    background-color: #ffffff;
+}
+
+.report-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.report-preview-table th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    color: #333333;
+    font-weight: 600;
+    padding: 13px 14px;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.report-preview-table th:first-child,
+.report-preview-table td:first-child {
+    text-align: center;
+    width: 50px;
+}
+
+.report-preview-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #eee;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.report-preview-table tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+}
+
+.report-preview-table tbody tr:hover {
+    background-color: #f1f3f5;
+    transition: background-color 0.2s ease;
+}
+
+.report-no-records-preview {
+    margin: 15px 0;
+    padding: 12px 16px;
+    background-color: #fff5f5;
+    border-left: 4px solid #c1121f;
+    color: #c1121f;
+    font-size: 12px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+
+.report-excel-preview-table-container::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.report-excel-preview-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.report-excel-preview-table-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.report-excel-preview-table-container::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
 }
 
 .modal-profile-header-view {
@@ -732,15 +890,75 @@
     width: 100%;
 }
 
+.admin-personal-form-input,
 .admin-personal-form-row select {
     appearance: none;
+    text-transform: uppercase;
     -webkit-appearance: none;
     -moz-appearance: none;
+    font-size: 12px;
 
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 9px;
+}
+
+.reasons-container {
+    padding: 15px;
+    margin-top: 20px;
+    background: #e9ecef;
+    width: 100%;
+}
+
+.reasons-title {
+    display: block;
+    font-size: 10px;
+    color: #000;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.reasons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reason-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    text-transform: uppercase;
+    background-color: #ffffff;
+    border: 1px solid #fff;
+    transition: background-color 0.2s ease;
+}
+
+.reason-item:hover {
+    background-color: #f5f5f5;
+}
+
+.reason-text {
+    font-size: 11px;
+    color: #333;
+    word-break: break-word;
+}
+
+.delete-icon {
+    width: 12px;
+    height: 12px;
+    color: #c1121f;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    margin-left: 10px;
+}
+
+.delete-icon:hover {
+    color: #000;
+    transform: scale(1.1);
 }
 
 .admin-personal-input-group {
@@ -768,7 +986,7 @@
     grid-column: span 3;
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 5px;
 }
 
 .admin-personal-modal-footer button {
@@ -858,6 +1076,38 @@
     font-weight: 700;
     text-transform: uppercase;
     color: #000;
+}
+
+.designations-checkbox-list {
+    max-height: 180px;
+    padding: 10px 12px;
+    background-color: #f8f9fc;
+    margin-top: 5px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.designations-checkbox-list label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.designations-checkbox-list label:hover {
+    background-color: #eaecf4;
+}
+
+.designations-checkbox-list input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    accent-color: #457b9d;
 }
 
 .admin-personal-field-open-form-input {

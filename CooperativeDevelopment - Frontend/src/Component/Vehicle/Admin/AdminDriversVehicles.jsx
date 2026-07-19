@@ -101,8 +101,36 @@ const AdminDriversVehicles = () => {
 
     const handleDriverSubmit = async (e) => {
         e.preventDefault();
-        setLoadingDriver(true);
+
         setDriverMessage({ text: '', type: '' });
+
+        if (driverData.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(driverData.email)) {
+                setDriverMessage({ text: "❌ Please enter a valid email address!", type: 'error' });
+                return;
+            }
+        }
+
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(driverData.phoneNumber)) {
+            setDriverMessage({ text: "❌ Please enter a valid 10-digit main phone number!", type: 'error' });
+            return;
+        }
+
+        if (!phoneRegex.test(numericEmergency)) {
+            setDriverMessage({ text: "❌ Emergency contact must contain a valid 10-digit phone number!", type: 'error' });
+            return;
+        }
+
+        const oldNicRegex = /^[0-9]{9}[vVxX]$/;
+        const newNicRegex = /^[0-9]{12}$/;
+        if (!oldNicRegex.test(driverData.nic) && !newNicRegex.test(driverData.nic)) {
+            setDriverMessage({ text: "❌ Please enter a valid Sri Lankan NIC number!", type: 'error' });
+            return;
+        }
+
+        setLoadingDriver(true);
         const token = localStorage.getItem('token');
         const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -425,7 +453,7 @@ const AdminDriversVehicles = () => {
                                                                                 <tbody>
                                                                                     {vehicle.serviceHistorySummary.map((srv, idx) => (
                                                                                         <tr key={srv.id || idx} className="admin-driver-vehicle-tr">
-                                                                                            
+
                                                                                             <td className="admin-driver-vehicle-td">{srv.driverName}</td>
                                                                                             <td className="admin-driver-vehicle-td">{srv.description}</td>
                                                                                             <td className="admin-driver-vehicle-td">{srv.serviceKm} KM</td>

@@ -10,29 +10,61 @@ import '../../CSS/IncrementFormsHandling.css';
 const IncrementFormsHandling = () => {
     const [incrementNotifications, setIncrementNotifications] = useState([]);
     const [message, setMessage] = useState({ text: '', type: '' });
-
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedMonth, setSelectedMonth] = useState('');
-
     const [isHovered, setIsHovered] = useState(false);
+
+    const [designations, setDesignations] = useState([]);
+    const [configLoading, setConfigLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDesignation, setSelectedDesignation] = useState('');
+    const [selectedTemplates, setSelectedTemplates] = useState([]);
+    const [saving, setSaving] = useState(false);
+
+    const [activeRightDesignation, setActiveRightDesignation] = useState('');
+    const [mappedTemplates, setMappedTemplates] = useState([]);
+
+    const availableTemplates = [
+        { id: "t1", name: "පොදු 232 ආකෘතිය.docx", displayName: "පොදු 232 ආකෘතිය" },
+        { id: "t2", name: "වාර්ෂික වැටුප් වර්ධක පත්‍රය - සමුපකාර සංවර්ධන නිලධාරී සේවය.docx", displayName: "වාර්ෂික වැටුප් වර්ධක පත්‍රය - සමුපකාර සංවර්ධන නිලධාරී සේවය" },
+        { id: "t3", name: "කාර්ය සාධක පරීක්ෂණ වාර්තා - ප්‍රධාන කළමනාකරණ සේවා නිලධාරි.docx", displayName: "කාර්ය සාධක පරීක්ෂණ වාර්තා - ප්‍රධාන කළමනාකරණ සේවා නිලධාරි" },
+        { id: "t4", name: "කාර්ය සාධන ඇගයීම් වාර්තා - කණිෂ්ඨ සේවය.docx", displayName: "කාර්ය සාධන ඇගයීම් වාර්තා - කණිෂ්ඨ සේවය" },
+        { id: "t5", name: "කාර්ය සාධන ඇගයීම් වාර්තා - සංවර්ධන නිලධාරි.docx", displayName: "කාර්ය සාධන ඇගයීම් වාර්තා - සංවර්ධන නිලධාරි" },
+        { id: "t6", name: "කාර්යසාධන ඇගයිම කළමනාකරණ - සහකාර සේවයේ නිලධාරින්.docx", displayName: "කාර්යසාධන ඇගයිම කළමනාකරණ - සහකාර සේවයේ නිලධාරින්" }
+    ];
 
     useEffect(() => {
         fetchAdminNotifications();
+        fetchUniqueDesignations();
     }, []);
 
-    const handleGeneratePodu232 = async (notificationId, employeeName) => {
-        try {
-            const response = await api.get(`/personalfile/increment-notifications/${notificationId}/generate-podu232`);
-            const fileUrl = response.data.fileUrl;
+    useEffect(() => {
+        if (activeRightDesignation) {
+            fetchTemplatesForDesignation(activeRightDesignation);
+        } else {
+            setMappedTemplates([]);
+        }
+    }, [activeRightDesignation]);
 
-            if (fileUrl) {
-                await handleDownloadFile(fileUrl, employeeName);
-                alert("✅ The Gen 232 form was successfully prepared and downloaded!");
+
+    const fetchUniqueDesignations = async () => {
+        try {
+            setConfigLoading(true);
+            const response = await api.get('/personalfile/all-employees');
+            const allDesignations = response.data
+                .map(emp => emp.designation)
+                .filter(des => des && des.trim() !== '')
+                .filter((value, index, self) => self.indexOf(value) === index);
+            setDesignations(allDesignations);
+
+            if (allDesignations.length > 0) {
+                setActiveRightDesignation(allDesignations[0]);
             }
-        } catch (error) {
-            console.error("❌ Error generating Podu 232 form:", error);
-            alert("❌ Gen 232 format preparation failed: " + (error.response?.data?.message || error.message));
+        } catch (err) {
+            console.error("❌ Error fetching designations:", err);
+        } finally {
+            setConfigLoading(false);
         }
     };
 
@@ -45,11 +77,77 @@ const IncrementFormsHandling = () => {
         }
     };
 
+    const fetchTemplatesForDesignation = async (desigName) => {
+        try {
+            const response = await api.get(`/designation-templates/${encodeURIComponent(desigName)}`);
+            setMappedTemplates(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error fetching designation templates:", error);
+            setMappedTemplates([]);
+        }
+    };
+
+    const handleSaveMapping = async () => {
+        if (selectedTemplates.length === 0) {
+            alert("⚠️ Please select at least one template!");
+            return;
+        }
+        setSaving(true);
+        try {
+            await api.post('/designation-templates', {
+                designation: selectedDesignation,
+                templateNames: selectedTemplates
+            });
+            alert(`✅ ${selectedDesignation} Templates for the post have been saved!`);
+            setIsModalOpen(false);
+
+            setActiveRightDesignation(selectedDesignation);
+            fetchTemplatesForDesignation(selectedDesignation);
+        } catch (err) {
+            console.error("❌ Error saving mapping:", err);
+            alert("❌ The data could not be saved.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const openMappingModal = async (designationName) => {
+        setSelectedDesignation(designationName);
+        try {
+            const response = await api.get(`/designation-templates/${encodeURIComponent(designationName)}`);
+            setSelectedTemplates(Array.isArray(response.data) ? response.data : []);
+        } catch (e) {
+            setSelectedTemplates([]);
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleTemplateCheckboxChange = (templateName) => {
+        if (selectedTemplates.includes(templateName)) {
+            setSelectedTemplates(prev => prev.filter(name => name !== templateName));
+        } else {
+            setSelectedTemplates(prev => [...prev, templateName]);
+        }
+    };
+
+    const handleGeneratePodu232 = async (notificationId, employeeName) => {
+        try {
+            const response = await api.get(`/personalfile/increment-notifications/${notificationId}/generate-podu232`);
+            const fileUrl = response.data.fileUrl;
+            if (fileUrl) {
+                await handleDownloadFile(fileUrl, employeeName);
+                alert("✅ The Gen 232 form was successfully prepared and downloaded!");
+            }
+        } catch (error) {
+            console.error("❌ Error generating Podu 232 form:", error);
+            alert("❌ Gen 232 format preparation failed: " + (error.response?.data?.message || error.message));
+        }
+    };
+
     const handleApproveIncrement = async (notificationId) => {
         if (!window.confirm("⚠️ Are you sure you want to approve this salary increment form and update the date for next year?")) {
             return;
         }
-
         try {
             await api.put(`/personalfile/increment-notifications/${notificationId}/approve`, {});
             alert("✅ Successfully approved! Date updated for next year.");
@@ -59,46 +157,26 @@ const IncrementFormsHandling = () => {
         }
     };
 
-    const handleCancelIncrement = async (notificationId) => {
-        if (!window.confirm("⚠️ Are you sure you want to cancel and delete this increment notification? This action cannot be undone.")) {
-            return;
-        }
-
-        try {
-            await api.delete(`/personalfile/increment-notifications/${notificationId}/cancel`);
-            alert("✅ Increment request successfully cancelled and deleted!");
-            fetchAdminNotifications();
-        } catch (error) {
-            console.error("❌ Error cancelling increment:", error);
-            alert("❌ Failed to cancel: " + (error.response?.data?.message || error.message));
-        }
-    };
-
     const handleDownloadFile = async (fileUrl, employeeName) => {
         try {
             const fileParts = fileUrl.split('/');
             const fileNameWithTimestamp = fileParts[fileParts.length - 1];
-
             const firstUnderscoreIndex = fileNameWithTimestamp.indexOf('_');
             let originalFileName = fileNameWithTimestamp;
             if (firstUnderscoreIndex !== -1) {
                 originalFileName = fileNameWithTimestamp.substring(firstUnderscoreIndex + 1);
             }
-
             const cleanedEmployeeName = employeeName ? employeeName.trim().replace(/\s+/g, '_') : 'Employee';
             const finalDownloadName = `${cleanedEmployeeName}_${originalFileName}`;
 
             const response = await api.get(fileUrl, { responseType: 'blob' });
-
             const blob = new Blob([response.data], { type: response.headers['content-type'] });
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
             link.setAttribute('download', finalDownloadName);
-
             document.body.appendChild(link);
             link.click();
-
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(downloadUrl);
         } catch (error) {
@@ -120,25 +198,16 @@ const IncrementFormsHandling = () => {
     const getMonthNameFromDate = (dateString) => {
         if (!dateString) return null;
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const monthIndex = new Date(dateString).getMonth();
-        return months[monthIndex];
+        return months[new Date(dateString).getMonth()];
     };
 
     const dynamicYearsList = Array.from(
-        new Set(
-            incrementNotifications
-                .map(notif => getYearFromDate(notif.incrementDate))
-                .filter(Boolean)
-        )
+        new Set(incrementNotifications.map(notif => getYearFromDate(notif.incrementDate)).filter(Boolean))
     ).sort((a, b) => b - a);
 
     const monthOrder = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
     const dynamicMonthsList = Array.from(
-        new Set(
-            incrementNotifications
-                .map(notif => getMonthNameFromDate(notif.incrementDate))
-                .filter(Boolean)
-        )
+        new Set(incrementNotifications.map(notif => getMonthNameFromDate(notif.incrementDate)).filter(Boolean))
     ).sort((a, b) => monthOrder.indexOf(a.toLowerCase()) - monthOrder.indexOf(b.toLowerCase()));
 
     const monthTranslations = {
@@ -148,16 +217,11 @@ const IncrementFormsHandling = () => {
     };
 
     const filteredNotifications = incrementNotifications.filter((notif) => {
-        const matchesSearch =
-            notif.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            notif.email?.toLowerCase().includes(searchTerm.toLowerCase());
-
+        const matchesSearch = notif.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) || notif.email?.toLowerCase().includes(searchTerm.toLowerCase());
         const notifYear = getYearFromDate(notif.incrementDate);
         const notifMonth = getMonthNameFromDate(notif.incrementDate);
-
         const matchesYear = selectedYear === '' || notifYear === selectedYear;
         const matchesMonth = selectedMonth === '' || notifMonth?.toLowerCase() === selectedMonth.toLowerCase();
-
         return matchesSearch && matchesYear && matchesMonth;
     });
 
@@ -165,7 +229,7 @@ const IncrementFormsHandling = () => {
         <div className="increment-forms-handling-container fade-in">
             <h2 className="increment-forms-handling-title">Salary Increment Form Management Center</h2>
             <p className="increment-forms-handling-description">
-                This central management dashboard allows you to oversee and process salary increment requests submitted by the department employees. Here, you can efficiently filter records by year or month, download submitted verification documents, and approve pending applications, which will automatically update the employee's next increment date for the upcoming year.
+                This central management dashboard allows you to oversee and process salary increment requests submitted by the department employees. Here, you can efficiently filter records by year or month, download submitted verification documents, and approve pending applications.
             </p>
 
             {message.text && (
@@ -175,7 +239,6 @@ const IncrementFormsHandling = () => {
             )}
 
             <div className="increment-forms-handling-section">
-
                 <div className="filter-bar-container">
                     <div className="search-wrapper">
                         <input
@@ -222,6 +285,77 @@ const IncrementFormsHandling = () => {
                     </div>
                 </div>
 
+                <div className="designation-template-config-row">
+                    <div className="config-left-side">
+                        <h4>System Designations & Process</h4>
+                        <p>List of positions available in the system. Press the Setup button to connect or change the template.</p>
+
+                        {configLoading ? (
+                            <div></div>
+                        ) : (
+                            <div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Designation Title</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {designations.length > 0 ? (
+                                            designations.map((desig, idx) => (
+                                                <tr key={idx}
+                                                    style={{ borderBottom: '1px solid #edf2f7', cursor: 'pointer', backgroundColor: activeRightDesignation === desig ? '#ebf8ff' : 'transparent' }}
+                                                    onClick={() => setActiveRightDesignation(desig)}
+                                                >
+                                                    <td>{desig}</td>
+                                                    <td>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); openMappingModal(desig); }}
+                                                        >
+                                                            Setup
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="2">No Designations Found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="config-right-side">
+                        <h4>Current Mapped Templates</h4>
+
+                        {activeRightDesignation ? (
+                            <div>
+                                <div>
+                                    <span>Selected Designation: <strong>{activeRightDesignation}</strong></span>
+                                </div>
+
+                                {mappedTemplates.length > 0 ? (
+                                    <ul>
+                                        {mappedTemplates.map((template, idx) => (
+                                            <li key={idx}>
+                                                📄 {template}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>⚠️ No templates assigned yet for this designation.</p>
+                                )}
+                            </div>
+                        ) : (
+                            <p>Select a designation from the left table to view its templates.</p>
+                        )}
+                    </div>
+                </div>
+
                 <div className="table-header-flex">
                     <h3 className="increment-forms-handling-section-title">List of forms submitted by employees</h3>
                 </div>
@@ -232,9 +366,10 @@ const IncrementFormsHandling = () => {
                             <tr>
                                 <th>Employee Name</th>
                                 <th>Email</th>
+                                <th>In: Date</th>
+                                <th>Prev:Sick</th>
+                                <th>Curr:Sick</th>
                                 <th>Send Date</th>
-                                <th>Prev. Year Sick Used</th>
-                                <th>Curr. Year Sick Used</th>
                                 <th>Status</th>
                                 <th>Submitted</th>
                                 <th>Download</th>
@@ -251,10 +386,7 @@ const IncrementFormsHandling = () => {
                                     <tr key={notif.notificationId}>
                                         <td>{notif.employeeName}</td>
                                         <td>{notif.email}</td>
-                                        <td><span className="date-increment">{notif.sentDate
-                                            ? new Date(notif.sentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                                            : '-'}</span>
-                                        </td>
+                                        <td>{notif.incrementDate}</td>
                                         <td>
                                             <span className="sick-leave-count-badge old-year">
                                                 {Number(notif.oldYearSickUsed ?? 0)} Days
@@ -265,19 +397,22 @@ const IncrementFormsHandling = () => {
                                                 {Number(notif.currentYearSickUsed ?? 0)} Days
                                             </span>
                                         </td>
+
                                         <td>
-                                            <span className={`increment-forms-handling-badge ${notif.status === 'SUBMITTED'
-                                                ? 'increment-forms-handling-badge-submitted'
-                                                : notif.status === 'APPROVED'
-                                                    ? 'increment-forms-handling-badge-approved'
-                                                    : 'increment-forms-handling-badge-pending'
-                                                }`}>
+                                            <span className="date-increment">
+                                                {notif.sentDate ? new Date(notif.sentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`increment-forms-handling-badge ${notif.status === 'SUBMITTED' ? 'increment-forms-handling-badge-submitted' : notif.status === 'APPROVED' ? 'increment-forms-handling-badge-approved' : 'increment-forms-handling-badge-pending'}`}>
                                                 {notif.status}
                                             </span>
                                         </td>
-                                        <td><span className="date-increment">{notif.submittedDate
-                                            ? new Date(notif.submittedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                                            : '-'}</span></td>
+                                        <td>
+                                            <span className="date-increment">
+                                                {notif.submittedDate ? new Date(notif.submittedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
+                                            </span>
+                                        </td>
                                         <td>
                                             {notif.submittedFileUrls && notif.submittedFileUrls.length > 0 ? (
                                                 <ul className="increment-forms-handling-file-list">
@@ -294,28 +429,9 @@ const IncrementFormsHandling = () => {
                                             )}
                                         </td>
                                         <td>
-                                            {(notif.status === "SUBMITTED" || notif.status === "APPROVED") && (
-                                                <button
-                                                    onClick={() => handleGeneratePodu232(notif.notificationId, notif.employeeName)} className="btn-gen"
-                                                    style={{ backgroundColor: isHovered ? '#000' : '#17a2b8', cursor: 'pointer', marginBottom: '5px', width: '80%' }}
-                                                    onMouseEnter={() => setIsHovered(true)}
-                                                    onMouseLeave={() => setIsHovered(false)}>Gen 232</button>
-                                            )}
-
-                                            {notif.status === "SUBMITTED" ? (
+                                            {notif.status === "SUBMITTED" && (
                                                 <button onClick={() => handleApproveIncrement(notif.notificationId)}
-                                                    className="btn-approve-increment" style={{ width: '80%' }}>Update Next Year</button>
-
-                                            ) : notif.status === "APPROVED" ? (
-                                                <span style={{ color: '#28a745', fontWeight: 'bold', display: 'block', textAlign: 'center', marginTop: '0px' }}></span>
-                                            ) : (
-                                                <span style={{ color: '#000' }}>{notif.status}</span>
-                                            )}
-
-                                            {notif.status !== "SUBMITTED" && notif.status !== "APPROVED" && (
-                                                <button onClick={() => handleCancelIncrement(notif.notificationId)}
-                                                    className="btn-cancel-increment"
-                                                    style={{ width: '80%', marginTop: '6px', background: '#c1121f'}}>Cancel Request</button>
+                                                    className="btn-approve-increment">Update Next Year</button>
                                             )}
                                         </td>
                                     </tr>
@@ -325,6 +441,48 @@ const IncrementFormsHandling = () => {
                     </table>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <div className="inc-custom-modal-backdrop">
+                    <div className="increment-custom-modal-card">
+                        <div className="increment-modal-top-bar">
+                            <h3>Setup Templates for Designation</h3>
+                            <button onClick={() => setIsModalOpen(false)}>×</button>
+                        </div>
+
+                        <div className="inc-custom-modal-backdrop-modal-body">
+                            <div>
+                                Target Designation: <span>{selectedDesignation}</span>
+                            </div>
+
+                            <p>කරුණාකර මෙම තනතුරට අදාළ වන පරිදි වැටුප් වර්ධක ආකෘති පත්‍ර තෝරන්න.</p>
+
+                            <div className="inc-custom-modal-backdrop-modal-checkbox-list">
+                                {availableTemplates.map((template) => (
+                                    <label key={template.id}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTemplates.includes(template.name)}
+                                            onChange={() => handleTemplateCheckboxChange(template.name)}
+                                        />
+                                        <div>
+                                            <span>{template.displayName}</span>
+                                            <span>({template.name})</span>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="inc-custom-modal-backdrop-modal-footer-bar">
+                            <button onClick={() => setIsModalOpen(false)} disabled={saving}>Cancel</button>
+                            <button onClick={handleSaveMapping} disabled={saving}>
+                                {saving ? 'Saving Changes...' : 'Save Configuration'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

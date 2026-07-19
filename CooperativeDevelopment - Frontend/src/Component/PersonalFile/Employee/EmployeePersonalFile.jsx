@@ -194,6 +194,54 @@ const EmployeePersonalFile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            alert("❌ Please enter a valid email address!");
+            return;
+        }
+
+        const phoneRegex = /^[0-9]{10}$/;
+        if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
+            alert("❌ Please enter a valid 10-digit phone number!");
+            return;
+        }
+        if (formData.emergencyContact && !phoneRegex.test(formData.emergencyContact)) {
+            alert("❌ Please enter a valid 10-digit emergency contact number!");
+            return;
+        }
+
+        const oldNicRegex = /^[0-9]{9}[vVxX]$/;
+        const newNicRegex = /^[0-9]{12}$/;
+
+        if (formData.nic && !oldNicRegex.test(formData.nic) && !newNicRegex.test(formData.nic)) {
+            alert("❌ Please enter a valid National Identity Card (NIC) number!");
+            return;
+        }
+
+        const missingRequiredDynamicField = dynamicFieldConfigs.some(field => {
+            if (field.isAdminOnly === true) return false;
+
+            let isApplicable = field.isGlobal || field.scope === "GLOBAL";
+            if (field.scope === "DESIGNATION" && formData.designation && field.targetDesignation === formData.designation) {
+                isApplicable = true;
+            }
+            if ((field.scope === "SPECIFIC" || !field.isGlobal) && userEmail && field.employeeEmail?.toLowerCase() === userEmail?.toLowerCase()) {
+                isApplicable = true;
+            }
+
+            if (isApplicable && field.required) {
+                const val = formData.dynamicFields?.[field.fieldKey];
+                return val === undefined || val === null || String(val).trim() === "";
+            }
+            return false;
+        });
+
+        if (missingRequiredDynamicField) {
+            alert("❌ Please fill out all required dynamic fields!");
+            return;
+        }
+
         setIsSaving(true);
         try {
             await API.put(`/personalfile/update-profile?id=${formData.id}`, formData);
@@ -274,7 +322,7 @@ const EmployeePersonalFile = () => {
                         <div className="notification-alert-banner">
                             {notifications.map(n => (
                                 <div key={n.id} className="alert-item" onClick={() => openIncrementModal(n)}>
-                                    <Mail size={15} />
+                                    <Mail size={13} />
                                     <span>{n.message}</span>
                                 </div>
                             ))}

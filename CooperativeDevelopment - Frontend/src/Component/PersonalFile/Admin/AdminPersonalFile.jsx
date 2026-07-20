@@ -252,6 +252,29 @@ const AdminPersonalFile = () => {
 
                 setPreviewData(rows);
                 setIsPreviewOpen(true);
+
+                const duplicateEmployees = rows.filter(row => {
+                    const rowNic = row["National ID"] || row["nic"];
+                    return files.some(emp =>
+                        emp.nic && rowNic &&
+                        String(emp.nic).trim().toLowerCase() === String(rowNic).trim().toLowerCase()
+                    );
+                });
+
+                if (duplicateEmployees.length > 0) {
+                    const duplicateNames = duplicateEmployees
+                        .map(emp => `• ${emp["Name Of The Employee"] || "Employee"} (NIC: ${emp["National ID"]})`)
+                        .join("\n");
+
+                    setTimeout(() => {
+                        alert(
+                            `⚠️ Notice: System Existing Employees Detected!\n\n` +
+                            `The following employee(s) in this Excel file are ALREADY REGISTERED in the system:\n\n` +
+                            `${duplicateNames}\n\n` +
+                            `Clicking "Upload Employees" will ONLY UPDATE their existing profile data with the new details from Excel.`
+                        );
+                    }, 300);
+                }
             }
         };
 
@@ -260,6 +283,27 @@ const AdminPersonalFile = () => {
 
     const handleBulkUpload = async () => {
         if (!excelFile) return;
+
+        const duplicateCount = previewData.filter(row => {
+            const rowNic = row["National ID"] || row["nic"];
+            return files.some(emp =>
+                emp.nic && rowNic &&
+                String(emp.nic).trim().toLowerCase() === String(rowNic).trim().toLowerCase()
+            );
+        }).length;
+
+        if (duplicateCount > 0) {
+            const confirmUpload = window.confirm(
+                `⚠️ Found ${duplicateCount} employee(s) that already exist in the system.\n\n` +
+                `Existing records will be UPDATED with the new Excel data.\n\n` +
+                `Do you want to proceed with the upload?`
+            );
+
+            if (!confirmUpload) {
+                return;
+            }
+        }
+
         const formData = new FormData();
         formData.append("file", excelFile);
 
@@ -637,8 +681,32 @@ const AdminPersonalFile = () => {
         }
     };
 
+    const checkExistingEmployeeByNic = (inputNic) => {
+        if (!inputNic || !isAddMode) return null;
+        const cleanInputNic = String(inputNic).trim().toLowerCase();
+
+        return files.find(file => {
+            const existingNic = file.nic || file["National ID"];
+            return existingNic && String(existingNic).trim().toLowerCase() === cleanInputNic;
+        });
+    };
+
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        if (isAddMode && name === "nic" && value.trim().length >= 9) {
+            const matchedEmployee = checkExistingEmployeeByNic(value);
+            if (matchedEmployee) {
+                const confirmRedirect = window.confirm(
+                    `⚠️ Alert: This NIC (${value}) is already registered for employee "${matchedEmployee.name || matchedEmployee.username}".\n\nDo you want to view/edit this employee's profile card instead?`
+                );
+
+                if (confirmRedirect) {
+                    openEditModal(matchedEmployee);
+                }
+            }
+        }
     };
 
     const handleDynamicInputChange = (e) => {
@@ -716,6 +784,21 @@ const AdminPersonalFile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (isAddMode && formData.nic) {
+            const matchedEmployee = checkExistingEmployeeByNic(formData.nic);
+            if (matchedEmployee) {
+                const openProfile = window.confirm(
+                    `❌ Alert: This NIC (${formData.nic}) is already registered in the system under "${matchedEmployee.name || matchedEmployee.username}".\n\nYou cannot create a new user with this NIC. Would you like to view this employee's profile?`
+                );
+
+                if (openProfile) {
+                    openEditModal(matchedEmployee);
+                }
+                return;
+            }
+        }
+
         let preparedFormData = { ...formData };
 
         if (preparedFormData.email) {
@@ -760,25 +843,35 @@ const AdminPersonalFile = () => {
 
         if (preparedFormData.incrementDate) {
             let dateStr = preparedFormData.incrementDate.trim();
-
-            const incrementRegex = /^\d{1,2}-[a-zA-Z]{3}$/;
-
-            if (!incrementRegex.test(dateStr)) {
-                alert("❌ Invalid Increment Date Format! It must follow the format 'd-mmm' (e.g., 20-Apr or 5-Jan).");
-                return;
-            }
-
             const currentYear = new Date().getFullYear();
-            const parts = dateStr.split('-');
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const mIdx = monthNames.findIndex(m => m.toLowerCase() === parts[1].toLowerCase());
 
-            if (mIdx !== -1) {
-                const formattedMonth = String(mIdx + 1).padStart(2, '0');
-                const formattedDay = String(parts[0]).padStart(2, '0');
-                preparedFormData.incrementDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
+            const dayMonthRegex = /^(\d{1,2})-([a-zA-Z]{3,9})$/;
+
+            const mmDdRegex = /^(\d{1,2})-(\d{1,2})$/;
+
+            if (dayMonthRegex.test(dateStr)) {
+                const parts = dateStr.match(dayMonthRegex);
+                const day = parts[1];
+                const monthStr = parts[2].toLowerCase();
+
+                const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                const mIdx = monthNames.findIndex(m => monthStr.startsWith(m));
+
+                if (mIdx !== -1) {
+                    const formattedMonth = String(mIdx + 1).padStart(2, '0');
+                    const formattedDay = String(day).padStart(2, '0');
+                    preparedFormData.incrementDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
+                } else {
+                    alert("❌ Invalid Month Name in Increment Date! Use standard month names (e.g., Jan, Apr, Dec).");
+                    return;
+                }
+            } else if (mmDdRegex.test(dateStr)) {
+                const parts = dateStr.split('-');
+                const month = String(parts[0]).padStart(2, '0');
+                const day = String(parts[1]).padStart(2, '0');
+                preparedFormData.incrementDate = `${currentYear}-${month}-${day}`;
             } else {
-                alert("❌ Invalid Month Name in Increment Date! Use standard 3-letter months (e.g., Jan, Apr, Dec).");
+                alert("❌ Invalid Increment Date Format! Please use '20-Apr' or '04-20' format.");
                 return;
             }
         }

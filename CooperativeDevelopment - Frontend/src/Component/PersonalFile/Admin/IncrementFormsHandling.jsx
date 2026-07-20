@@ -130,20 +130,6 @@ const IncrementFormsHandling = () => {
         }
     };
 
-    const handleGeneratePodu232 = async (notificationId, employeeName) => {
-        try {
-            const response = await api.get(`/personalfile/increment-notifications/${notificationId}/generate-podu232`);
-            const fileUrl = response.data.fileUrl;
-            if (fileUrl) {
-                await handleDownloadFile(fileUrl, employeeName);
-                alert("✅ The Gen 232 form was successfully prepared and downloaded!");
-            }
-        } catch (error) {
-            console.error("❌ Error generating Podu 232 form:", error);
-            alert("❌ Gen 232 format preparation failed: " + (error.response?.data?.message || error.message));
-        }
-    };
-
     const handleApproveIncrement = async (notificationId) => {
         if (!window.confirm("⚠️ Are you sure you want to approve this salary increment form and update the date for next year?")) {
             return;
@@ -201,13 +187,16 @@ const IncrementFormsHandling = () => {
         return months[new Date(dateString).getMonth()];
     };
 
+    const validIncrementNotifications = incrementNotifications.filter(notif => notif.status !== 'PROFILE_UPDATED');
+
     const dynamicYearsList = Array.from(
-        new Set(incrementNotifications.map(notif => getYearFromDate(notif.incrementDate)).filter(Boolean))
+        new Set(validIncrementNotifications.map(notif => getYearFromDate(notif.incrementDate)).filter(Boolean))
     ).sort((a, b) => b - a);
 
     const monthOrder = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+
     const dynamicMonthsList = Array.from(
-        new Set(incrementNotifications.map(notif => getMonthNameFromDate(notif.incrementDate)).filter(Boolean))
+        new Set(validIncrementNotifications.map(notif => getMonthNameFromDate(notif.incrementDate)).filter(Boolean))
     ).sort((a, b) => monthOrder.indexOf(a.toLowerCase()) - monthOrder.indexOf(b.toLowerCase()));
 
     const monthTranslations = {
@@ -216,14 +205,21 @@ const IncrementFormsHandling = () => {
         September: "සැප්තැම්බර්", October: "ඔක්තෝබර්", November: "නොවැම්බර්", December: "දෙසැම්බර්"
     };
 
-    const filteredNotifications = incrementNotifications.filter((notif) => {
-        const matchesSearch = notif.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) || notif.email?.toLowerCase().includes(searchTerm.toLowerCase());
-        const notifYear = getYearFromDate(notif.incrementDate);
-        const notifMonth = getMonthNameFromDate(notif.incrementDate);
-        const matchesYear = selectedYear === '' || notifYear === selectedYear;
-        const matchesMonth = selectedMonth === '' || notifMonth?.toLowerCase() === selectedMonth.toLowerCase();
-        return matchesSearch && matchesYear && matchesMonth;
-    });
+    const filteredNotifications = incrementNotifications
+        .filter((notif) => notif.status !== 'PROFILE_UPDATED')
+        .filter((notif) => {
+            const matchesSearch =
+                notif.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                notif.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const notifYear = getYearFromDate(notif.incrementDate);
+            const notifMonth = getMonthNameFromDate(notif.incrementDate);
+
+            const matchesYear = selectedYear === '' || notifYear === selectedYear;
+            const matchesMonth = selectedMonth === '' || notifMonth?.toLowerCase() === selectedMonth.toLowerCase();
+
+            return matchesSearch && matchesYear && matchesMonth;
+        });
 
     return (
         <div className="increment-forms-handling-container fade-in">
@@ -369,7 +365,7 @@ const IncrementFormsHandling = () => {
                                 <th>In: Date</th>
                                 <th>Prev:Sick</th>
                                 <th>Curr:Sick</th>
-                                <th>Send Date</th>
+                                <th>Send Date / Forms</th>
                                 <th>Status</th>
                                 <th>Submitted</th>
                                 <th>Download</th>
@@ -379,14 +375,21 @@ const IncrementFormsHandling = () => {
                         <tbody>
                             {filteredNotifications.length === 0 ? (
                                 <tr>
-                                    <td colSpan="9" className="no-data-td">No data was found matching the search criteria.</td>
+                                    <td colSpan="10" className="no-data-td">No data was found matching the search criteria.</td>
                                 </tr>
                             ) : (
                                 filteredNotifications.map((notif) => (
                                     <tr key={notif.notificationId}>
                                         <td>{notif.employeeName}</td>
                                         <td>{notif.email}</td>
-                                        <td>{notif.incrementDate}</td>
+                                        <td>
+                                            {notif.incrementDate ? (() => {
+                                                const dateObj = new Date(notif.incrementDate);
+                                                const day = String(dateObj.getDate()).padStart(2, '0'); // 01, 02 විදිහට තනි ඉලක්කම් වලට බිංදුවක් එකතු කරයි
+                                                const month = dateObj.toLocaleDateString('en-US', { month: 'long' }); // August, September වගේ මාසයේ නම ගනියි
+                                                return `${day} - ${month}`;
+                                            })() : '-'}
+                                        </td>
                                         <td>
                                             <span className="sick-leave-count-badge old-year">
                                                 {Number(notif.oldYearSickUsed ?? 0)} Days
@@ -399,10 +402,29 @@ const IncrementFormsHandling = () => {
                                         </td>
 
                                         <td>
-                                            <span className="date-increment">
-                                                {notif.sentDate ? new Date(notif.sentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
-                                            </span>
+                                            <div>
+                                                <span className="date-increment">
+                                                    {notif.sentDate ? new Date(notif.sentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
+                                                </span>
+
+                                                {notif.generatedFileUrls && notif.generatedFileUrls.length > 0 ? (
+                                                    <div className="generated-files-preview">
+                                                        {notif.generatedFileUrls.map((url, index) => (
+                                                            <button
+                                                                key={index}
+                                                                onClick={() => handleDownloadFile(url, notif.employeeName)}
+                                                                title="Download Sent Template"
+                                                            >
+                                                                📄 SENT FORM {index + 1}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span style={{ fontSize: '11px', color: '#000' }}>No Sent Forms</span>
+                                                )}
+                                            </div>
                                         </td>
+
                                         <td>
                                             <span className={`increment-forms-handling-badge ${notif.status === 'SUBMITTED' ? 'increment-forms-handling-badge-submitted' : notif.status === 'APPROVED' ? 'increment-forms-handling-badge-approved' : 'increment-forms-handling-badge-pending'}`}>
                                                 {notif.status}

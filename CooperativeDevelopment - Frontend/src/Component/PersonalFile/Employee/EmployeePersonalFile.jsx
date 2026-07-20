@@ -343,14 +343,15 @@ const EmployeePersonalFile = () => {
 
                                         {selectedNotification && selectedNotification.generatedFileUrls && selectedNotification.generatedFileUrls.length > 0 ? (
                                             selectedNotification.generatedFileUrls.map((fileUrl, index) => {
-                                                let originalName = selectedNotification.requestedTemplates;
 
-                                                if (selectedNotification.generatedFileUrls.length > 1) {
-                                                    originalName = originalName ? originalName.replace(".docx", ` (Part ${index + 1}).docx`) : `Increment_Form_${index + 1}.docx`;
+                                                let originalName = "";
+                                                if (fileUrl) {
+                                                    const urlParts = fileUrl.split('/');
+                                                    const rawFileName = urlParts[urlParts.length - 1];
+                                                    originalName = rawFileName.substring(rawFileName.indexOf('_') + 1);
                                                 } else {
-                                                    originalName = originalName || `Increment_Form_${index + 1}.docx`;
+                                                    originalName = `Increment_Form_${index + 1}.docx`;
                                                 }
-
                                                 return (
                                                     <a
                                                         key={index}
@@ -374,15 +375,15 @@ const EmployeePersonalFile = () => {
                                 <form onSubmit={handleFormUploadSubmit} style={{ marginTop: '20px' }}>
                                     <div>
                                         <h4>Step 2: Upload Completed Documents</h4>
-
                                         <input type="file" multiple accept=".docx,.pdf" onChange={handleFileChange} />
 
                                         {selectedFiles.length > 0 && (
                                             <div className="personalFile-increment-selected-file">
                                                 <span>Selected Files {selectedFiles.length}</span>
-                                                <ul> {selectedFiles.map((file, idx) => (
-                                                    <li key={idx}>{file.name} ({(file.size / 1024).toFixed(1)} KB)</li>
-                                                ))}
+                                                <ul>
+                                                    {selectedFiles.map((file, idx) => (
+                                                        <li key={idx}>{file.name} ({(file.size / 1024).toFixed(1)} KB)</li>
+                                                    ))}
                                                 </ul>
                                             </div>
                                         )}

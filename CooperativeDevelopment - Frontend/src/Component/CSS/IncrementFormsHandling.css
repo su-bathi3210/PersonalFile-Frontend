@@ -497,6 +497,24 @@
     font-size: 13px;
 }
 
+.generated-files-preview {
+    margin-top: 10px;
+}
+
+.generated-files-preview button {
+    font-size: 12px;
+    border: none;
+    background-color: #ced4da;
+    color: black;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.generated-files-preview button:hover {
+    background-color: #000;
+    color: white;
+}
+
 .no-data-td {
     text-align: center;
     color: #c1121f;

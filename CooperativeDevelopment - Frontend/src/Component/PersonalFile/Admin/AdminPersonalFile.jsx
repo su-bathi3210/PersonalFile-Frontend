@@ -77,6 +77,10 @@ const AdminPersonalFile = () => {
     const [targetEmployeeId, setTargetEmployeeId] = useState(null);
     const [selectedReasonFilter, setSelectedReasonFilter] = useState("");
 
+    const [deactivatedDate, setDeactivatedDate] = useState("");
+    const [activatedDate, setActivatedDate] = useState("");
+    const [deathDate, setDeathDate] = useState("");
+
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [selectedColumns, setSelectedColumns] = useState([]);
 
@@ -223,27 +227,34 @@ const AdminPersonalFile = () => {
                 const mainHeaders = jsonData[0].map(h => h ? h.toString().trim() : "");
                 const subHeaders = jsonData[1] ? jsonData[1].map(h => h ? h.toString().trim() : "") : [];
 
+                // Merged header එකේ නම පසුපස columns වලට carry forward කිරීම
+                let currentMainHeader = "";
+                const filledMainHeaders = mainHeaders.map(h => {
+                    if (h) currentMainHeader = h;
+                    return currentMainHeader;
+                });
+
                 const rows = jsonData.slice(2).map(row => {
                     let rowData = {};
 
-                    mainHeaders.forEach((header, index) => {
+                    filledMainHeaders.forEach((header, index) => {
                         let cellValue = row[index] !== undefined ? row[index].toString().trim() : "";
+                        const sub = subHeaders[index] ? subHeaders[index].trim() : "";
 
-                        let actualHeader = header;
-                        if (!actualHeader && index > 0) {
-                            actualHeader = mainHeaders[index - 1] || mainHeaders[index - 2] || "";
-                        }
-
-                        if (actualHeader) {
-                            const sub = subHeaders[index];
-                            if (sub === "I" || sub === "II" || sub === "III") {
-                                if (actualHeader.includes("Grade")) {
-                                    rowData[`dateOfReceiptGrade${sub}`] = cellValue;
-                                } else {
-                                    rowData[`${actualHeader}_${sub}`] = cellValue;
-                                }
+                        if (sub === "III" || sub === "3") {
+                            rowData["III"] = cellValue;
+                            rowData["dateOfReceiptGradeIII"] = cellValue;
+                        } else if (sub === "II" || sub === "2") {
+                            rowData["II"] = cellValue;
+                            rowData["dateOfReceiptGradeII"] = cellValue;
+                        } else if (sub === "I" || sub === "1") {
+                            rowData["I"] = cellValue;
+                            rowData["dateOfReceiptGradeI"] = cellValue;
+                        } else if (header) {
+                            if (sub) {
+                                rowData[`${header}_${sub}`] = cellValue;
                             } else {
-                                rowData[actualHeader] = cellValue;
+                                rowData[header] = cellValue;
                             }
                         }
                     });
@@ -842,14 +853,16 @@ const AdminPersonalFile = () => {
         }
 
         if (preparedFormData.incrementDate) {
-            let dateStr = preparedFormData.incrementDate.trim();
+            let dateStr = String(preparedFormData.incrementDate).trim();
             const currentYear = new Date().getFullYear();
 
+            const fullDateRegex = /^\d{4}-\d{2}-\d{2}$/;
             const dayMonthRegex = /^(\d{1,2})-([a-zA-Z]{3,9})$/;
-
             const mmDdRegex = /^(\d{1,2})-(\d{1,2})$/;
 
-            if (dayMonthRegex.test(dateStr)) {
+            if (fullDateRegex.test(dateStr)) {
+                preparedFormData.incrementDate = dateStr;
+            } else if (dayMonthRegex.test(dateStr)) {
                 const parts = dateStr.match(dayMonthRegex);
                 const day = parts[1];
                 const monthStr = parts[2].toLowerCase();
@@ -871,7 +884,7 @@ const AdminPersonalFile = () => {
                 const day = String(parts[1]).padStart(2, '0');
                 preparedFormData.incrementDate = `${currentYear}-${month}-${day}`;
             } else {
-                alert("❌ Invalid Increment Date Format! Please use '20-Apr' or '04-20' format.");
+                alert("❌ Invalid Increment Date Format! Please use '20-Apr', '04-20' or 'YYYY-MM-DD' format.");
                 return;
             }
         }
@@ -952,14 +965,26 @@ const AdminPersonalFile = () => {
         setTargetEmployeeId(id);
         setReasonModalType("DEACTIVATE");
         setSelectedReason("");
+        setDeactivatedDate("");
+        setDeathDate("");
         fetchReasons("DEACTIVATE");
         setReasonModalOpen(true);
     };
 
     const handleActivateEmployee = (userId) => {
+        const emp = files.find(f => f.id === userId || f._id === userId);
+
+        if (emp && emp.reason && emp.reason.trim().toLowerCase() === "death") {
+            alert("❌ Action Restricted: This employee record was deactivated due to 'Death' and cannot be reactivated.");
+            return;
+        }
+
         setTargetEmployeeId(userId);
         setReasonModalType("ACTIVATE");
         setSelectedReason("");
+        setDeactivatedDate("");
+        setActivatedDate("");
+        setDeathDate("");
         fetchReasons("ACTIVATE");
         setReasonModalOpen(true);
     };
@@ -975,6 +1000,15 @@ const AdminPersonalFile = () => {
         return deactivatedList.filter(emp => emp.reason === reasonText).length;
     };
 
+    const formatToLocalDateString = (dateInput) => {
+        if (!dateInput) return "";
+        const d = new Date(dateInput);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const handleStatusConfirmSubmit = async () => {
         if (!selectedReason) {
             alert("❌ Please select a reason before submitting!");
@@ -983,8 +1017,31 @@ const AdminPersonalFile = () => {
 
         try {
             const endpoint = reasonModalType === "DEACTIVATE" ? "deactivate" : "activate";
-            await API.put(`/personalfile/${targetEmployeeId}/${endpoint}?reason=${encodeURIComponent(selectedReason)}`);
+            let url = `/personalfile/${targetEmployeeId}/${endpoint}?reason=${encodeURIComponent(selectedReason)}`;
 
+            if (reasonModalType === "DEACTIVATE") {
+                const isDeath = selectedReason.trim().toLowerCase() === "death";
+
+                if (isDeath) {
+                    if (!deathDate) {
+                        alert("❌ Please select a Death Date!");
+                        return;
+                    }
+                    const formattedDeathDate = formatToLocalDateString(deathDate);
+                    url += `&deathDate=${formattedDeathDate}`;
+                } else {
+                    if (deactivatedDate) {
+                        const formattedDeactDate = formatToLocalDateString(deactivatedDate);
+                        url += `&deactivatedDate=${formattedDeactDate}`;
+                    }
+                }
+            } else if (reasonModalType === "ACTIVATE") {
+                if (activatedDate) {
+                    const formattedActDate = formatToLocalDateString(activatedDate);
+                    url += `&activatedDate=${formattedActDate}`;
+                }
+            }
+            await API.put(url);
             alert(`✅ Employee status updated to ${reasonModalType.toLowerCase()}d!`);
             setReasonModalOpen(false);
             setIsModalOpen(false);
@@ -1113,33 +1170,42 @@ const AdminPersonalFile = () => {
 
     const formatDayMonth = (dateVal) => {
         if (!dateVal) return "-";
-        let dateStr = dateVal;
+
+        let dateObj;
 
         if (dateVal instanceof Date) {
-            const year = dateVal.getFullYear();
-            const month = String(dateVal.getMonth() + 1).padStart(2, '0');
-            const day = String(dateVal.getDate()).padStart(2, '0');
-            dateStr = `${year}-${month}-${day}`;
-        }
-
-        if (typeof dateStr !== 'string') dateStr = String(dateStr);
-
-        const cleanDate = dateStr.split('T')[0];
-        const parts = cleanDate.split('-');
-
-        let month, day;
-        if (parts.length === 3) {
-            month = parseInt(parts[1], 10) - 1;
-            day = parseInt(parts[2], 10);
-        } else if (parts.length === 2) {
-            month = parseInt(parts[0], 10) - 1;
-            day = parseInt(parts[1], 10);
+            dateObj = dateVal;
         } else {
-            return dateStr;
+            const strVal = String(dateVal).trim();
+            const parts = strVal.split('T')[0].split('-');
+
+            if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                dateObj = new Date(year, month, day);
+            }
+            else if (parts.length === 2) {
+                const currentYear = new Date().getFullYear();
+                const p1 = parseInt(parts[0], 10);
+                const p2 = parseInt(parts[1], 10);
+                if (p1 <= 12) {
+                    dateObj = new Date(currentYear, p1 - 1, p2);
+                } else {
+                    dateObj = new Date(currentYear, p2 - 1, p1);
+                }
+            } else {
+                return dateVal;
+            }
         }
 
-        const monthNames = ["Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        return `${day}-${monthNames[month]}`;
+        if (isNaN(dateObj.getTime())) return dateVal;
+
+        const day = dateObj.getDate();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[dateObj.getMonth()];
+
+        return `${day}-${month}`;
     };
 
     const filterableColumns = [
@@ -1517,35 +1583,24 @@ const AdminPersonalFile = () => {
                             }
                         </span>
                     </div>
-                </div>
 
-                {showDeactive && (
-                    <div className="filter-dropdown-group" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '10px' }}>
-                        <select
-                            value={selectedReasonFilter}
-                            onChange={(e) => setSelectedReasonFilter(e.target.value)}
-                            className="admin-filter-dropdown"
-                            style={{ minWidth: '220px' }}
-                        >
-                            <option value="">All Deactivation Reasons</option>
-                            {getUniqueReasonsForStatus().map((reason, idx) => (
-                                <option key={idx} value={reason}>
-                                    {reason} ({getEmployeeCountByReason(reason)})
-                                </option>
-                            ))}
-                        </select>
-
-                        {selectedReasonFilter && (
-                            <button
-                                onClick={() => setSelectedReasonFilter("")}
-                                className="btn-filter-reset"
-                                title="Clear Reason Filter"
+                    {showDeactive && (
+                        <div className="deactive-reason-filter-group">
+                            <select
+                                className="deactive-reason-filter-select"
+                                value={selectedReasonFilter}
+                                onChange={(e) => setSelectedReasonFilter(e.target.value)}
                             >
-                                <RotateCcw size={14} />
-                            </button>
-                        )}
-                    </div>
-                )}
+                                <option value="">All Deactivation Reasons</option>
+                                {getUniqueReasonsForStatus().map((reason, idx) => (
+                                    <option key={idx} value={reason}>
+                                        {reason} ({getEmployeeCountByReason(reason)})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="active-filter-tags">
@@ -1563,39 +1618,100 @@ const AdminPersonalFile = () => {
                 })}
             </div>
 
-            <div className="admin-personal-grid fade-in">
-                {filteredFiles.length === 0 ? (
-                    <div className="no-records-found">
-                        <p>⚠️ No Employees Found Matching Your Search Criterion.</p>
-                    </div>
-                ) : (
-                    filteredFiles.map((file) => (
-                        <div key={file.id} className={`user-card ${selectedIds.includes(file.id) ? 'selected' : ''}`} onClick={() => openEditModal(file)}>
-                            <div className="admin-personal-checkbox" onClick={(e) => toggleSelect(file.id, e)}>
-                                {selectedIds.includes(file.id) ? <CheckSquare size={13} /> : <Square size={13} />}
-                            </div>
-                            <div className="user-avatar">
-                                {file.profileImage ? (
-                                    <img src={file.profileImage} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                                ) : (
-                                    getInitials(file.name || file.username)
-                                )}
-                            </div>
-                            <div className="user-info">
-                                <h3 className="user-name">{file.name || file.username}</h3>
-                                <p className="user-email">{file.email}</p>
-                                <span className="user-designation-badge">{file.designation || 'Employee'}</span>
-
-                                {file.status === "Deactivated" && (
-                                    <span className="status-badge deactivated" style={{ backgroundColor: '#ffccd5', color: '#c1121f', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '5px', fontWeight: 'bold' }}>
-                                        Deactivated
-                                    </span>
-                                )}
-                            </div>
+            {showDeactive ? (
+                <div className="deactive-table-wrapper">
+                    <table className="deactive-employees-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>NIC</th>
+                                <th>Designation</th>
+                                <th>Address</th>
+                                <th>Deactivate Reason</th>
+                                <th>Deactivate Date</th>
+                                <th style={{ textAlign: 'center', width: '70px' }}>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredFiles.length > 0 ? (
+                                filteredFiles.map((user) => (
+                                    <tr
+                                        key={user.id || user._id}
+                                        className={selectedIds.includes(user.id) ? "selected-row" : ""}
+                                    >
+                                        <td>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.includes(user.id)}
+                                                onChange={(e) => toggleSelect(user.id, e)}
+                                            />
+                                        </td>
+                                        <td className="emp-name-cell">{user.name || user.username || "-"}</td>
+                                        <td>{user.email || "-"}</td>
+                                        <td>{user.nic || user["National ID"] || "-"}</td>
+                                        <td>{user.designation || "-"}</td>
+                                        <td>{user.address || "-"}</td>
+                                        <td>{user.reason || "-"}</td>
+                                        <td>{formatDate(user.deactivatedDate || user.deathDate) || "-"}</td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <button
+                                                type="button"
+                                                className="action-more-btn"
+                                                title="Edit Profile"
+                                                onClick={() => openEditModal(user)}
+                                            >
+                                                •••
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="9" className="no-records-table">
+                                        No Deactivated Records Found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="admin-personal-grid fade-in">
+                    {filteredFiles.length === 0 ? (
+                        <div className="no-records-found">
+                            <p>⚠️ No Employees Found Matching Your Search Criterion.</p>
                         </div>
-                    ))
-                )}
-            </div>
+                    ) : (
+                        filteredFiles.map((file) => (
+                            <div key={file.id} className={`user-card ${selectedIds.includes(file.id) ? 'selected' : ''}`} onClick={() => openEditModal(file)}>
+                                <div className="admin-personal-checkbox" onClick={(e) => toggleSelect(file.id, e)}>
+                                    {selectedIds.includes(file.id) ? <CheckSquare size={13} /> : <Square size={13} />}
+                                </div>
+                                <div className="user-avatar">
+                                    {file.profileImage ? (
+                                        <img src={file.profileImage} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                    ) : (
+                                        getInitials(file.name || file.username)
+                                    )}
+                                </div>
+                                <div className="user-info">
+                                    <h3 className="user-name">{file.name || file.username}</h3>
+                                    <p className="user-email">{file.email}</p>
+                                    <span className="user-designation-badge">{file.designation || 'Employee'}</span>
+
+                                    {file.status === "Deactivated" && (
+                                        <span className="status-badge deactivated" style={{ backgroundColor: '#ffccd5', color: '#c1121f', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginLeft: '5px', fontWeight: 'bold' }}>
+                                            Deactivated
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
 
             {isReportModalOpen && (
                 <div className="admin-personal-modal-overlay" style={{ zIndex: 2500 }}>
@@ -1740,9 +1856,9 @@ const AdminPersonalFile = () => {
                                         <th colSpan="3" style={{ textAlign: 'center' }}>Date Of Receipt Of Relevant Grade</th>
                                     </tr>
                                     <tr>
-                                        <th>I</th>
-                                        <th>II</th>
                                         <th>III</th>
+                                        <th>II</th>
+                                        <th>I</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1783,9 +1899,9 @@ const AdminPersonalFile = () => {
                                                 <td>{row["Date Of Compulsory Retirement"] instanceof Date ? row["Date Of Compulsory Retirement"].toLocaleDateString() : row["Date Of Compulsory Retirement"]}</td>
                                                 <td>{row["Present Status Date"] instanceof Date ? row["Present Status Date"].toLocaleDateString() : row["Present Status Date"]}</td>
                                                 <td>{row["Grade"]}</td>
-                                                <td>{row["III"] instanceof Date ? row["III"].toLocaleDateString() : row["III"]}</td>
-                                                <td>{row["II"] instanceof Date ? row["II"].toLocaleDateString() : row["II"]}</td>
-                                                <td>{row["I"] instanceof Date ? row["I"].toLocaleDateString() : row["I"]}</td>
+                                                <td>{row["III"] || row["dateOfReceiptGradeIII"] || "-"}</td>
+                                                <td>{row["II"] || row["dateOfReceiptGradeII"] || "-"}</td>
+                                                <td>{row["I"] || row["dateOfReceiptGradeI"] || "-"}</td>
                                             </tr>
                                         );
                                     })}
@@ -1868,7 +1984,7 @@ const AdminPersonalFile = () => {
                                         {designationsSummary.map((item, index) => {
                                             const isChecked = newFieldData.targetDesignations.includes(item.designation);
                                             return (
-                                                <label>
+                                                <label key={index}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isChecked}
@@ -2043,6 +2159,7 @@ const AdminPersonalFile = () => {
                                 value={selectedReason}
                                 onChange={(e) => setSelectedReason(e.target.value)}
                                 className="admin-personal-form-input"
+                                style={{ marginTop: '5px' }}
                                 required
                             >
                                 <option value="">Choose a Reason</option>
@@ -2051,7 +2168,48 @@ const AdminPersonalFile = () => {
                                 ))}
                             </select>
 
-                            <div className="reasons-container">
+                            {reasonModalType === "DEACTIVATE" && (
+                                <div style={{ marginTop: '17px' }}>
+                                    {selectedReason.trim().toLowerCase() === "death" ? (
+                                        <div className="admin-personal-form-row">
+                                            <label className="admin-personal-form-label">Death Date</label>
+                                            <input
+                                                type="date"
+                                                value={deathDate}
+                                                onChange={(e) => setDeathDate(e.target.value)}
+                                                className="admin-personal-form-input-field"
+                                                required
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="admin-personal-form-row">
+                                            <label className="admin-personal-form-label">Deactivation Date</label>
+                                            <input
+                                                type="date"
+                                                value={deactivatedDate}
+                                                onChange={(e) => setDeactivatedDate(e.target.value)}
+                                                className="admin-personal-form-input-field"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {reasonModalType === "ACTIVATE" && (
+                                <div style={{ marginTop: '17px' }}>
+                                    <div className="admin-personal-form-row">
+                                        <label className="admin-personal-form-label">Activated Date</label>
+                                        <input
+                                            type="date"
+                                            value={activatedDate}
+                                            onChange={(e) => setActivatedDate(e.target.value)}
+                                            className="admin-personal-form-input-field"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="reasons-container" style={{ marginTop: '15px' }}>
                                 <small className="reasons-title">Saved Reasons List (Click 🗑️ to remove)</small>
 
                                 <div className="reasons-list">
@@ -2193,12 +2351,11 @@ const AdminPersonalFile = () => {
                                     <input
                                         type="text"
                                         name="incrementDate"
-                                        placeholder="MM-DD (e.g. 04-20)"
-                                        value={isDateFocused ? (formData.incrementDate || "") : formatDayMonth(formData.incrementDate)}
+                                        placeholder="e.g. 03-Sep"
+                                        value={formatDayMonth(formData.incrementDate) || ""}
                                         onChange={handleInputChange}
-                                        onFocus={() => setIsDateFocused(true)}
-                                        onBlur={() => setIsDateFocused(false)}
-                                        className="admin-personal-form-input-field" />
+                                        className="admin-personal-form-input-field"
+                                    />
                                 </div>
                             </div>
 
@@ -2295,16 +2452,27 @@ const AdminPersonalFile = () => {
                                 )}
 
                                 {!isAddMode && formData.active === false && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleActivateEmployee(formData.id)}
-                                        className="btn-modal-update"
-                                        style={{ backgroundColor: '#2a9d8f', color: '#fff' }}
-                                    >
-                                        Activate Employee
-                                    </button>
+                                    formData.reason && formData.reason.trim().toLowerCase() === "death" ? (
+                                        <button
+                                            type="button"
+                                            disabled
+                                            className="btn-modal-update"
+                                            style={{ backgroundColor: '#6c757d', color: '#fff', cursor: 'not-allowed', opacity: 0.7 }}
+                                            title="Deceased employees cannot be reactivated"
+                                        >
+                                            Deceased (Cannot Activate)
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleActivateEmployee(formData.id)}
+                                            className="btn-modal-update"
+                                            style={{ backgroundColor: '#2a9d8f', color: '#fff' }}
+                                        >
+                                            Activate Employee
+                                        </button>
+                                    )
                                 )}
-
                                 <button type="submit" className="btn-modal-update">
                                     {isAddMode ? "Create User" : "Update Profile"}
                                 </button>

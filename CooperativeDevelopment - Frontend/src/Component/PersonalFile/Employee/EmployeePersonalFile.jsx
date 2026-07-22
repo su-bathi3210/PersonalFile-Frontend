@@ -8,6 +8,7 @@ import API from '../../API/Axios';
 import '../../CSS/EmployeePersonalFile.css';
 
 import {
+    BadgeInfo,
     Cake,
     Download,
     Eye,
@@ -20,8 +21,7 @@ import {
     Siren,
     Transgender,
     User as UserIcon,
-    UserRoundCog,
-    BadgeInfo
+    UserRoundCog
 } from 'lucide-react';
 
 import { LuTrash2 } from "react-icons/lu";
@@ -178,7 +178,22 @@ const EmployeePersonalFile = () => {
     };
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        if (name === "email") {
+            if (value.length > 0 && !value.includes("@")) {
+                alert("⚠️ The email address must contain the '@' character!");
+            }
+        }
+
+        if (name === "phoneNumber" || name === "emergencyContact") {
+            if (value.length > 0 && !value.startsWith("0")) {
+                alert("⚠️The phone number must start with the letter '0'!");
+                return;
+            }
+        }
+
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleDynamicFieldChange = (e) => {
@@ -201,13 +216,15 @@ const EmployeePersonalFile = () => {
             return;
         }
 
-        const phoneRegex = /^[0-9]{10}$/;
+        const phoneRegex = /^0[0-9]{9}$/;
+
         if (formData.phoneNumber && !phoneRegex.test(formData.phoneNumber)) {
-            alert("❌ Please enter a valid 10-digit phone number!");
+            alert("❌ The phone number must be 10 digits long and start with '0'!");
             return;
         }
+
         if (formData.emergencyContact && !phoneRegex.test(formData.emergencyContact)) {
-            alert("❌ Please enter a valid 10-digit emergency contact number!");
+            alert("❌ The Emergency Contact must be 10 digits long and start with '0'!");
             return;
         }
 
@@ -215,7 +232,7 @@ const EmployeePersonalFile = () => {
         const newNicRegex = /^[0-9]{12}$/;
 
         if (formData.nic && !oldNicRegex.test(formData.nic) && !newNicRegex.test(formData.nic)) {
-            alert("❌ Please enter a valid National Identity Card (NIC) number!");
+            alert("❌ Please enter a correct NIC number!");
             return;
         }
 
@@ -238,14 +255,14 @@ const EmployeePersonalFile = () => {
         });
 
         if (missingRequiredDynamicField) {
-            alert("❌ Please fill out all required dynamic fields!");
+            alert("❌ Please complete all required fields (Dynamic Fields)!");
             return;
         }
 
         setIsSaving(true);
         try {
             await API.put(`/personalfile/update-profile?id=${formData.id}`, formData);
-            alert("✅ Personal details updated successfully!");
+            alert("✅ Personal details successfully updated!");
             setIsEditing(false);
             fetchUserData();
         } catch (err) {

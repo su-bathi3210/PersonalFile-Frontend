@@ -184,7 +184,7 @@
 
 .employee-vehicle-badge {
     display: inline-block;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-align: center;
 }
@@ -251,13 +251,29 @@
     color: #fff;
     border: none;
     padding: 7px 9px;
-    font-size: 10px;
+    font-size: 11px;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
     white-space: nowrap;
 }
 
 .employee-vehicle-btn-cancel:hover {
+    background-color: #000;
+}
+
+.employee-vehicle-btn-edit {
+    background-color: #e76f51;
+    text-transform: uppercase;
+    color: #fff;
+    border: none;
+    padding: 7px 15px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.employee-vehicle-btn-edit:hover {
     background-color: #000;
 }
 

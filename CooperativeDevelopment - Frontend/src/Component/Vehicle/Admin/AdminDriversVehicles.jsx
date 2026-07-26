@@ -263,10 +263,26 @@ const AdminDriversVehicles = () => {
         let statusClass = "admin-driver-vehicle-status-unknown";
         let label = "Unknown";
 
-        if (status === 'AVAILABLE') { statusClass = "admin-driver-vehicle-status-available"; label = "Active"; }
-        else if (status === 'BOOKED') { statusClass = "admin-driver-vehicle-status-booked"; label = "BOOKED"; }
-        else if (status === 'ON_TRIP') { statusClass = "admin-driver-vehicle-status-ontrip"; label = "Operational"; }
-        else if (status === 'REPAIR') { statusClass = "admin-driver-vehicle-status-repair"; label = "Maintenance"; }
+        if (status === 'AVAILABLE') {
+            statusClass = "admin-driver-vehicle-status-available";
+            label = "AVAILABLE";
+        }
+        else if (status === 'ALLOCATED') {
+            statusClass = "admin-driver-vehicle-status-allocated";
+            label = "ALLOCATED";
+        }
+        else if (status === 'BOOKED') {
+            statusClass = "admin-driver-vehicle-status-booked";
+            label = "BOOKED";
+        }
+        else if (status === 'ON_TRIP') {
+            statusClass = "admin-driver-vehicle-status-ontrip";
+            label = "Operational";
+        }
+        else if (status === 'REPAIR') {
+            statusClass = "admin-driver-vehicle-status-repair";
+            label = "Maintenance";
+        }
 
         return (
             <span className={`admin-driver-vehicle-status-badge ${statusClass}`}>

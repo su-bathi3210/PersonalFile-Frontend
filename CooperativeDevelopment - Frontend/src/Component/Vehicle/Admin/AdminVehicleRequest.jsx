@@ -31,10 +31,16 @@ const AdminVehicleRequest = () => {
         setLoading(true);
         try {
             const response = await API.get('/vehicle-requests/pending');
-            setAllRequests(response.data);
+            const sortedData = (response.data || []).sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.travelDateTime || 0);
+                const dateB = new Date(b.createdAt || b.travelDateTime || 0);
+                return dateB - dateA;
+            });
+
+            setAllRequests(sortedData);
 
             if (selectedRequest) {
-                const updatedSelected = response.data.find(r => (r.id || r._id) === (selectedRequest.id || selectedRequest._id));
+                const updatedSelected = sortedData.find(r => (r.id || r._id) === (selectedRequest.id || selectedRequest._id));
                 if (updatedSelected) setSelectedRequest(updatedSelected);
             }
         } catch (error) {
@@ -49,8 +55,14 @@ const AdminVehicleRequest = () => {
         try {
             setAllReqLoading(true);
             const response = await API.get('/vehicle-requests/officer-approved-list');
-            console.log("Backend Data:", response.data);
-            setAllApprovedRequests(response.data);
+
+            const sortedApproved = (response.data || []).sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.travelDateTime || 0);
+                const dateB = new Date(b.createdAt || b.travelDateTime || 0);
+                return dateB - dateA;
+            });
+
+            setAllApprovedRequests(sortedApproved);
         } catch (error) {
             console.error("❌ Error fetching requests:", error);
         } finally {
@@ -82,24 +94,23 @@ const AdminVehicleRequest = () => {
         setSelectedDriver('');
         setAdminRejectRemark('');
         setCustomRejectReason('');
+        setMessage({ type: '', text: '' });
     };
 
-    const handleAdminReject = async (requestId) => {
-        const finalRejectReason =
-            adminRejectRemark === "Other"
-                ? customRejectReason
-                : adminRejectRemark;
+    const handleAdminReject = async (requestId, customRemarks = null) => {
+        let finalRejectReason = customRemarks;
 
-        if (!finalRejectReason.trim()) {
-            alert('⚠️ Please enter the reason for rejecting the request.');
-            return;
+        if (!finalRejectReason) {
+            finalRejectReason = adminRejectRemark === "Other" ? customRejectReason : adminRejectRemark;
         }
 
-        if (!window.confirm('⚠️ Would you like to permanently deny this vehicle request?')) {
+        if (!finalRejectReason || !finalRejectReason.trim()) {
+            alert('⚠️ Please enter the reason for rejecting/cancelling the request.');
             return;
         }
 
         setActionLoading(true);
+        setProcessingId(requestId);
         setMessage({ type: '', text: '' });
 
         try {
@@ -110,18 +121,30 @@ const AdminVehicleRequest = () => {
             });
 
             if (response.status === 200 || response.status === 201) {
-                setMessage({ type: 'success', text: '✅ Vehicle request has been successfully REJECTED by Admin.' });
+                setMessage({ type: 'success', text: '✅ Vehicle request has been successfully CANCELLED/REJECTED by Admin.' });
                 setSelectedRequest(null);
                 setAdminRejectRemark('');
                 setCustomRejectReason('');
                 fetchAllRequests();
+                fetchOfficerApprovedRequests();
+                fetchVehiclesAndDrivers();
             }
         } catch (error) {
             console.error('Error rejecting request:', error);
-            const errorMsg = error.response?.data?.message || '❌ Failed to reject vehicle request.';
+            const errorMsg = error.response?.data?.message ||
+                (typeof error.response?.data === 'string' ? error.response.data : null) ||
+                '❌ Failed to cancel vehicle request.';
             setMessage({ type: 'danger', text: errorMsg });
+            alert(errorMsg);
         } finally {
             setActionLoading(false);
+            setProcessingId(null);
+        }
+    };
+
+    const handleAdminCancelApprovedRequest = (requestId) => {
+        if (window.confirm("⚠️ Are you sure you want to cancel this approved vehicle request?")) {
+            handleAdminReject(requestId, "Cancelled by Admin");
         }
     };
 
@@ -152,11 +175,32 @@ const AdminVehicleRequest = () => {
                 setSelectedVehicle('');
                 setSelectedDriver('');
                 fetchAllRequests();
+                fetchVehiclesAndDrivers();
             }
         } catch (error) {
             console.error('Error approving vehicle request:', error);
-            const errorMsg = error.response?.data?.message || '❌ Failed to approve and assign vehicle request.';
-            setMessage({ type: 'danger', text: errorMsg });
+
+            let backendError = '';
+
+            if (error.response && error.response.data) {
+                const data = error.response.data;
+
+                if (typeof data === 'string') {
+                    backendError = data;
+                } else if (data.message) {
+                    backendError = data.message;
+                } else if (data.error) {
+                    backendError = data.error;
+                } else {
+                    backendError = JSON.stringify(data);
+                }
+            } else if (error.message) {
+                backendError = error.message;
+            } else {
+                backendError = '❌ Failed to approve and assign vehicle request.';
+            }
+            setMessage({ type: 'danger', text: backendError });
+            alert(backendError);
         } finally {
             setActionLoading(false);
         }
@@ -171,9 +215,13 @@ const AdminVehicleRequest = () => {
             setProcessingId(requestId);
             await API.post(`/vehicle-requests/complete/${requestId}`);
 
-            setAllApprovedRequests(allApprovedRequests.filter(req => req.id !== requestId));
+            fetchOfficerApprovedRequests();
+            setMessage({ type: 'success', text: '✅ Request completed and notification email sent!' });
         } catch (error) {
             console.error("❌ Error completing request:", error);
+            const errorMsg = error.response?.data?.message || '❌ Failed to complete request.';
+            setMessage({ type: 'danger', text: errorMsg });
+            alert(errorMsg);
         } finally {
             setProcessingId(null);
         }
@@ -297,32 +345,47 @@ const AdminVehicleRequest = () => {
 
                                 {selectedRequest.status === 'PENDING' && (
                                     <>
-                                        <h5 className="admin-vehicle-section-title " >Assign Vehicle & Driver</h5>
+                                        <h5 className="admin-vehicle-section-title">Assign Vehicle & Driver</h5>
                                         <div className="admin-vehicle-assign-block">
-
                                             <div>
                                                 <label className="admin-vehicle-info-label">Select Vehicle:</label>
-                                                <select className="form-select admin-vehicle-dropdown" value={selectedVehicle} onChange={(e) => setSelectedVehicle(e.target.value)}>
+                                                <select
+                                                    className="form-select admin-vehicle-dropdown"
+                                                    value={selectedVehicle}
+                                                    onChange={(e) => setSelectedVehicle(e.target.value)}>
                                                     <option value="">Choose Vehicle</option>
-                                                    {vehicles.map(v => (
-                                                        <option key={v.id || v._id} value={v.id || v._id} disabled={v.status === 'BOOKED'}
-                                                            style={{ color: v.status === 'BOOKED' ? '#c1121f' : '#000' }}>
-                                                            {v.vehicleNumber} - {v.vehicleModel || v.brand} {v.status === 'BOOKED' ? '(BOOKED)' : '(AVAILABLE)'}
-                                                        </option>
-                                                    ))}
+                                                    {vehicles.map(v => {
+                                                        const isAllocated = v.status === 'ALLOCATED' || v.status === 'BOOKED';
+                                                        return (
+                                                            <option
+                                                                key={v.id || v._id}
+                                                                value={v.id || v._id}
+                                                                style={{ color: isAllocated ? '#457b9d' : '#000' }}>
+                                                                {v.vehicleNumber} - {v.vehicleModel || v.brand || v.model} {isAllocated ? `(${v.status})` : '(AVAILABLE)'}
+                                                            </option>
+                                                        );
+                                                    })}
                                                 </select>
                                             </div>
 
                                             <div>
                                                 <label className="admin-vehicle-info-label">Select Driver:</label>
-                                                <select className="form-select admin-vehicle-dropdown" value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)}>
+                                                <select
+                                                    className="form-select admin-vehicle-dropdown"
+                                                    value={selectedDriver}
+                                                    onChange={(e) => setSelectedDriver(e.target.value)}>
                                                     <option value="">Choose Driver</option>
-                                                    {drivers.map(d => (
-                                                        <option key={d.id || d._id} value={d.id || d._id} disabled={d.status === 'BOOKED'}
-                                                            style={{ color: d.status === 'BOOKED' ? '#c1121f' : '#000' }}>
-                                                            {d.driverName || d.name} {d.status === 'BOOKED' ? '(BOOKED)' : '(AVAILABLE)'}
-                                                        </option>
-                                                    ))}
+                                                    {drivers.map(d => {
+                                                        const isAllocated = d.status === 'ALLOCATED' || d.status === 'BOOKED';
+                                                        return (
+                                                            <option
+                                                                key={d.id || d._id}
+                                                                value={d.id || d._id}
+                                                                style={{ color: isAllocated ? '#457b9d' : '#000' }}>
+                                                                {d.driverName || d.name} {isAllocated ? `(${d.status})` : '(AVAILABLE)'}
+                                                            </option>
+                                                        );
+                                                    })}
                                                 </select>
                                             </div>
                                         </div>
@@ -373,12 +436,12 @@ const AdminVehicleRequest = () => {
             <div className="admin-vehicle-all-request-wrapper" style={{ marginTop: '30px' }}>
                 <div className="admin-vehicle-all-request-header">
                     <div>
-                        <h1 className="admin-vehicle-all-request-title">Officer Approved Vehicle Requests</h1>
+                        <h1 className="admin-vehicle-all-request-title">Approved & Confirmed Vehicle Requests</h1>
                         <p className="admin-vehicle-all-request-subtitle">
-                            Review details and finalize vehicle deployments by sending notification emails.
+                            Review details, finalize vehicle deployments, or cancel prior to trip start.
                         </p>
                     </div>
-                    <span className="admin-vehicle-all-request-badge">Pending Finalization: {allApprovedRequests.length}</span>
+                    <span className="admin-vehicle-all-request-badge">Total Active: {allApprovedRequests.length}</span>
                 </div>
 
                 {allApprovedRequests.length === 0 ? (
@@ -386,8 +449,8 @@ const AdminVehicleRequest = () => {
                         <svg className="admin-vehicle-all-request-empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p className="admin-vehicle-all-request-empty-title">No approved requests available</p>
-                        <p className="admin-vehicle-all-request-empty-subtitle">All processed requests have been finalized and notified.</p>
+                        <p className="admin-vehicle-all-request-empty-title">No active approved requests available</p>
+                        <p className="admin-vehicle-all-request-empty-subtitle">All trips have either started, completed, or been cancelled.</p>
                     </div>
                 ) : (
                     <div className="admin-vehicle-all-request-table-container">
@@ -397,10 +460,8 @@ const AdminVehicleRequest = () => {
                                     <tr className="admin-vehicle-all-request-th-row">
                                         <th className="admin-vehicle-all-request-th">Employee</th>
                                         <th className="admin-vehicle-all-request-th">Email</th>
-                                        <th className="admin-vehicle-all-request-th">Duty Nature</th>
                                         <th className="admin-vehicle-all-request-th">Journey Details</th>
                                         <th className="admin-vehicle-all-request-th">Assigned Vehicle and Drivers</th>
-                                        <th className="admin-vehicle-all-request-th">Officer Remarks</th>
                                         <th className="admin-vehicle-all-request-th admin-vehicle-all-request-th--center">Action</th>
                                     </tr>
                                 </thead>
@@ -410,7 +471,6 @@ const AdminVehicleRequest = () => {
 
                                             <td className="admin-vehicle-all-request-td">{request.requesterName}</td>
                                             <td className="admin-vehicle-all-request-td">{request.requesterEmail}</td>
-                                            <td className="admin-vehicle-all-request-td">{request.dutyNature}</td>
 
                                             <td className="admin-vehicle-all-request-td">
                                                 <div className="admin-vehicle-all-request-location">{request.fromLocation} To {request.toLocation}</div>
@@ -447,28 +507,27 @@ const AdminVehicleRequest = () => {
                                                 </div>
                                             </td>
 
-                                            <td className="admin-vehicle-all-request-td admin-vehicle-all-request-td--remarks">
-                                                {request.officerRemarks ? `${request.officerRemarks}` : <span className="admin-vehicle-all-request-no-remarks">No remarks</span>}
-                                            </td>
-
                                             <td className="admin-vehicle-all-request-td admin-vehicle-all-request-td--center">
-                                                <button
-                                                    onClick={() => handleCompleteRequest(request.id || request._id)}
-                                                    disabled={processingId === (request.id || request._id)}
-                                                    className={`admin-vehicle-all-request-action-btn ${processingId === (request.id || request._id) ? 'admin-vehicle-all-request-action-btn--disabled' : ''}`}
-                                                >
-                                                    {processingId === (request.id || request._id) ? (
-                                                        <span className="admin-vehicle-all-request-btn-spinner-container">
-                                                            <svg className="admin-vehicle-all-request-btn-spinner" fill="none" viewBox="0 0 24 24">
-                                                                <circle className="admin-vehicle-all-request-spinner-circle" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                                <path className="admin-vehicle-all-request-spinner-path" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                                            </svg>
-                                                            Sending...
-                                                        </span>
-                                                    ) : 'Complete & Send Email'}
-                                                </button>
-                                            </td>
+                                                <div className="admin-vehicle-action-btn-group">
 
+                                                    {request.status !== 'TRIP_PROCESS_CONFIRMED' ? (
+                                                        <button
+                                                            onClick={() => handleCompleteRequest(request.id || request._id)}
+                                                            disabled={processingId === (request.id || request._id)}
+                                                            className={`admin-vehicle-all-request-action-btn ${processingId === (request.id || request._id) ? 'admin-vehicle-all-request-action-btn--disabled' : ''}`}
+                                                        >
+                                                            {processingId === (request.id || request._id) ? 'Sending...' : 'Complete & Send Email'}
+                                                        </button>
+                                                    ) : (
+                                                        <span style={{ fontSize: '10px', color: '#2a9d8f', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> ✅ Email Sent </span>
+                                                    )}
+
+                                                    <button
+                                                        onClick={() => handleAdminCancelApprovedRequest(request.id || request._id)}
+                                                        disabled={processingId === (request.id || request._id)}
+                                                        className="admin-vehicle-all-request-action-btn cancel"> Cancel </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

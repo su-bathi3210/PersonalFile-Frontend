@@ -55,7 +55,8 @@ const AdminVehicleHistory = () => {
         const fetchAllRequests = async () => {
             try {
                 const response = await api.get('/vehicle-requests/admin/all-requests');
-                const data = response.data;
+                const data = response.data.reverse();
+
                 setRequests(data);
                 setFilteredRequests(data);
 
@@ -79,7 +80,6 @@ const AdminVehicleHistory = () => {
                 setLoading(false);
             }
         };
-
         fetchAllRequests();
     }, []);
 
@@ -467,9 +467,7 @@ const AdminVehicleHistory = () => {
                 <table className="admin-vehicle-history-table">
                     <thead className="admin-vehicle-history-thead">
                         <tr>
-                            <th className="admin-vehicle-history-th">Requester Name</th>
                             <th className="admin-vehicle-history-th">Email</th>
-                            <th className="admin-vehicle-history-th">Travel Date & Time</th>
                             <th className="admin-vehicle-history-th">Journey (From - To)</th>
                             <th className="admin-vehicle-history-th">Assigned Vehicle and Drivers</th>
                             <th className="admin-vehicle-history-th">Status</th>
@@ -486,12 +484,7 @@ const AdminVehicleHistory = () => {
                         ) : (
                             filteredRequests.map((request) => (
                                 <tr key={request.id} className="admin-vehicle-history-tr">
-                                    <td className="admin-vehicle-history-td">{request.requesterName}</td>
                                     <td className="admin-vehicle-history-td">{request.requesterEmail}</td>
-                                    <td className="admin-vehicle-history-td">{request.travelDateTime
-                                        ? request.travelDateTime.replace('T', ' ').split('.')[0]
-                                        : 'N/A'
-                                    }</td>
                                     <td className="admin-vehicle-history-td">
                                         <div className="admin-vehicle-history-journey">
                                             {request.fromLocation} <span className="admin-vehicle-history-arrow">➡️</span> {request.toLocation}

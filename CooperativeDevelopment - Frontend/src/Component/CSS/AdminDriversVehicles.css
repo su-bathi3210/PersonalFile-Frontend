@@ -384,13 +384,23 @@
 }
 
 .admin-driver-vehicle-status-available {
-    color: #2a9d8f;
+    color: #588157;
 }
 
 .admin-driver-vehicle-status-available .admin-driver-vehicle-status-dot,
 .admin-driver-vehicle-status-available .admin-driver-vehicle-status-ping {
-    background-color: #2a9d8f;
+    background-color: #588157;
 }
+
+.admin-driver-vehicle-status-allocated {
+    color: #0077b6;
+}
+
+.admin-driver-vehicle-status-allocated .admin-driver-vehicle-status-dot,
+.admin-driver-vehicle-status-allocated .admin-driver-vehicle-status-ping {
+    background-color: #0077b6;
+}
+
 
 .admin-driver-vehicle-status-booked {
     color: #e76f51;

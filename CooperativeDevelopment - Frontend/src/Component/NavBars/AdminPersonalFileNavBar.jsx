@@ -89,6 +89,7 @@ const AdminPersonalFileNavBar = () => {
         { name: 'Dashboard', path: '/AdminPFDashboard', relatedPaths: ["/AdminPFHistory"] },
         { name: 'Personal File', path: '/AdminPersonalFile' },
         { name: 'In:Forms', path: '/IncrementFormsHandling', hasBadge: true },
+        { name: 'History', path: '/AdminEmployeeHistory'},
     ];
 
     return (

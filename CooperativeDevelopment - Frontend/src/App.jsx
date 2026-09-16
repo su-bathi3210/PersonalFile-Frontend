@@ -10,6 +10,7 @@ import {
 
 // Logins
 import LoginRegister from './Component/Logins/LoginRegister';
+import UnderMaintenance from './Component/Logins/UnderMaintains';
 
 // Dashboards
 import EmployeeDashboard from './Component/Dashboard/EmployeeDashboard';
@@ -90,7 +91,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LoginRegister />} />
+        <Route path="/" element={<UnderMaintenance />} />
         <Route path="/Unauthorized" element={<Unauthorized />} />
 
         <Route element={

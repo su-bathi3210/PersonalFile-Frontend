@@ -1,6 +1,7 @@
 import React from 'react';
 
 const UnderMaintenance = () => {
+    // Inline styles use karala thiyenne custom CSS file ekak nathuvath vada karanna
     const styles = {
         container: {
             display: 'flex',
@@ -25,7 +26,7 @@ const UnderMaintenance = () => {
         icon: {
             fontSize: '64px',
             marginBottom: '20px',
-            color: '#f39c12',
+            color: '#f39c12', // Warning color
         },
         title: {
             fontSize: '28px',
@@ -53,6 +54,7 @@ const UnderMaintenance = () => {
     return (
         <div style={styles.container}>
             <div style={styles.card}>
+                {/* Maintenance Icon ekak (Emoji) */}
                 <div style={styles.icon}>🛠️</div>
 
                 <h1 style={styles.title}>Under Maintenance</h1>
@@ -62,6 +64,7 @@ const UnderMaintenance = () => {
                     We'll be back online shortly. Thank you for your patience!
                 </p>
 
+                {/* Loading animation ekak hadaganna custom style injection ekak */}
                 <div style={styles.spinner}></div>
                 <style>{`
                     @keyframes spin {

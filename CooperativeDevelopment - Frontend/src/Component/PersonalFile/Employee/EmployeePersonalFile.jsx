@@ -73,7 +73,9 @@ const EmployeePersonalFile = () => {
         const fetchNotifications = async () => {
             try {
                 const response = await API.get(`/personalfile/notifications/${formData.id}`);
-                setNotifications(response.data.filter(n => !n.read && n.status === "PENDING"));
+                console.log("Fetched Notifications:", response.data);
+
+                setNotifications(response.data.filter(n => n.isIncrementType || n.status === "PENDING"));
             } catch (err) {
                 console.error("❌ Error fetching notifications", err);
             }
@@ -323,6 +325,31 @@ const EmployeePersonalFile = () => {
         </div>
     );
 
+    const handleFileDownload = async (fileUrl, defaultFileName) => {
+        try {
+            const response = await API.get(`/personalfile/download-increment-form?filePath=${encodeURIComponent(fileUrl)}`, {
+                responseType: 'blob'
+            });
+
+            const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', defaultFileName || 'Increment_Form.docx');
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error("❌ File Download Error:", err);
+            alert("❌ File download failed!");
+        }
+    };
+
     return (
         <div className="personalFile-container fade-in">
             <div className="personalFile-glass-layout">
@@ -358,34 +385,23 @@ const EmployeePersonalFile = () => {
                                     <h4>Step 1: Download Auto-Filled Templates</h4>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
 
-                                        {selectedNotification && selectedNotification.generatedFileUrls && selectedNotification.generatedFileUrls.length > 0 ? (
-                                            selectedNotification.generatedFileUrls.map((fileUrl, index) => {
+                                        {selectedNotification?.generatedFileUrls?.map((fileUrl, index) => {
+                                            let originalName = fileUrl
+                                                ? fileUrl.substring(fileUrl.lastIndexOf('_') + 1)
+                                                : `Increment_Form_${index + 1}.docx`;
 
-                                                let originalName = "";
-                                                if (fileUrl) {
-                                                    const urlParts = fileUrl.split('/');
-                                                    const rawFileName = urlParts[urlParts.length - 1];
-                                                    originalName = rawFileName.substring(rawFileName.indexOf('_') + 1);
-                                                } else {
-                                                    originalName = `Increment_Form_${index + 1}.docx`;
-                                                }
-                                                return (
-                                                    <a
-                                                        key={index}
-                                                        href={`${BACKEND_BASE_URL}${fileUrl}`}
-                                                        download
-                                                        className="template-download-link-btn"
-                                                        onMouseEnter={(e) => e.currentTarget.style.background = '#e3e3dc'}
-                                                        onMouseLeave={(e) => e.currentTarget.style.background = '#edede9'}
-                                                    >
-                                                        <Download size={18} color="#2a9d8f" />
-                                                        <span>{originalName}</span>
-                                                    </a>
-                                                );
-                                            })
-                                        ) : (
-                                            <p style={{ color: '#e63946', fontSize: '12px', fontWeight: '500' }}>⚠️ No auto-filled documents found. Please contact the Admin section.</p>
-                                        )}
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    type="button"
+                                                    onClick={() => handleFileDownload(fileUrl, originalName)}
+                                                    className="template-download-link-btn"
+                                                >
+                                                    <Download size={18} color="#2a9d8f" />
+                                                    <span>{originalName}</span>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
